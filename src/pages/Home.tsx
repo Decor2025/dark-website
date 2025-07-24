@@ -80,14 +80,14 @@ const Home: React.FC = () => {
         <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mt-6">
           <a
             href="/estimate"
-            className="w-40 sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow hover:bg-blue-700 transition"
+            className="w-auto inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow hover:bg-blue-700 transition"
           >
             Get Free Estimate
             <ArrowRight className="ml-2 w-5 h-5" />
           </a>
           <a
             href="/catalogue"
-            className="w-40 sm:w-auto inline-flex items-center justify-center px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-100 transition"
+            className="w-auto inline-flex items-center justify-center px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-100 transition"
           >
             Browse Catalogue
             <ShoppingBag className="ml-2 w-5 h-5" />
