@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { Testimonial } from '../types';
 import TestimonialForm from '../components/testimonials/TestimonialForm';
 import { ArrowRight, ShoppingBag, Users, Shield, Phone, Star, CheckCircle, Award, Clock, Headphones } from 'lucide-react';
+import Marquee from 'react-fast-marquee';
 
 const Home: React.FC = () => {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
@@ -59,65 +60,80 @@ const Home: React.FC = () => {
   return (
     <div className="min-h-screen">
       {/* Enhanced Hero Section */}
-      <section className="relative bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 text-white overflow-hidden">
-        <div className="absolute inset-0 bg-black/20"></div>
-        <div className="absolute inset-0">
-          <div className="absolute top-20 left-20 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-20 right-20 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
-        </div>
-        
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32">
-          <div className="text-center max-w-4xl mx-auto">
-            <h1 className="text-5xl md:text-7xl font-bold mb-8 leading-tight">
-              Your Trusted
-              <span className="block bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                Business Partner
-              </span>
-            </h1>
-            <p className="text-xl md:text-2xl mb-12 text-gray-300 max-w-3xl mx-auto leading-relaxed">
-              Discover premium products and exceptional service tailored to your business needs. 
-              We deliver quality solutions that drive your success forward.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
-              <Link
-                to="/estimate"
-                className="group bg-white text-slate-900 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-100 transition-all duration-300 inline-flex items-center justify-center shadow-xl hover:shadow-2xl transform hover:-translate-y-1"
-              >
-                Get Free Estimate
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Link>
-              <Link
-                to="/catalogue"
-                className="group border-2 border-white/30 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-white/10 hover:border-white/50 transition-all duration-300 inline-flex items-center justify-center backdrop-blur-sm"
-              >
-                Browse Catalogue
-                <ShoppingBag className="ml-2 w-5 h-5 group-hover:scale-110 transition-transform" />
-              </Link>
-            </div>
+      <section className="relative bg-white overflow-hidden">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32 flex flex-col lg:flex-row items-center">
+      
+      {/* Left Column */}
+      <div className="lg:w-1/2 text-center lg:text-left space-y-6">
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 leading-tight">
+          Build Your Dream  
+          <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500">
+            Interior Store
+          </span>
+        </h1>
+        <p className="text-lg text-gray-600 max-w-md mx-auto lg:mx-0">
+          Launch an elegant, high‑performance e‑commerce site in minutes.  
+          Free estimate, secure payments, and 24/7 support included.
+        </p>
 
-            {/* Trust Indicators */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-              <div>
-                <div className="text-3xl font-bold text-blue-400">500+</div>
-                <div className="text-gray-400">Happy Clients</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-purple-400">1000+</div>
-                <div className="text-gray-400">Projects Completed</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-green-400">24/7</div>
-                <div className="text-gray-400">Support Available</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-yellow-400">5★</div>
-                <div className="text-gray-400">Average Rating</div>
-              </div>
-            </div>
-          </div>
+        {/* Buttons: capped width on mobile */}
+        <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mt-6">
+          <a
+            href="/estimate"
+            className="w-40 sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow hover:bg-blue-700 transition"
+          >
+            Get Free Estimate
+            <ArrowRight className="ml-2 w-5 h-5" />
+          </a>
+          <a
+            href="/catalogue"
+            className="w-40 sm:w-auto inline-flex items-center justify-center px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-100 transition"
+          >
+            Browse Catalogue
+            <ShoppingBag className="ml-2 w-5 h-5" />
+          </a>
         </div>
-      </section>
+
+        {/* Trust Badges */}
+        <div className="mt-10 flex flex-wrap justify-center lg:justify-start gap-6">
+          {[
+            { label: '500+ Clients', icon: '../assets/icons/client.svg' },
+            { label: '1k+ Projects', icon: '../assets/icons/project.svg' },
+            { label: '24/7 Support', icon: '../assets/icons/support.svg' },
+            { label: '5★ Rating', icon: '../assets/icons/rating.svg' },
+          ].map((badge) => (
+            <div key={badge.label} className="flex items-center space-x-2">
+              <img src={badge.icon} alt="" className="h-6 w-6" />
+              <span className="text-gray-600 font-medium">{badge.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Right Column (Dynamic Illustration) */}
+      <div className="mt-12 lg:mt-0 lg:w-1/2 flex justify-center lg:justify-end">
+        <img
+          src="../assets/1.jpg"
+          alt="Hero Illustration"
+          className="w-full max-w-md rounded-xl shadow-lg"
+        />
+      </div>
+    </div>
+
+    {/* Decorative SVG Curve */}
+    <div className="pointer-events-none absolute inset-x-0 bottom-0">
+      <svg
+        className="w-full h-20"
+        viewBox="0 0 1440 320"
+        preserveAspectRatio="none"
+      >
+        <path
+          fill="#FFFFFF"
+          d="M0,192L48,170.7C96,149,192,107,288,106.7C384,107,480,149,576,160C672,171,768,149,864,133.3C960,117,1056,107,1152,122.7C1248,139,1344,181,1392,202.7L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
+        />
+      </svg>
+    </div>
+  </section>
 
       {/* Why Choose Us Section */}
       <section className="py-24 bg-white">
