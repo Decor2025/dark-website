@@ -5,7 +5,6 @@ import InventoryManagement from '../../components/admin/InventoryManagement';
 import UserManagement from '../../components/admin/UserManagement';
 import TestimonialManagement from '../../components/admin/TestimonialManagement';
 import ContactManagement from '../../components/admin/ContactManagement';
-import ContentManagement from '../../components/admin/ContentManagement';
 import SettingsManagement from '../../components/admin/SettingsManagement';
 import EmployeeDashboard from '../../components/admin/EmployeeDashboard';
 import { 
@@ -17,7 +16,6 @@ import {
   TrendingUp,
   MessageSquare,
   Mail,
-  Globe
 } from 'lucide-react';
 
 const AdminDashboard: React.FC = () => {
@@ -38,7 +36,6 @@ const AdminDashboard: React.FC = () => {
     { id: 'users', label: 'Users', icon: Users },
     { id: 'testimonials', label: 'Testimonials', icon: MessageSquare },
     { id: 'contacts', label: 'Contact Messages', icon: Mail },
-    { id: 'content', label: 'Content Management', icon: Globe },
     { id: 'settings', label: 'Site Settings', icon: Settings },
   ];
 
@@ -98,8 +95,6 @@ const AdminDashboard: React.FC = () => {
         return <TestimonialManagement />;
       case 'contacts':
         return <ContactManagement />;
-      case 'content':
-        return <ContentManagement />;
       case 'settings':
         return <SettingsManagement />;
       default:

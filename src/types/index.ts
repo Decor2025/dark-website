@@ -3,6 +3,11 @@ export interface User {
   email: string;
   displayName?: string;
   profileImage?: string;
+  phone?: string;
+  address?: string;
+  company?: string;
+  website?: string;
+  bio?: string;
   role: 'admin' | 'employee' | 'customer' | 'editor' | 'viewer';
   createdAt: string;
 }
@@ -30,10 +35,101 @@ export interface CartItem {
 export interface InventoryItem {
   id: string;
   productId: string;
+  sku: string;
+  name: string;
+  description: string;
+  category: string;
+  unit: string;
+  costPrice: number;
+  sellingPrice: number;
   currentStock: number;
   minimumStock: number;
+  maximumStock: number;
+  reorderLevel: number;
+  location: string;
+  supplier: string;
+  barcode?: string;
   lastUpdated: string;
   updatedBy: string;
+  createdAt: string;
+  isActive: boolean;
+}
+
+export interface InventoryTransaction {
+  id: string;
+  inventoryItemId: string;
+  type: 'purchase' | 'sale' | 'adjustment' | 'damage' | 'return' | 'transfer';
+  quantity: number;
+  previousStock: number;
+  newStock: number;
+  reason: string;
+  reference?: string;
+  performedBy: string;
+  performedAt: string;
+  approvedBy?: string;
+  approvedAt?: string;
+  notes?: string;
+}
+
+export interface InventoryGroup {
+  id: string;
+  name: string;
+  description: string;
+  categories: string[];
+  assignedEmployees: string[];
+  permissions: {
+    canAdd: boolean;
+    canReduce: boolean;
+    canAdjust: boolean;
+    canViewReports: boolean;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Message {
+  id: string;
+  fromUserId: string;
+  toUserId: string;
+  subject: string;
+  content: string;
+  isRead: boolean;
+  parentMessageId?: string;
+  attachments?: string[];
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface Quotation {
+  id: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  projectName: string;
+  description: string;
+  items: QuotationItem[];
+  subtotal: number;
+  tax: number;
+  discount: number;
+  total: number;
+  status: 'draft' | 'sent' | 'approved' | 'rejected' | 'converted';
+  validUntil: string;
+  notes?: string;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+  approvedBy?: string;
+  approvedAt?: string;
+}
+
+export interface QuotationItem {
+  id: string;
+  inventoryItemId: string;
+  name: string;
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  total: number;
 }
 
 export interface Order {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ref, onValue } from 'firebase/database';
 import { database } from '../config/firebase';
-import { Product } from '../types';
+import { Product, InventoryItem } from '../types';
 import { formatCurrency } from '../config/razorpay';
 import ProductCard from '../components/product/ProductCard';
 import ProductModal from '../components/product/ProductModal';
@@ -9,6 +9,7 @@ import { Search, Filter, X } from 'lucide-react';
 
 const Catalogue: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -18,8 +19,11 @@ const Catalogue: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Load both products and inventory
     const productsRef = ref(database, 'products');
-    const unsubscribe = onValue(productsRef, (snapshot) => {
+    const inventoryRef = ref(database, 'inventory');
+    
+    const unsubscribeProducts = onValue(productsRef, (snapshot) => {
       if (snapshot.exists()) {
         const productsData = snapshot.val();
         const productsList: Product[] = Object.keys(productsData).map(key => ({
@@ -30,15 +34,49 @@ const Catalogue: React.FC = () => {
       } else {
         setProducts([]);
       }
+    });
+
+    const unsubscribeInventory = onValue(inventoryRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const inventoryData = snapshot.val();
+        const inventoryList: InventoryItem[] = Object.keys(inventoryData)
+          .map(key => ({
+            id: key,
+            ...inventoryData[key],
+          }))
+          .filter(item => item.isActive && item.currentStock > 0);
+        setInventory(inventoryList);
+      } else {
+        setInventory([]);
+      }
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribeProducts();
+      unsubscribeInventory();
+    };
   }, []);
 
-  const categories = ['all', ...Array.from(new Set(products.map(p => p.category)))];
+  // Convert inventory items to product format for display
+  const inventoryAsProducts: Product[] = inventory.map(item => ({
+    id: item.id,
+    name: item.name,
+    description: item.description,
+    price: item.sellingPrice,
+    category: item.category,
+    imageUrl: item.imageUrl || '',
+    stock: item.currentStock,
+    createdAt: item.createdAt,
+    updatedAt: item.lastUpdated,
+  }));
+
+  // Combine products and inventory items
+  const allProducts = [...products, ...inventoryAsProducts];
+
+  const categories = ['all', ...Array.from(new Set(allProducts.map(p => p.category)))];
   
-  const filteredProducts = products
+  const filteredProducts = allProducts
     .filter(product => {
       // Category filter
       if (categoryFilter !== 'all' && product.category !== categoryFilter) return false;
@@ -200,12 +238,12 @@ const Catalogue: React.FC = () => {
         ) : (
           <>
             <div className="mb-4 text-sm text-gray-600">
-              Showing {filteredProducts.length} of {products.length} products
+              Showing {filteredProducts.length} of {allProducts.length} products
             </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredProducts.map((product) => (
+            {filteredProducts.map((product, index) => (
               <ProductCard
-                key={product.id}
+                key={`${product.id}-${index}`}
                 product={product}
                 onViewDetails={() => setSelectedProduct(product)}
               />

@@ -12,7 +12,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string, role?: 'customer' | 'employee' | 'editor' | 'viewer') => Promise<void>;
   logout: () => Promise<void>;
-  updateProfile: (displayName: string, profileImage?: File) => Promise<void>;
+  updateProfile: (displayName: string, profileImage?: File, additionalData?: any) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -67,7 +67,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const updateProfile = async (displayName: string, profileImage?: File) => {
+  const updateProfile = async (displayName: string, profileImage?: File, additionalData?: any) => {
     if (!currentUser) {
       throw new Error('No user logged in');
     }
@@ -83,6 +83,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         ...currentUser,
         displayName,
         profileImage: profileImageUrl,
+        ...additionalData,
       };
 
       const userRef = ref(database, `users/${currentUser.uid}`);

@@ -29,6 +29,7 @@ const SettingsManagement: React.FC = () => {
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
   const [showMemberForm, setShowMemberForm] = useState(false);
   const { currentUser } = useAuth();
+  const [imageLoading, setImageLoading] = useState<Record<string, boolean>>({});
 
   const [memberForm, setMemberForm] = useState({
     name: '',
@@ -80,33 +81,170 @@ const SettingsManagement: React.FC = () => {
   const initializeDefaultSettings = async () => {
     const defaultSettings = [
       // General Settings
-      { category: 'general', key: 'site_title', value: 'Shop', type: 'text', label: 'Site Title' },
-      { category: 'general', key: 'site_description', value: 'Your trusted business partner', type: 'textarea', label: 'Site Description' },
-      { category: 'general', key: 'site_logo', value: '', type: 'image', label: 'Site Logo' },
-      { category: 'general', key: 'favicon', value: '', type: 'image', label: 'Favicon' },
-      
+      {
+        category: "general",
+        key: "site_title",
+        value: "Shop",
+        type: "text",
+        label: "Title",
+      },
+      {
+        category: "general",
+        key: "site_description",
+        value: "Your trusted business partner",
+        type: "textarea",
+        label: "Tagline",
+      },
+      {
+        category: "general",
+        key: "site_logo",
+        value: "",
+        type: "image",
+        label: "Site Logo",
+      },
+      {
+        category: "general",
+        key: "favicon",
+        value: "",
+        type: "image",
+        label: "Favicon",
+      },
+
       // Store Settings
-      { category: 'store', key: 'store_name', value: 'Shop', type: 'text', label: 'Store Name' },
-      { category: 'store', key: 'store_tagline', value: 'Quality products for your business', type: 'text', label: 'Store Tagline' },
-      { category: 'store', key: 'store_hours', value: 'Mon-Fri: 9AM-6PM, Sat: 10AM-4PM, Sun: Closed', type: 'textarea', label: 'Store Hours' },
-      { category: 'store', key: 'store_address', value: '123 Business Street, City, State 12345', type: 'textarea', label: 'Store Address' },
-      
+      {
+        category: "store",
+        key: "store_name",
+        value: "Shop",
+        type: "text",
+        label: "Store Name",
+      },
+      {
+        category: "store",
+        key: "store_tagline",
+        value: "Quality products for your business",
+        type: "text",
+        label: "Store Tagline",
+      },
+      {
+        category: "store",
+        key: "store_hours",
+        value: "Mon-Fri: 9AM-6PM, Sat: 10AM-4PM, Sun: Closed",
+        type: "textarea",
+        label: "Store Hours",
+      },
+      {
+        category: "store",
+        key: "store_address",
+        value: "123 Business Street, City, State 12345",
+        type: "textarea",
+        label: "Store Address",
+      },
+
       // Contact Settings
-      { category: 'contact', key: 'primary_email', value: 'contact@shop.com', type: 'email', label: 'Primary Email' },
-      { category: 'contact', key: 'support_email', value: 'support@shop.com', type: 'email', label: 'Support Email' },
-      { category: 'contact', key: 'primary_phone', value: '+1 (555) 123-4567', type: 'text', label: 'Primary Phone' },
-      { category: 'contact', key: 'secondary_phone', value: '+1 (555) 987-6543', type: 'text', label: 'Secondary Phone' },
-      
+      {
+        category: "contact",
+        key: "primary_email",
+        value: "contact@shop.com",
+        type: "email",
+        label: "Primary Email",
+      },
+      {
+        category: "contact",
+        key: "support_email",
+        value: "support@shop.com",
+        type: "email",
+        label: "Support Email",
+      },
+      {
+        category: "contact",
+        key: "primary_phone",
+        value: "+1 (555) 123-4567",
+        type: "text",
+        label: "Primary Phone",
+      },
+      {
+        category: "contact",
+        key: "secondary_phone",
+        value: "+1 (555) 987-6543",
+        type: "text",
+        label: "Secondary Phone",
+      },
+
       // Social Media
-      { category: 'social', key: 'facebook_url', value: '', type: 'url', label: 'Facebook URL' },
-      { category: 'social', key: 'twitter_url', value: '', type: 'url', label: 'Twitter URL' },
-      { category: 'social', key: 'instagram_url', value: '', type: 'url', label: 'Instagram URL' },
-      { category: 'social', key: 'linkedin_url', value: '', type: 'url', label: 'LinkedIn URL' },
-      
+      {
+        category: "social",
+        key: "facebook_url",
+        value: "",
+        type: "url",
+        label: "Facebook URL",
+      },
+      {
+        category: "social",
+        key: "twitter_url",
+        value: "",
+        type: "url",
+        label: "Twitter URL",
+      },
+      {
+        category: "social",
+        key: "instagram_url",
+        value: "",
+        type: "url",
+        label: "Instagram URL",
+      },
+      {
+        category: "social",
+        key: "linkedin_url",
+        value: "",
+        type: "url",
+        label: "LinkedIn URL",
+      },
+
       // SEO Settings
-      { category: 'seo', key: 'meta_keywords', value: 'shop, business, products, quality', type: 'textarea', label: 'Meta Keywords' },
-      { category: 'seo', key: 'meta_description', value: 'Your trusted business partner providing premium products and exceptional service.', type: 'textarea', label: 'Meta Description' },
-      { category: 'seo', key: 'google_analytics', value: '', type: 'text', label: 'Google Analytics ID' },
+      {
+        category: "seo",
+        key: "meta_keywords",
+        value: "shop, business, products, quality",
+        type: "textarea",
+        label: "Meta Keywords",
+      },
+      {
+        category: "seo",
+        key: "meta_description",
+        value:
+          "Your trusted business partner providing premium products and exceptional service.",
+        type: "textarea",
+        label: "Meta Description",
+      },
+      {
+        category: "seo",
+        key: "google_analytics",
+        value: "",
+        type: "text",
+        label: "Google Analytics ID",
+      },
+      {
+        category: "general",
+        key: "hero_image",
+        value: "",
+        type: "image",
+        label: "Hero Section Image",
+      },
+      {
+        category: "general",
+        key: "hero_heading",
+        value: "Build Your Dream Interior House",
+        type: "text",
+        label: "Hero Heading",
+      },
+      {
+        category: "general",
+        key: "hero_tagline",
+        value:
+          "Launch an elegant, high‑performance e‑commerce site in minutes. Free estimate, secure payments, and 24/7 support included.",
+        type: "textarea",
+        label: "Hero Tagline",
+      },
     ];
 
     const settingsRef = ref(database, 'siteSettings');
@@ -122,31 +260,37 @@ const SettingsManagement: React.FC = () => {
 
   const updateSetting = async (settingId: string, value: string, imageFile?: File) => {
     setLoading(true);
-    try {
-      let finalValue = value;
-      
-      if (imageFile) {
-        finalValue = await uploadToCloudinary(imageFile);
-      }
+  try {
+    let finalValue = value;
 
-      const setting = settings.find(s => s.id === settingId);
-      if (setting) {
-        const settingRef = ref(database, `siteSettings/${settingId}`);
-        await set(settingRef, {
-          ...setting,
-          value: finalValue,
-          updatedAt: new Date().toISOString(),
-          updatedBy: currentUser?.email || 'admin',
-        });
-        toast.success('Setting updated successfully!');
-      }
-    } catch (error) {
-      toast.error('Failed to update setting');
-      console.error('Error updating setting:', error);
-    } finally {
-      setLoading(false);
+    if (imageFile) {
+      // turn on spinner for this setting
+      setImageLoading(prev => ({ ...prev, [settingId]: true }));
+      finalValue = await uploadToCloudinary(imageFile);
     }
-  };
+
+    const setting = settings.find(s => s.id === settingId);
+    if (setting) {
+      const settingRef = ref(database, `siteSettings/${settingId}`);
+      await set(settingRef, {
+        ...setting,
+        value: finalValue,
+        updatedAt: new Date().toISOString(),
+        updatedBy: currentUser?.email || 'admin',
+      });
+      toast.success('Setting updated successfully!');
+    }
+  } catch (error) {
+    toast.error('Failed to update setting');
+    console.error('Error updating setting:', error);
+  } finally {
+    // clear loading for this setting (and overall)
+    if (imageFile) {
+      setImageLoading(prev => ({ ...prev, [settingId]: false }));
+    }
+    setLoading(false);
+  }
+}
 
   const handleMemberSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -256,24 +400,47 @@ const SettingsManagement: React.FC = () => {
           />
         );
       case 'image':
-        return (
-          <div className="space-y-2">
-            {setting.value && (
-              <img src={setting.value} alt={setting.label} className="w-32 h-32 object-cover rounded-lg" />
-            )}
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) {
-                  updateSetting(setting.id, setting.value, file);
-                }
-              }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-        );
+  return (
+    <div className="space-y-2">
+      {setting.value && (
+        <img
+          src={setting.value}
+          alt={setting.label}
+          className="w-32 h-32 object-cover rounded-lg border"
+        />
+      )}
+      <label
+        htmlFor={`file-input-${setting.id}`}
+        className={`inline-flex items-center px-4 py-2 border rounded-md cursor-pointer 
+          ${
+            imageLoading[setting.id]
+              ? "opacity-50 cursor-wait"
+              : "hover:bg-gray-100"
+          }
+        `}
+      >
+        {imageLoading[setting.id]
+          ? "Uploading…"
+          : setting.value
+          ? "Change Image"
+          : "Upload Image"}
+        <Upload className="w-4 h-4 ml-2" />
+      </label>
+      <input
+        id={`file-input-${setting.id}`}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        disabled={imageLoading[setting.id]}
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) {
+            updateSetting(setting.id, setting.value, file);
+          }
+        }}
+      />
+    </div>
+  );
       case 'boolean':
         return (
           <label className="flex items-center">

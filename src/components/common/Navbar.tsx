@@ -1,15 +1,47 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import { useCart } from '../../context/CartContext';
-import { ShoppingCart, User, Menu, X, LogOut, Settings, Mail, Calendar, Shield } from 'lucide-react';
+// src/components/Navbar.tsx
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate }         from 'react-router-dom';
+import { useAuth }                   from '../../context/AuthContext';
+import { useCart }                   from '../../context/CartContext';
+import {
+  ShoppingCart,
+  User as UserIcon,
+  Menu,
+  X,
+  LogOut,
+  Settings,
+  Calendar,
+  Shield
+} from 'lucide-react';
+import { ref, onValue }              from 'firebase/database';
+import { database }                  from '../../config/firebase';
+import { SiteSettings }              from '../../types';
 
 const Navbar: React.FC = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen]         = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const { currentUser, logout } = useAuth();
-  const { getItemCount } = useCart();
-  const navigate = useNavigate();
+  const [settings, setSettings]             = useState<SiteSettings[]>([]);
+  const { currentUser, loading: authLoading, logout } = useAuth();
+  const { getItemCount }                    = useCart();
+  const navigate                            = useNavigate();
+
+  // Load siteSettings for store name
+  useEffect(() => {
+    const settingsRef = ref(database, 'siteSettings');
+    const unsub = onValue(settingsRef, snap => {
+      if (snap.exists()) {
+        const data = snap.val();
+        setSettings(Object.keys(data).map(key => ({ id: key, ...data[key] })));
+      }
+    });
+    return () => unsub();
+  }, []);
+
+  const getSetting = (key: string) =>
+    settings.find(s => s.key === key)?.value || '';
+
+  const storeName    = getSetting('store_name') || 'Shop';
+  const storeInitial = storeName.charAt(0).toUpperCase();
 
   const handleLogout = async () => {
     await logout();
@@ -18,27 +50,40 @@ const Navbar: React.FC = () => {
   };
 
   const navLinks = [
-    { to: '/', label: 'Home' },
+    { to: '/',       label: 'Home' },
     { to: '/catalogue', label: 'Catalogue' },
-    { to: '/about', label: 'About' },
-    { to: '/contact', label: 'Contact' },
+    { to: '/about',  label: 'About' },
+    { to: '/contact',label: 'Contact' },
   ];
 
   return (
     <nav className="bg-white shadow-lg sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo */}
+          
+          {/* Logo + Store Name */}
           <Link to="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">S</span>
-            </div>
-            <span className="text-xl font-bold text-gray-900">Shop</span>
+            {authLoading ? (
+              <div className="h-8 w-8 bg-gray-200 rounded-full animate-pulse" />
+            ) : (
+              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-lg">
+                  {storeInitial}
+                </span>
+              </div>
+            )}
+            {authLoading ? (
+              <div className="h-6 w-24 bg-gray-200 rounded animate-pulse" />
+            ) : (
+              <span className="text-xl font-bold text-gray-900">
+                {storeName}
+              </span>
+            )}
           </Link>
 
-          {/* Desktop Navigation */}
+          {/* Desktop Nav Links */}
           <div className="hidden md:flex items-center space-x-8">
-            {navLinks.map((link) => (
+            {navLinks.map(link => (
               <Link
                 key={link.to}
                 to={link.to}
@@ -49,10 +94,10 @@ const Navbar: React.FC = () => {
             ))}
           </div>
 
-          {/* Right side */}
+          {/* Right Side: Cart + Auth Controls */}
           <div className="flex items-center space-x-4">
-            {/* Cart */}
-            {currentUser && (
+            {/* Cart (only after authLoading && currentUser) */}
+            {!authLoading && currentUser && (
               <Link
                 to="/cart"
                 className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors"
@@ -66,12 +111,20 @@ const Navbar: React.FC = () => {
               </Link>
             )}
 
-            {/* User Menu */}
-            {currentUser ? (
+            {/* Auth Controls */}
+            {authLoading ? (
+              // Skeleton placeholders
+              <div className="flex items-center space-x-2">
+                <div className="h-8 w-16 bg-gray-200 rounded animate-pulse" />
+                <div className="h-8 w-20 bg-gray-200 rounded animate-pulse" />
+                <div className="md:hidden h-6 w-6 bg-gray-200 rounded animate-pulse" />
+              </div>
+            ) : currentUser ? (
+              // User Dropdown
               <div className="relative">
                 <button
-                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center space-x-3 p-2 text-gray-700 hover:text-blue-600 transition-colors"
+                  onClick={() => setIsUserMenuOpen(o => !o)}
+                  className="flex items-center space-x-2 p-2 text-gray-700 hover:text-blue-600 transition-colors"
                 >
                   {currentUser.profileImage ? (
                     <img
@@ -80,15 +133,15 @@ const Navbar: React.FC = () => {
                       className="w-8 h-8 rounded-full object-cover border-2 border-gray-200"
                     />
                   ) : (
-                    <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                      <User className="w-5 h-5 text-gray-600" />
-                    </div>
+                    <UserIcon className="w-8 h-8 text-gray-600 bg-gray-200 rounded-full p-1" />
                   )}
                   <div className="hidden md:block text-left">
                     <div className="text-sm font-medium text-gray-900">
                       {currentUser.displayName || currentUser.email.split('@')[0]}
                     </div>
-                    <div className="text-xs text-gray-500 capitalize">{currentUser.role}</div>
+                    <div className="text-xs text-gray-500 capitalize">
+                      {currentUser.role}
+                    </div>
                   </div>
                 </button>
 
@@ -105,14 +158,16 @@ const Navbar: React.FC = () => {
                           />
                         ) : (
                           <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
-                            <User className="w-6 h-6 text-gray-600" />
+                            <UserIcon className="w-6 h-6 text-gray-600" />
                           </div>
                         )}
                         <div className="flex-1 min-w-0">
                           <div className="text-sm font-medium text-gray-900 truncate">
                             {currentUser.displayName || 'User'}
                           </div>
-                          <div className="text-sm text-gray-500 truncate">{currentUser.email}</div>
+                          <div className="text-sm text-gray-500 truncate">
+                            {currentUser.email}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -126,7 +181,9 @@ const Navbar: React.FC = () => {
                         </div>
                         <div className="flex items-center">
                           <Calendar className="w-3 h-3 mr-2" />
-                          <span>Joined {new Date(currentUser.createdAt).toLocaleDateString()}</span>
+                          <span>
+                            Joined {new Date(currentUser.createdAt).toLocaleDateString()}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -137,8 +194,7 @@ const Navbar: React.FC = () => {
                       className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                       onClick={() => setIsUserMenuOpen(false)}
                     >
-                      <User className="w-4 h-4 mr-2" />
-                      My Profile
+                      <UserIcon className="w-4 h-4 mr-2" /> My Profile
                     </Link>
                     {(currentUser.role === 'admin' || currentUser.role === 'employee') && (
                       <Link
@@ -151,18 +207,18 @@ const Navbar: React.FC = () => {
                       </Link>
                     )}
                     <div className="border-t border-gray-100 mt-2 pt-2">
-                    <button
-                      onClick={handleLogout}
-                      className="flex items-center w-full px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                    >
-                      <LogOut className="w-4 h-4 mr-2" />
-                      Logout
-                    </button>
+                      <button
+                        onClick={handleLogout}
+                        className="flex items-center w-full px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                      >
+                        <LogOut className="w-4 h-4 mr-2" /> Logout
+                      </button>
                     </div>
                   </div>
                 )}
               </div>
             ) : (
+              // Login / Sign Up Links
               <div className="flex items-center space-x-2">
                 <Link
                   to="/login"
@@ -176,28 +232,26 @@ const Navbar: React.FC = () => {
                 >
                   Sign Up
                 </Link>
+                <button
+                  onClick={() => setIsMenuOpen(o => !o)}
+                  className="md:hidden p-2 text-gray-700 hover:text-blue-600 transition-colors"
+                >
+                  {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                </button>
               </div>
             )}
-
-            {/* Mobile menu button */}
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden p-2 text-gray-700 hover:text-blue-600 transition-colors"
-            >
-              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
           </div>
         </div>
 
-        {/* Mobile Navigation */}
-        {isMenuOpen && (
+        {/* Mobile Navigation for non-logged-in when menu open */}
+        {!authLoading && !currentUser && isMenuOpen && (
           <div className="md:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-gray-50">
-              {navLinks.map((link) => (
+              {navLinks.map(link => (
                 <Link
                   key={link.to}
                   to={link.to}
-                  className="text-gray-700 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium transition-colors"
+                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {link.label}
