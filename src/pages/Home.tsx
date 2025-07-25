@@ -7,7 +7,6 @@ import { useAuth } from '../context/AuthContext';
 import { Testimonial } from '../types';
 import TestimonialForm from '../components/testimonials/TestimonialForm';
 import { ArrowRight, ShoppingBag, Users, Shield, Phone, Star, CheckCircle, Award, Clock, Headphones } from 'lucide-react';
-import Marquee from 'react-fast-marquee';
 
 const Home: React.FC = () => {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);

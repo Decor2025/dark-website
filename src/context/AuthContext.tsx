@@ -10,7 +10,7 @@ interface AuthContextType {
   currentUser: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string, role?: 'customer' | 'employee') => Promise<void>;
+  signup: (email: string, password: string, role?: 'customer' | 'employee' | 'editor' | 'viewer') => Promise<void>;
   logout: () => Promise<void>;
   updateProfile: (displayName: string, profileImage?: File) => Promise<void>;
 }
@@ -39,13 +39,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const signup = async (email: string, password: string,  role: 'customer' | 'employee' = 'customer') => {
+  const signup = async (email: string, password: string, role: 'customer' | 'employee' | 'editor' | 'viewer' = 'customer') => {
     try {
       const result = await createUserWithEmailAndPassword(auth, email, password);
       const userData: User = {
         uid: result.user.uid,
         email: result.user.email!,
-        profileImage: '',
         role,
         createdAt: new Date().toISOString(),
       };
@@ -95,35 +94,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw error;
     }
   };
-useEffect(() => {
-  const unsubscribeAuth = onAuthStateChanged(
-    auth,
-    async (firebaseUser: FirebaseUser | null) => {
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
       if (firebaseUser) {
         try {
           const userRef = ref(database, `users/${firebaseUser.uid}`);
           const snapshot = await get(userRef);
-
           if (snapshot.exists()) {
-            // Merge DB record with any updated displayName
-            const dbUser = snapshot.val() as User;
-            const mergedUser: User = {
-              ...dbUser,
-              displayName: firebaseUser.displayName || dbUser.displayName,
-            };
-            setCurrentUser(mergedUser);
+            setCurrentUser(snapshot.val() as User);
           } else {
-            // New user: include displayName from firebaseUser
-            const newUser: User = {
+            // If user data doesn't exist, create it with customer role
+            const userData: User = {
               uid: firebaseUser.uid,
               email: firebaseUser.email!,
-              displayName: firebaseUser.displayName || '',
               role: 'customer',
               createdAt: new Date().toISOString(),
-              profileImage: '',
             };
-            await set(userRef, newUser);
-            setCurrentUser(newUser);
+            await set(userRef, userData);
+            setCurrentUser(userData);
           }
         } catch (error) {
           console.error('Error fetching user data:', error);
@@ -133,11 +121,10 @@ useEffect(() => {
         setCurrentUser(null);
       }
       setLoading(false);
-    }
-  );
+    });
 
-  return () => unsubscribeAuth();
-}, []);
+    return unsubscribe;
+  }, []);
 
   const value = {
     currentUser,

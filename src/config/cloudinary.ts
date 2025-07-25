@@ -1,6 +1,6 @@
 export const cloudinaryConfig = {
-  cloudName: 'ds6um53cx', 
-  uploadPreset: 'images', 
+  cloudName: 'ds6um53cx', // Replace with your Cloudinary cloud name
+  uploadPreset: 'images', // Replace with your upload preset
 };
 
 export const uploadToCloudinary = async (file: File): Promise<string> => {

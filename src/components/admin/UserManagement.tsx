@@ -87,11 +87,13 @@ const UserManagement: React.FC = () => {
                     <select
                       value={user.role}
                       onChange={(e) => updateUserRole(user.uid, e.target.value as any)}
-                      className="text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 capitalize"
                     >
                       <option value="customer">Customer</option>
                       <option value="employee">Employee</option>
                       <option value="admin">Admin</option>
+                      <option value="editor">Editor</option>
+                      <option value="viewer">Viewer</option>
                     </select>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

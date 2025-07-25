@@ -1,5 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { ref, onValue } from 'firebase/database';
+import { database } from '../../config/firebase';
+import { SiteSettings } from '../../types';
 import { 
   Mail, 
   Phone, 
@@ -16,7 +19,29 @@ import {
 } from 'lucide-react';
 
 const Footer: React.FC = () => {
+  const [settings, setSettings] = useState<SiteSettings[]>([]);
   const currentYear = new Date().getFullYear();
+
+  useEffect(() => {
+    const settingsRef = ref(database, 'siteSettings');
+    const unsubscribe = onValue(settingsRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const settingsData = snapshot.val();
+        const settingsList: SiteSettings[] = Object.keys(settingsData).map(key => ({
+          id: key,
+          ...settingsData[key],
+        }));
+        setSettings(settingsList);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const getSetting = (key: string) => {
+    const setting = settings.find(s => s.key === key);
+    return setting?.value || '';
+  };
 
   return (
     <footer className="bg-gray-900 text-white">
@@ -25,32 +50,40 @@ const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="space-y-6">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">D</span>
-              </div>
-              <div className="flex flex-col">
-                <span id="COMPANY_NAME" className="text-xl font-bold">
-                  Decor Drapes
+            <div className="flex items-center space-x-2">
+              <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-xl">
+                  {(getSetting('store_name') || 'Shop').charAt(0)}
                 </span>
-                <span className="text-sm  text-gray-500">Instyle</span>
               </div>
+              <span className="text-2xl font-bold">{getSetting('store_name') || 'Shop'}</span>
             </div>
             <p className="text-gray-400 leading-relaxed">
-              Your trusted business partner providing premium products and exceptional service. 
-              We deliver quality solutions that drive your success forward.
+              {getSetting('store_tagline') || 'Your trusted business partner providing premium products and exceptional service. We deliver quality solutions that drive your success forward.'}
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="w-10 h-10 bg-gray-800 hover:bg-blue-600 rounded-lg flex items-center justify-center transition-colors">
+              <a 
+                href={getSetting('facebook_url') || '#'} 
+                className="w-10 h-10 bg-gray-800 hover:bg-blue-600 rounded-lg flex items-center justify-center transition-colors"
+              >
                 <Facebook className="w-5 h-5" />
               </a>
-              <a href="#" className="w-10 h-10 bg-gray-800 hover:bg-blue-600 rounded-lg flex items-center justify-center transition-colors">
+              <a 
+                href={getSetting('twitter_url') || '#'} 
+                className="w-10 h-10 bg-gray-800 hover:bg-blue-600 rounded-lg flex items-center justify-center transition-colors"
+              >
                 <Twitter className="w-5 h-5" />
               </a>
-              <a href="#" className="w-10 h-10 bg-gray-800 hover:bg-blue-600 rounded-lg flex items-center justify-center transition-colors">
+              <a 
+                href={getSetting('instagram_url') || '#'} 
+                className="w-10 h-10 bg-gray-800 hover:bg-blue-600 rounded-lg flex items-center justify-center transition-colors"
+              >
                 <Instagram className="w-5 h-5" />
               </a>
-              <a href="#" className="w-10 h-10 bg-gray-800 hover:bg-blue-600 rounded-lg flex items-center justify-center transition-colors">
+              <a 
+                href={getSetting('linkedin_url') || '#'} 
+                className="w-10 h-10 bg-gray-800 hover:bg-blue-600 rounded-lg flex items-center justify-center transition-colors"
+              >
                 <Linkedin className="w-5 h-5" />
               </a>
             </div>
@@ -139,25 +172,25 @@ const Footer: React.FC = () => {
               <div className="flex items-start space-x-3">
                 <MapPin className="w-5 h-5 text-blue-400 mt-1 flex-shrink-0" />
                 <div className="text-gray-400">
-                  <p>123 Business Street</p>
-                  <p>City, State 12345</p>
-                  <p>United States</p>
+                  {(getSetting('store_address') || '123 Business Street\nCity, State 12345\nUnited States').split('\n').map((line, index) => (
+                    <p key={index}>{line}</p>
+                  ))}
                 </div>
               </div>
               
               <div className="flex items-center space-x-3">
                 <Phone className="w-5 h-5 text-green-400 flex-shrink-0" />
                 <div className="text-gray-400">
-                  <p>+1 (555) 123-4567</p>
-                  <p>+1 (555) 987-6543</p>
+                  <p>{getSetting('primary_phone') || '+1 (555) 123-4567'}</p>
+                  <p>{getSetting('secondary_phone') || '+1 (555) 987-6543'}</p>
                 </div>
               </div>
               
               <div className="flex items-center space-x-3">
                 <Mail className="w-5 h-5 text-purple-400 flex-shrink-0" />
                 <div className="text-gray-400">
-                  <p>contact@shop.com</p>
-                  <p>support@shop.com</p>
+                  <p>{getSetting('primary_email') || 'contact@shop.com'}</p>
+                  <p>{getSetting('support_email') || 'support@shop.com'}</p>
                 </div>
               </div>
             </div>
@@ -166,18 +199,9 @@ const Footer: React.FC = () => {
             <div className="mt-6">
               <h4 className="text-sm font-semibold mb-3 text-gray-300">Business Hours</h4>
               <div className="text-gray-400 text-sm space-y-1">
-                <div className="flex justify-between">
-                  <span>Mon - Fri:</span>
-                  <span>9:00 AM - 6:00 PM</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Saturday:</span>
-                  <span>10:00 AM - 4:00 PM</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Sunday:</span>
-                  <span>Closed</span>
-                </div>
+                {(getSetting('store_hours') || 'Mon-Fri: 9AM-6PM\nSat: 10AM-4PM\nSun: Closed').split('\n').map((line, index) => (
+                  <div key={index}>{line}</div>
+                ))}
               </div>
             </div>
           </div>
@@ -211,7 +235,7 @@ const Footer: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col md:flex-row items-center justify-between">
             <p className="text-gray-400 text-sm">
-              © {currentYear} Shop. All rights reserved.
+              © {currentYear} {getSetting('store_name') || 'Shop'}. All rights reserved.
             </p>
             <div className="flex items-center space-x-6 mt-4 md:mt-0">
               <a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">

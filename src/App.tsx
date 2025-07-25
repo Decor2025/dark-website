@@ -36,8 +36,6 @@ function App() {
                 <Route path="/estimate" element={<Estimate />} />
                 <Route path="/privacy" element={<PrivacyPolicy />} />
                 
-
-                
                 {/* Protected Routes */}
                 <Route
                   path="/cart"

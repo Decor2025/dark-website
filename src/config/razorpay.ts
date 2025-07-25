@@ -24,7 +24,7 @@ export const createRazorpayOrder = async (amount: number, orderId: string) => {
   // For demo purposes, we'll simulate the order creation
   return {
     id: `order_${Date.now()}`,
-    amount: amount * 100, 
+    amount: amount * 100, // Razorpay expects amount in paise
     currency: razorpayConfig.currency,
     receipt: orderId,
   };

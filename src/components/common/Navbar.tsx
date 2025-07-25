@@ -30,12 +30,10 @@ const Navbar: React.FC = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <div className="flex flex-col">
-              <span className="text-lg md:text-base font-bold text-gray-900">
-                Decor Drapes
-              </span>
-              <span className="text-sm md:text-xs text-gray-400">Instyle</span>
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-lg">S</span>
             </div>
+            <span className="text-xl font-bold text-gray-900">Shop</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -88,12 +86,9 @@ const Navbar: React.FC = () => {
                   )}
                   <div className="hidden md:block text-left">
                     <div className="text-sm font-medium text-gray-900">
-                      {currentUser.displayName ||
-                        currentUser.email.split("@")[0]}
+                      {currentUser.displayName || currentUser.email.split('@')[0]}
                     </div>
-                    <div className="text-xs text-gray-500 capitalize">
-                      {currentUser.role}
-                    </div>
+                    <div className="text-xs text-gray-500 capitalize">{currentUser.role}</div>
                   </div>
                 </button>
 
@@ -115,11 +110,9 @@ const Navbar: React.FC = () => {
                         )}
                         <div className="flex-1 min-w-0">
                           <div className="text-sm font-medium text-gray-900 truncate">
-                            {currentUser.displayName || "User"}
+                            {currentUser.displayName || 'User'}
                           </div>
-                          <div className="text-sm text-gray-500 truncate">
-                            {currentUser.email}
-                          </div>
+                          <div className="text-sm text-gray-500 truncate">{currentUser.email}</div>
                         </div>
                       </div>
                     </div>
@@ -133,12 +126,7 @@ const Navbar: React.FC = () => {
                         </div>
                         <div className="flex items-center">
                           <Calendar className="w-3 h-3 mr-2" />
-                          <span>
-                            Joined{" "}
-                            {new Date(
-                              currentUser.createdAt
-                            ).toLocaleDateString()}
-                          </span>
+                          <span>Joined {new Date(currentUser.createdAt).toLocaleDateString()}</span>
                         </div>
                       </div>
                     </div>
@@ -152,27 +140,24 @@ const Navbar: React.FC = () => {
                       <User className="w-4 h-4 mr-2" />
                       My Profile
                     </Link>
-                    {(currentUser.role === "admin" ||
-                      currentUser.role === "employee") && (
+                    {(currentUser.role === 'admin' || currentUser.role === 'employee') && (
                       <Link
                         to="/admin"
                         className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                         onClick={() => setIsUserMenuOpen(false)}
                       >
                         <Settings className="w-4 h-4 mr-2" />
-                        {currentUser.role === "admin"
-                          ? "Admin Panel"
-                          : "Dashboard"}
+                        {currentUser.role === 'admin' ? 'Admin Panel' : 'Dashboard'}
                       </Link>
                     )}
                     <div className="border-t border-gray-100 mt-2 pt-2">
-                      <button
-                        onClick={handleLogout}
-                        className="flex items-center w-full px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                      >
-                        <LogOut className="w-4 h-4 mr-2" />
-                        Logout
-                      </button>
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center w-full px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Logout
+                    </button>
                     </div>
                   </div>
                 )}
@@ -199,11 +184,7 @@ const Navbar: React.FC = () => {
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="md:hidden p-2 text-gray-700 hover:text-blue-600 transition-colors"
             >
-              {isMenuOpen ? (
-                <X className="w-6 h-6" />
-              ) : (
-                <Menu className="w-6 h-6" />
-              )}
+              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
         </div>

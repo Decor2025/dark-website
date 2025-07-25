@@ -3,7 +3,7 @@ export interface User {
   email: string;
   displayName?: string;
   profileImage?: string;
-  role: 'admin' | 'employee' | 'customer';
+  role: 'admin' | 'employee' | 'customer' | 'editor' | 'viewer';
   createdAt: string;
 }
 
@@ -81,8 +81,29 @@ export interface SiteContent {
   updatedBy: string;
 }
 
-declare global {
-  interface Window {
-    Razorpay: any;
-  }
+export interface TeamMember {
+  id: string;
+  name: string;
+  position: string;
+  bio: string;
+  image: string;
+  email?: string;
+  linkedin?: string;
+  twitter?: string;
+  order: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SiteSettings {
+  id: string;
+  category: 'general' | 'contact' | 'social' | 'seo' | 'store';
+  key: string;
+  value: string;
+  type: 'text' | 'email' | 'url' | 'textarea' | 'image' | 'boolean';
+  label: string;
+  description?: string;
+  updatedAt: string;
+  updatedBy: string;
 }

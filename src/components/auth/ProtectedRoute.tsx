@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: 'admin' | 'employee' | 'customer';
+  requiredRole?: 'admin' | 'employee' | 'customer' | 'editor' | 'viewer';
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole }) => {
@@ -23,6 +23,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole 
   }
 
   if (requiredRole && currentUser.role !== requiredRole && currentUser.role !== 'admin') {
+    // Allow editors to access employee features
+    if (requiredRole === 'employee' && currentUser.role === 'editor') {
+      return <>{children}</>;
+    }
     return <Navigate to="/" />;
   }
 

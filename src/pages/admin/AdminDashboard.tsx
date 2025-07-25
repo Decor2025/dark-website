@@ -6,6 +6,7 @@ import UserManagement from '../../components/admin/UserManagement';
 import TestimonialManagement from '../../components/admin/TestimonialManagement';
 import ContactManagement from '../../components/admin/ContactManagement';
 import ContentManagement from '../../components/admin/ContentManagement';
+import SettingsManagement from '../../components/admin/SettingsManagement';
 import EmployeeDashboard from '../../components/admin/EmployeeDashboard';
 import { 
   Package, 
@@ -38,7 +39,7 @@ const AdminDashboard: React.FC = () => {
     { id: 'testimonials', label: 'Testimonials', icon: MessageSquare },
     { id: 'contacts', label: 'Contact Messages', icon: Mail },
     { id: 'content', label: 'Content Management', icon: Globe },
-    { id: 'settings', label: 'Settings', icon: Settings },
+    { id: 'settings', label: 'Site Settings', icon: Settings },
   ];
 
   const renderContent = () => {
@@ -100,12 +101,7 @@ const AdminDashboard: React.FC = () => {
       case 'content':
         return <ContentManagement />;
       case 'settings':
-        return (
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h2 className="text-2xl font-bold mb-4">Settings</h2>
-            <p className="text-gray-600">Settings panel coming soon...</p>
-          </div>
-        );
+        return <SettingsManagement />;
       default:
         return null;
     }
