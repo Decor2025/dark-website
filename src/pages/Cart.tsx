@@ -27,15 +27,12 @@ const Cart: React.FC = () => {
         image: razorpayConfig.image,
         theme: razorpayConfig.theme,
         handler: function (response: any) {
-          toast.success('Payment successful!');
-          console.log('Payment response:', response);
-          // Handle successful payment here
-          clearCart();
+          handlePaymentSuccess(response);
         },
         prefill: {
-          name: 'Customer Name',
-          email: 'customer@example.com',
-          contact: '9999999999'
+          name: currentUser?.displayName || 'Customer',
+          email: currentUser?.email || '',
+          contact: currentUser?.phone || ''
         },
         modal: {
           ondismiss: function() {
@@ -50,6 +47,35 @@ const Cart: React.FC = () => {
     } catch (error) {
       toast.error('Failed to initiate payment');
       console.error('Payment error:', error);
+    }
+  };
+
+  const handlePaymentSuccess = async (response: any) => {
+    try {
+      // Verify payment on backend
+      await processRazorpayPayment(response, `cart_${Date.now()}`);
+      
+      // Create order record
+      const orderData = {
+        userId: currentUser?.uid,
+        items: cartItems,
+        total: getTotalPrice(),
+        paymentId: response.razorpay_payment_id,
+        orderId: response.razorpay_order_id,
+        signature: response.razorpay_signature,
+        status: 'paid',
+        createdAt: new Date().toISOString(),
+      };
+      
+      // Save order to database
+      const ordersRef = ref(database, 'orders');
+      await push(ordersRef, orderData);
+      
+      toast.success('Payment successful! Order placed.');
+      clearCart();
+    } catch (error) {
+      toast.error('Payment verification failed');
+      console.error('Payment verification error:', error);
     }
   };
 

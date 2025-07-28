@@ -43,6 +43,7 @@ const ContactManagement: React.FC = () => {
           ...message,
           isRead: true,
         });
+        toast.success('Message marked as read');
       }
     } catch (error) {
       console.error('Error marking message as read:', error);

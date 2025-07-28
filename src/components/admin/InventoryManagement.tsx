@@ -32,6 +32,7 @@ const InventoryManagement: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
+  const [groupFilter, setGroupFilter] = useState('all');
   const [syncing, setSyncing] = useState(false);
   const { currentUser } = useAuth();
 
@@ -41,8 +42,10 @@ const InventoryManagement: React.FC = () => {
     description: '',
     category: '',
     unit: 'pcs',
+    unitType: 'piece' as 'sqft' | 'meter' | 'piece' | 'kg' | 'liter',
     costPrice: '',
     sellingPrice: '',
+    pricePerUnit: '',
     currentStock: '',
     minimumStock: '',
     maximumStock: '',
@@ -51,6 +54,9 @@ const InventoryManagement: React.FC = () => {
     supplier: '',
     barcode: '',
     imageUrl: '',
+    groupTag: '',
+    width: '',
+    height: '',
   });
 
   useEffect(() => {
@@ -107,20 +113,38 @@ const InventoryManagement: React.FC = () => {
     try {
       const sheetsData = await fetchInventoryFromGoogleSheets();
       
-      // Clear existing inventory
-      const inventoryRef = ref(database, 'inventory');
-      await set(inventoryRef, null);
-      
       // Add new data from Google Sheets
+      const inventoryRef = ref(database, 'inventory');
       for (const item of sheetsData) {
-        const newItemRef = push(inventoryRef);
-        await set(newItemRef, {
-          ...item,
-          lastUpdated: new Date().toISOString(),
-          updatedBy: currentUser?.email || 'admin',
-          createdAt: new Date().toISOString(),
-          isActive: true,
-        });
+        // Check if item already exists
+        const existingItems = inventory.filter(inv => inv.sku === item.sku);
+        
+        if (existingItems.length > 0) {
+          // Update existing item
+          const existingItem = existingItems[0];
+          const itemRef = ref(database, `inventory/${existingItem.id}`);
+          await set(itemRef, {
+            ...existingItem,
+            ...item,
+            lastUpdated: new Date().toISOString(),
+            updatedBy: currentUser?.email || 'admin',
+            isActive: true,
+          });
+        } else {
+          const newItemRef = push(inventoryRef);
+const cleanItem = Object.fromEntries(
+  Object.entries({
+    ...item,
+    lastUpdated: new Date().toISOString(),
+    updatedBy: currentUser?.email || 'admin',
+    createdAt: new Date().toISOString(),
+    isActive: true,
+  }).filter(([_, value]) => value !== undefined)
+);
+
+await set(newItemRef, cleanItem);
+
+        }
       }
       
       toast.success(`Synced ${sheetsData.length} items from Google Sheets!`);
@@ -132,6 +156,37 @@ const InventoryManagement: React.FC = () => {
     }
   };
 
+  const syncToGoogleSheets = async (item: InventoryItem) => {
+    try {
+      const sheetsItem = {
+        sku: item.sku,
+        name: item.name,
+        description: item.description,
+        category: item.category,
+        unitType: item.unitType || 'piece',
+        pricePerUnit: item.pricePerUnit || item.sellingPrice,
+        costPrice: item.costPrice,
+        sellingPrice: item.sellingPrice,
+        currentStock: item.currentStock,
+        minimumStock: item.minimumStock,
+        maximumStock: item.maximumStock,
+        reorderLevel: item.reorderLevel,
+        location: item.location,
+        supplier: item.supplier,
+        barcode: item.barcode,
+        imageUrl: item.imageUrl,
+        groupTag: item.groupTag,
+        width: item.width,
+        height: item.height,
+        unit: item.unit
+      };
+      
+      await updateGoogleSheetsInventory(sheetsItem);
+      console.log('Successfully synced to Google Sheets');
+    } catch (error) {
+      console.error('Failed to sync to Google Sheets:', error);
+    }
+  };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -143,8 +198,10 @@ const InventoryManagement: React.FC = () => {
         description: formData.description,
         category: formData.category,
         unit: formData.unit,
+        unitType: formData.unitType,
         costPrice: parseFloat(formData.costPrice),
         sellingPrice: parseFloat(formData.sellingPrice),
+        pricePerUnit: parseFloat(formData.pricePerUnit) || parseFloat(formData.sellingPrice),
         currentStock: parseInt(formData.currentStock),
         minimumStock: parseInt(formData.minimumStock),
         maximumStock: parseInt(formData.maximumStock),
@@ -156,16 +213,24 @@ const InventoryManagement: React.FC = () => {
         updatedBy: currentUser?.email || 'admin',
         isActive: true,
         imageUrl: formData.imageUrl || '',
+        groupTag: formData.groupTag || '',
+        width: parseFloat(formData.width) || undefined,
+        height: parseFloat(formData.height) || undefined,
         ...(editingItem ? {} : { createdAt: new Date().toISOString() }),
       };
 
       if (editingItem) {
         const itemRef = ref(database, `inventory/${editingItem.id}`);
         await set(itemRef, itemData);
+        // Sync to Google Sheets
+        await syncToGoogleSheets({ ...editingItem, ...itemData });
         toast.success('Inventory item updated successfully!');
       } else {
         const inventoryRef = ref(database, 'inventory');
-        await push(inventoryRef, itemData);
+        const newItemRef = push(inventoryRef);
+        await set(newItemRef, itemData);
+        // Sync to Google Sheets
+        await syncToGoogleSheets({ id: newItemRef.key!, ...itemData } as InventoryItem);
         toast.success('Inventory item added successfully!');
       }
 
@@ -186,8 +251,10 @@ const InventoryManagement: React.FC = () => {
       description: item.description,
       category: item.category,
       unit: item.unit,
+      unitType: item.unitType || 'piece',
       costPrice: item.costPrice.toString(),
       sellingPrice: item.sellingPrice.toString(),
+      pricePerUnit: (item.pricePerUnit || item.sellingPrice).toString(),
       currentStock: item.currentStock.toString(),
       minimumStock: item.minimumStock.toString(),
       maximumStock: item.maximumStock.toString(),
@@ -196,6 +263,9 @@ const InventoryManagement: React.FC = () => {
       supplier: item.supplier,
       barcode: item.barcode || '',
       imageUrl: item.imageUrl || '',
+      groupTag: item.groupTag || '',
+      width: item.width?.toString() || '',
+      height: item.height?.toString() || '',
     });
     setShowForm(true);
   };
@@ -220,8 +290,10 @@ const InventoryManagement: React.FC = () => {
       description: '',
       category: '',
       unit: 'pcs',
+      unitType: 'piece',
       costPrice: '',
       sellingPrice: '',
+      pricePerUnit: '',
       currentStock: '',
       minimumStock: '',
       maximumStock: '',
@@ -230,6 +302,9 @@ const InventoryManagement: React.FC = () => {
       supplier: '',
       barcode: '',
       imageUrl: '',
+      groupTag: '',
+      width: '',
+      height: '',
     });
     setEditingItem(null);
     setShowForm(false);
@@ -264,10 +339,12 @@ const InventoryManagement: React.FC = () => {
     const matchesSearch = (item.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
                          (item.sku || '').toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = categoryFilter === 'all' || item.category === categoryFilter;
-    return matchesSearch && matchesCategory;
+    const matchesGroup = groupFilter === 'all' || item.groupTag === groupFilter;
+    return matchesSearch && matchesCategory && matchesGroup;
   });
 
   const categories = Array.from(new Set(inventory.map(item => item.category)));
+  const groupTags = Array.from(new Set(inventory.map(item => item.groupTag).filter(Boolean)));
   const lowStockItems = inventory.filter(item => item.currentStock <= item.reorderLevel);
 
   const tabs = [
@@ -353,7 +430,7 @@ const InventoryManagement: React.FC = () => {
       {activeTab === 'items' && (
         <>
           {/* Search and Filter */}
-          <div className="flex flex-col lg:flex-row gap-4">
+          <div className="flex flex-col lg:flex-row gap-4 mb-6">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
@@ -372,6 +449,16 @@ const InventoryManagement: React.FC = () => {
               <option value="all">All Categories</option>
               {categories.map(category => (
                 <option key={category} value={category}>{category}</option>
+              ))}
+            </select>
+            <select
+              value={groupFilter}
+              onChange={(e) => setGroupFilter(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="all">All Groups</option>
+              {groupTags.map(tag => (
+                <option key={tag} value={tag}>{tag}</option>
               ))}
             </select>
           </div>
@@ -414,6 +501,11 @@ const InventoryManagement: React.FC = () => {
                           )}
                           <div className="text-sm text-gray-500">SKU: {item.sku}</div>
                           <div className="text-sm text-gray-500">{item.category}</div>
+                          {item.groupTag && (
+                            <span className="inline-block px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full mt-1">
+                              {item.groupTag}
+                            </span>
+                          )}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -423,9 +515,15 @@ const InventoryManagement: React.FC = () => {
                         <div className="text-sm text-gray-500">
                           Min: {item.minimumStock} | Reorder: {item.reorderLevel}
                         </div>
+                        {item.width && item.height && (
+                          <div className="text-sm text-gray-500">
+                            Dimensions: {item.width} × {item.height} {item.unitType}
+                          </div>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">₹{item.sellingPrice}</div>
+                        <div className="text-sm text-gray-900">₹{item.pricePerUnit || item.sellingPrice}</div>
+                        <div className="text-sm text-gray-500">per {item.unitType || item.unit}</div>
                         <div className="text-sm text-gray-500">Cost: ₹{item.costPrice}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -582,17 +680,17 @@ const InventoryManagement: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Unit</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Unit Type</label>
                   <select
-                    value={formData.unit}
-                    onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                    value={formData.unitType}
+                    onChange={(e) => setFormData({ ...formData, unitType: e.target.value as any })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    <option value="pcs">Pieces</option>
+                    <option value="piece">Pieces</option>
+                    <option value="sqft">Square Feet</option>
+                    <option value="meter">Square Meter</option>
                     <option value="kg">Kilograms</option>
-                    <option value="ltr">Liters</option>
-                    <option value="mtr">Meters</option>
-                    <option value="box">Box</option>
+                    <option value="liter">Liters</option>
                   </select>
                 </div>
                 <div>
@@ -618,13 +716,17 @@ const InventoryManagement: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Selling Price (₹) *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Price per Unit (₹) *</label>
                   <input
                     type="number"
                     step="0.01"
                     required
-                    value={formData.sellingPrice}
-                    onChange={(e) => setFormData({ ...formData, sellingPrice: e.target.value })}
+                    value={formData.pricePerUnit}
+                    onChange={(e) => setFormData({ 
+                      ...formData, 
+                      pricePerUnit: e.target.value,
+                      sellingPrice: e.target.value 
+                    })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -689,7 +791,10 @@ const InventoryManagement: React.FC = () => {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
-                <div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
                   <input
                     type="url"
@@ -699,7 +804,48 @@ const InventoryManagement: React.FC = () => {
                     placeholder="https://example.com/image.jpg"
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Group Tag</label>
+                  <input
+                    type="text"
+                    value={formData.groupTag}
+                    onChange={(e) => setFormData({ ...formData, groupTag: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g., Premium, Budget, Luxury"
+                  />
+                </div>
               </div>
+
+              {(formData.unitType === 'sqft' || formData.unitType === 'meter') && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Width ({formData.unitType === 'sqft' ? 'ft' : 'm'})
+                    </label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={formData.width}
+                      onChange={(e) => setFormData({ ...formData, width: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Width"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Height ({formData.unitType === 'sqft' ? 'ft' : 'm'})
+                    </label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={formData.height}
+                      onChange={(e) => setFormData({ ...formData, height: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Height"
+                    />
+                  </div>
+                </div>
+              )}
 
               <div className="flex space-x-4 pt-4">
                 <button

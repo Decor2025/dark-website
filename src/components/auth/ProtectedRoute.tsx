@@ -23,8 +23,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole 
   }
 
   if (requiredRole && currentUser.role !== requiredRole && currentUser.role !== 'admin') {
-    // Allow editors to access employee features
-    if (requiredRole === 'employee' && currentUser.role === 'editor') {
+    // Allow employees and editors to access employee features
+    if (requiredRole === 'employee' && (currentUser.role === 'editor' || currentUser.role === 'employee')) {
       return <>{children}</>;
     }
     return <Navigate to="/" />;

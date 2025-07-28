@@ -82,7 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const updatedUser: User = {
         ...currentUser,
         displayName,
-        profileImage: profileImageUrl,
+        profileImage: profileImageUrl || '',
         ...additionalData,
       };
 

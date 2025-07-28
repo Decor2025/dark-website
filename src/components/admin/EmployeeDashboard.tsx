@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { ref, onValue, push, set } from 'firebase/database';
 import { database } from '../../config/firebase';
 import { useAuth } from '../../context/AuthContext';
-import { InventoryItem, InventoryTransaction, Message } from '../../types';
+import { InventoryItem, InventoryTransaction, Message, Employee } from '../../types';
+import { updateGoogleSheetsInventory, addToGoogleSheets } from '../../config/googleSheets';
 import { 
   BarChart3, 
   Package, 
@@ -16,7 +17,9 @@ import {
   TrendingUp,
   TrendingDown,
   Search,
-  Filter
+  Filter,
+  Save,
+  RefreshCw
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -25,9 +28,11 @@ const EmployeeDashboard: React.FC = () => {
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [transactions, setTransactions] = useState<InventoryTransaction[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [employee, setEmployee] = useState<Employee | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [showAuditModal, setShowAuditModal] = useState(false);
   const [showMessageModal, setShowMessageModal] = useState(false);
+  const [showAddItemModal, setShowAddItemModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const [loading, setLoading] = useState(false);
   const { currentUser } = useAuth();
@@ -46,8 +51,40 @@ const EmployeeDashboard: React.FC = () => {
     content: '',
   });
 
+  const [newItemForm, setNewItemForm] = useState({
+    sku: '',
+    name: '',
+    description: '',
+    category: '',
+    unitType: 'piece' as 'sqft' | 'meter' | 'piece' | 'kg' | 'liter',
+    pricePerUnit: '',
+    costPrice: '',
+    sellingPrice: '',
+    currentStock: '',
+    minimumStock: '',
+    reorderLevel: '',
+    location: '',
+    supplier: '',
+    imageUrl: '',
+    groupTag: '',
+    width: '',
+    height: '',
+  });
+
   useEffect(() => {
-    // Load inventory items
+    if (!currentUser) return;
+
+    // Load employee data
+    const employeesRef = ref(database, 'employees');
+    const unsubscribeEmployee = onValue(employeesRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const employeeData = Object.values(data).find((emp: any) => emp.userId === currentUser.uid) as Employee;
+        setEmployee(employeeData);
+      }
+    });
+
+    // Load inventory items (filtered by employee's assigned stock groups)
     const inventoryRef = ref(database, 'inventory');
     const unsubscribeInventory = onValue(inventoryRef, (snapshot) => {
       if (snapshot.exists()) {
@@ -56,7 +93,15 @@ const EmployeeDashboard: React.FC = () => {
           id: key,
           ...data[key],
         }));
-        setInventory(items.filter(item => item.isActive));
+        
+        // Filter items based on employee's assigned stock groups
+        let filteredItems = items.filter(item => item.isActive);
+        if (employee?.assignedStockGroups?.length) {
+          // TODO: Filter based on stock group categories
+          // For now, show all items
+        }
+        
+        setInventory(filteredItems);
       }
     });
 
@@ -87,11 +132,12 @@ const EmployeeDashboard: React.FC = () => {
     });
 
     return () => {
+      unsubscribeEmployee();
       unsubscribeInventory();
       unsubscribeTransactions();
       unsubscribeMessages();
     };
-  }, [currentUser]);
+  }, [currentUser, employee?.assignedStockGroups]);
 
   const handleStockAudit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -126,13 +172,43 @@ const EmployeeDashboard: React.FC = () => {
       });
 
       // Update inventory stock
-      const inventoryRef = ref(database, `inventory/${selectedItem.id}`);
-      await set(inventoryRef, {
+      const updatedItem = {
         ...selectedItem,
         currentStock: newStock,
         lastUpdated: new Date().toISOString(),
         updatedBy: currentUser?.email || 'employee',
-      });
+      };
+
+      const inventoryRef = ref(database, `inventory/${selectedItem.id}`);
+      await set(inventoryRef, updatedItem);
+
+      // Sync to Google Sheets
+      try {
+        await updateGoogleSheetsInventory({
+          sku: updatedItem.sku,
+          name: updatedItem.name,
+          description: updatedItem.description,
+          category: updatedItem.category,
+          unitType: updatedItem.unitType || 'piece',
+          pricePerUnit: updatedItem.pricePerUnit || updatedItem.sellingPrice,
+          costPrice: updatedItem.costPrice,
+          sellingPrice: updatedItem.sellingPrice,
+          currentStock: updatedItem.currentStock,
+          minimumStock: updatedItem.minimumStock,
+          maximumStock: updatedItem.maximumStock,
+          reorderLevel: updatedItem.reorderLevel,
+          location: updatedItem.location,
+          supplier: updatedItem.supplier,
+          barcode: updatedItem.barcode,
+          imageUrl: updatedItem.imageUrl,
+          groupTag: updatedItem.groupTag,
+          width: updatedItem.width,
+          height: updatedItem.height,
+          unit: updatedItem.unit
+        });
+      } catch (sheetsError) {
+        console.warn('Failed to sync to Google Sheets:', sheetsError);
+      }
 
       toast.success('Stock updated successfully!');
       setShowAuditModal(false);
@@ -152,6 +228,99 @@ const EmployeeDashboard: React.FC = () => {
     }
   };
 
+  const handleAddNewItem = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const itemData = {
+        sku: newItemForm.sku,
+        name: newItemForm.name,
+        description: newItemForm.description,
+        category: newItemForm.category,
+        unit: newItemForm.unitType,
+        unitType: newItemForm.unitType,
+        costPrice: parseFloat(newItemForm.costPrice),
+        sellingPrice: parseFloat(newItemForm.sellingPrice),
+        pricePerUnit: parseFloat(newItemForm.pricePerUnit) || parseFloat(newItemForm.sellingPrice),
+        currentStock: parseInt(newItemForm.currentStock),
+        minimumStock: parseInt(newItemForm.minimumStock),
+        maximumStock: 1000,
+        reorderLevel: parseInt(newItemForm.reorderLevel),
+        location: newItemForm.location,
+        supplier: newItemForm.supplier,
+        imageUrl: newItemForm.imageUrl,
+        groupTag: newItemForm.groupTag,
+        width: parseFloat(newItemForm.width) || undefined,
+        height: parseFloat(newItemForm.height) || undefined,
+        lastUpdated: new Date().toISOString(),
+        updatedBy: currentUser?.email || 'employee',
+        createdAt: new Date().toISOString(),
+        isActive: true,
+      };
+
+      // Add to Firebase
+      const inventoryRef = ref(database, 'inventory');
+      const newItemRef = push(inventoryRef);
+      await set(newItemRef, itemData);
+
+      // Sync to Google Sheets
+      try {
+        await addToGoogleSheets({
+          sku: itemData.sku,
+          name: itemData.name,
+          description: itemData.description,
+          category: itemData.category,
+          unitType: itemData.unitType,
+          pricePerUnit: itemData.pricePerUnit,
+          costPrice: itemData.costPrice,
+          sellingPrice: itemData.sellingPrice,
+          currentStock: itemData.currentStock,
+          minimumStock: itemData.minimumStock,
+          maximumStock: itemData.maximumStock,
+          reorderLevel: itemData.reorderLevel,
+          location: itemData.location,
+          supplier: itemData.supplier,
+          barcode: '',
+          imageUrl: itemData.imageUrl,
+          groupTag: itemData.groupTag,
+          width: itemData.width,
+          height: itemData.height,
+          unit: itemData.unit
+        });
+      } catch (sheetsError) {
+        console.warn('Failed to sync to Google Sheets:', sheetsError);
+      }
+
+      toast.success('Item added successfully!');
+      setShowAddItemModal(false);
+      setNewItemForm({
+        sku: '',
+        name: '',
+        description: '',
+        category: '',
+        unitType: 'piece',
+        pricePerUnit: '',
+        costPrice: '',
+        sellingPrice: '',
+        currentStock: '',
+        minimumStock: '',
+        reorderLevel: '',
+        location: '',
+        supplier: '',
+        imageUrl: '',
+        groupTag: '',
+        width: '',
+        height: '',
+      });
+    } catch (error) {
+      toast.error('Failed to add item');
+      console.error('Error adding item:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -160,7 +329,7 @@ const EmployeeDashboard: React.FC = () => {
       const messagesRef = ref(database, 'messages');
       await push(messagesRef, {
         fromUserId: currentUser?.uid || '',
-        toUserId: messageForm.toUserId,
+        toUserId: 'admin', // Send to admin
         subject: messageForm.subject,
         content: messageForm.content,
         isRead: false,
@@ -190,7 +359,7 @@ const EmployeeDashboard: React.FC = () => {
 
   const employeeTabs = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
-    { id: 'inventory', label: 'Inventory Audit', icon: Package },
+    { id: 'inventory', label: 'Inventory', icon: Package },
     { id: 'messages', label: 'Messages', icon: MessageSquare },
     { id: 'profile', label: 'Profile', icon: User },
   ];
@@ -224,7 +393,7 @@ const EmployeeDashboard: React.FC = () => {
               <div className="bg-green-50 p-6 rounded-lg">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-green-600 text-sm font-medium">Total Items</p>
+                    <p className="text-green-600 text-sm font-medium">Managed Items</p>
                     <p className="text-2xl font-bold text-green-900">{inventory.length}</p>
                   </div>
                   <Package className="w-8 h-8 text-green-600" />
@@ -304,16 +473,25 @@ const EmployeeDashboard: React.FC = () => {
         return (
           <div className="space-y-6">
             <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
-              <h3 className="text-lg font-semibold">Inventory Audit</h3>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="text"
-                  placeholder="Search items..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+              <h3 className="text-lg font-semibold">Inventory Management</h3>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowAddItemModal(true)}
+                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Item
+                </button>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <input
+                    type="text"
+                    placeholder="Search items..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
               </div>
             </div>
 
@@ -340,13 +518,25 @@ const EmployeeDashboard: React.FC = () => {
                   }`}
                 >
                   <div className="flex justify-between items-start mb-4">
-                    <div>
+                    <div className="flex-1">
                       <h4 className="text-lg font-semibold text-gray-900">{item.name}</h4>
                       <p className="text-sm text-gray-500">SKU: {item.sku}</p>
                       <p className="text-sm text-gray-500">{item.category}</p>
+                      {item.groupTag && (
+                        <span className="inline-block px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full mt-1">
+                          {item.groupTag}
+                        </span>
+                      )}
                     </div>
+                    {item.imageUrl && (
+                      <img
+                        src={item.imageUrl}
+                        alt={item.name}
+                        className="w-16 h-16 object-cover rounded-lg ml-4"
+                      />
+                    )}
                     {item.currentStock <= item.reorderLevel && (
-                      <AlertTriangle className="w-5 h-5 text-yellow-500" />
+                      <AlertTriangle className="w-5 h-5 text-yellow-500 ml-2" />
                     )}
                   </div>
 
@@ -360,9 +550,19 @@ const EmployeeDashboard: React.FC = () => {
                       <span className="text-sm">{item.reorderLevel} {item.unit}</span>
                     </div>
                     <div className="flex justify-between">
+                      <span className="text-sm text-gray-600">Price per {item.unitType}:</span>
+                      <span className="text-sm font-medium">₹{item.pricePerUnit || item.sellingPrice}</span>
+                    </div>
+                    <div className="flex justify-between">
                       <span className="text-sm text-gray-600">Location:</span>
                       <span className="text-sm">{item.location}</span>
                     </div>
+                    {item.width && item.height && (
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-600">Dimensions:</span>
+                        <span className="text-sm">{item.width} × {item.height} {item.unitType}</span>
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex space-x-2">
@@ -455,6 +655,15 @@ const EmployeeDashboard: React.FC = () => {
             <h3 className="text-2xl font-bold mb-4">My Profile</h3>
             <div className="space-y-4">
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                <input
+                  type="text"
+                  value={employee?.name || currentUser?.displayName || ''}
+                  disabled
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
+                />
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                 <input
                   type="email"
@@ -464,19 +673,28 @@ const EmployeeDashboard: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Employee ID</label>
                 <input
                   type="text"
-                  value={currentUser?.role || ''}
+                  value={employee?.employeeId || ''}
                   disabled
                   className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Member Since</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
                 <input
                   type="text"
-                  value={currentUser?.createdAt ? new Date(currentUser.createdAt).toLocaleDateString() : ''}
+                  value={employee?.department || ''}
+                  disabled
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Position</label>
+                <input
+                  type="text"
+                  value={employee?.position || ''}
                   disabled
                   className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
                 />
@@ -497,7 +715,8 @@ const EmployeeDashboard: React.FC = () => {
         <div className="w-full lg:w-64 bg-white shadow-lg">
           <div className="p-6 border-b">
             <h2 className="text-xl font-bold text-gray-900">Employee Dashboard</h2>
-            <p className="text-sm text-gray-600">{currentUser?.email}</p>
+            <p className="text-sm text-gray-600">{employee?.name || currentUser?.email}</p>
+            <p className="text-xs text-gray-500">{employee?.position}</p>
           </div>
           
           <nav className="p-4">
@@ -640,25 +859,241 @@ const EmployeeDashboard: React.FC = () => {
         </div>
       )}
 
+      {/* Add New Item Modal */}
+      {showAddItemModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
+            <h3 className="text-lg font-semibold mb-4">Add New Inventory Item</h3>
+            
+            <form onSubmit={handleAddNewItem} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">SKU *</label>
+                  <input
+                    type="text"
+                    required
+                    value={newItemForm.sku}
+                    onChange={(e) => setNewItemForm({ ...newItemForm, sku: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={newItemForm.name}
+                    onChange={(e) => setNewItemForm({ ...newItemForm, name: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <textarea
+                  value={newItemForm.description}
+                  onChange={(e) => setNewItemForm({ ...newItemForm, description: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  rows={3}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
+                  <input
+                    type="text"
+                    required
+                    value={newItemForm.category}
+                    onChange={(e) => setNewItemForm({ ...newItemForm, category: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Unit Type</label>
+                  <select
+                    value={newItemForm.unitType}
+                    onChange={(e) => setNewItemForm({ ...newItemForm, unitType: e.target.value as any })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="piece">Pieces</option>
+                    <option value="sqft">Square Feet</option>
+                    <option value="meter">Square Meter</option>
+                    <option value="kg">Kilograms</option>
+                    <option value="liter">Liters</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                  <input
+                    type="text"
+                    value={newItemForm.location}
+                    onChange={(e) => setNewItemForm({ ...newItemForm, location: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Cost Price (₹)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={newItemForm.costPrice}
+                    onChange={(e) => setNewItemForm({ ...newItemForm, costPrice: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Price per Unit (₹) *</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    required
+                    value={newItemForm.pricePerUnit}
+                    onChange={(e) => setNewItemForm({ 
+                      ...newItemForm, 
+                      pricePerUnit: e.target.value,
+                      sellingPrice: e.target.value 
+                    })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Current Stock *</label>
+                  <input
+                    type="number"
+                    required
+                    value={newItemForm.currentStock}
+                    onChange={(e) => setNewItemForm({ ...newItemForm, currentStock: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Min Stock</label>
+                  <input
+                    type="number"
+                    value={newItemForm.minimumStock}
+                    onChange={(e) => setNewItemForm({ ...newItemForm, minimumStock: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Reorder Level</label>
+                  <input
+                    type="number"
+                    value={newItemForm.reorderLevel}
+                    onChange={(e) => setNewItemForm({ ...newItemForm, reorderLevel: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Supplier</label>
+                  <input
+                    type="text"
+                    value={newItemForm.supplier}
+                    onChange={(e) => setNewItemForm({ ...newItemForm, supplier: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Group Tag</label>
+                  <input
+                    type="text"
+                    value={newItemForm.groupTag}
+                    onChange={(e) => setNewItemForm({ ...newItemForm, groupTag: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g., Premium, Budget, Luxury"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
+                <input
+                  type="url"
+                  value={newItemForm.imageUrl}
+                  onChange={(e) => setNewItemForm({ ...newItemForm, imageUrl: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="https://example.com/image.jpg"
+                />
+              </div>
+
+              {(newItemForm.unitType === 'sqft' || newItemForm.unitType === 'meter') && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Width ({newItemForm.unitType === 'sqft' ? 'ft' : 'm'})
+                    </label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={newItemForm.width}
+                      onChange={(e) => setNewItemForm({ ...newItemForm, width: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Height ({newItemForm.unitType === 'sqft' ? 'ft' : 'm'})
+                    </label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={newItemForm.height}
+                      onChange={(e) => setNewItemForm({ ...newItemForm, height: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="flex space-x-4 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowAddItemModal(false)}
+                  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center justify-center"
+                >
+                  {loading ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                      Adding...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4 mr-2" />
+                      Add Item
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Message Modal */}
       {showMessageModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold mb-4">Send Message</h3>
+            <h3 className="text-lg font-semibold mb-4">Send Message to Admin</h3>
             
             <form onSubmit={handleSendMessage} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  To (Admin)
-                </label>
-                <input
-                  type="text"
-                  value="admin"
-                  disabled
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
-                />
-              </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Subject *

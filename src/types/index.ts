@@ -34,7 +34,6 @@ export interface CartItem {
 
 export interface InventoryItem {
   id: string;
-  productId: string;
   sku: string;
   name: string;
   description: string;
@@ -42,6 +41,8 @@ export interface InventoryItem {
   unit: string;
   costPrice: number;
   sellingPrice: number;
+  pricePerUnit: number;
+  unitType: 'sqft' | 'meter' | 'piece' | 'kg' | 'liter';
   currentStock: number;
   minimumStock: number;
   maximumStock: number;
@@ -49,6 +50,10 @@ export interface InventoryItem {
   location: string;
   supplier: string;
   barcode?: string;
+  imageUrl?: string;
+  groupTag?: string;
+  width?: number;
+  height?: number;
   lastUpdated: string;
   updatedBy: string;
   createdAt: string;
@@ -75,6 +80,28 @@ export interface InventoryGroup {
   id: string;
   name: string;
   description: string;
+  groupTag: string;
+  color: string;
+  items: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GoogleSheetsSync {
+  id: string;
+  action: 'create' | 'update' | 'delete';
+  itemId: string;
+  data: any;
+  status: 'pending' | 'synced' | 'failed';
+  timestamp: string;
+  performedBy: string;
+  error?: string;
+}
+
+export interface StockGroup {
+  id: string;
+  name: string;
+  description: string;
   categories: string[];
   assignedEmployees: string[];
   permissions: {
@@ -83,6 +110,26 @@ export interface InventoryGroup {
     canAdjust: boolean;
     canViewReports: boolean;
   };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Employee {
+  id: string;
+  userId: string;
+  employeeId: string;
+  name: string;
+  email: string;
+  phone?: string;
+  department: string;
+  position: string;
+  assignedStockGroups: string[];
+  permissions: {
+    canManageInventory: boolean;
+    canViewReports: boolean;
+    canProcessOrders: boolean;
+  };
+  isActive: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -105,7 +152,6 @@ export interface Quotation {
   customerName: string;
   customerEmail: string;
   customerPhone: string;
-  projectName: string;
   description: string;
   items: QuotationItem[];
   subtotal: number;
@@ -116,10 +162,13 @@ export interface Quotation {
   validUntil: string;
   notes?: string;
   createdBy: string;
+  assignedEmployee?: string;
   createdAt: string;
   updatedAt: string;
   approvedBy?: string;
   approvedAt?: string;
+  paymentStatus?: 'pending' | 'paid' | 'failed';
+  razorpayOrderId?: string;
 }
 
 export interface QuotationItem {
@@ -128,7 +177,12 @@ export interface QuotationItem {
   name: string;
   description: string;
   quantity: number;
+  width?: number;
+  height?: number;
+  area?: number;
   unitPrice: number;
+  pricePerUnit: number;
+  unitType: string;
   total: number;
 }
 

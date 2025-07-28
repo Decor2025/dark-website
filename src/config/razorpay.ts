@@ -20,12 +20,57 @@ export const formatCurrency = (amount: number): string => {
 };
 
 export const createRazorpayOrder = async (amount: number, orderId: string) => {
-  // This would typically be done on your backend
-  // For demo purposes, we'll simulate the order creation
-  return {
-    id: `order_${Date.now()}`,
-    amount: amount * 100, // Razorpay expects amount in paise
-    currency: razorpayConfig.currency,
-    receipt: orderId,
-  };
+  try {
+    // In production, this should be done on your backend
+    const response = await fetch('/api/create-razorpay-order', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        amount: amount * 100, // Convert to paise
+        currency: razorpayConfig.currency,
+        receipt: orderId,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to create Razorpay order');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error creating Razorpay order:', error);
+    // Fallback for demo purposes
+    return {
+      id: `order_${Date.now()}`,
+      amount: amount * 100,
+      currency: razorpayConfig.currency,
+      receipt: orderId,
+    };
+  }
+};
+
+export const processRazorpayPayment = async (paymentData: any, quotationId: string) => {
+  try {
+    const response = await fetch('/api/verify-razorpay-payment', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        ...paymentData,
+        quotationId,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Payment verification failed');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error processing payment:', error);
+    throw error;
+  }
 };
