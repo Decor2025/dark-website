@@ -448,7 +448,6 @@ const EmployeeManagement: React.FC = () => {
                     <label key={group.id} className="flex items-center">
                       <input
                         type="checkbox"
-                        checked={formData.assignedStockGroups.includes(group.id)}
                         checked={(formData.assignedStockGroups || []).includes(group.id)}
                         onChange={(e) => {
                           if (e.target.checked) {

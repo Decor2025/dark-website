@@ -27,6 +27,7 @@ import SettingsManagement from '../../components/admin/SettingsManagement';
 import EmployeeManagement from '../../components/admin/EmployeeManagement';
 import StockGroupManagement from '../../components/admin/StockGroupManagement';
 import EmployeeDashboard from '../../components/admin/EmployeeDashboard';
+import TestimonialManagement from '../../components/admin/TestimonialManagement';
 
 interface DashboardStats {
   totalUsers: number;
@@ -135,6 +136,7 @@ const AdminDashboard: React.FC = () => {
     { id: 'products', label: 'Products', icon: Package },
     { id: 'inventory', label: 'Inventory', icon: Package },
     { id: 'employees', label: 'Employees', icon: Users },
+    { id: 'testimonials', label: 'Testimonials', icon: MessageSquare },
     { id: 'stock-groups', label: 'Stock Groups', icon: Package },
     { id: 'messages', label: 'Messages', icon: MessageSquare, badge: stats.unreadMessages },
     { id: 'settings', label: 'Settings', icon: Settings },
@@ -285,6 +287,8 @@ const AdminDashboard: React.FC = () => {
         return <StockGroupManagement />;
       case 'messages':
         return <ContactManagement />;
+      case 'testimonials':
+        return <TestimonialManagement />;
       case 'settings':
         return <SettingsManagement />;
       default:
