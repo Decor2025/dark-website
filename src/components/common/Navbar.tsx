@@ -1,46 +1,66 @@
 // src/components/Navbar.tsx
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate }         from 'react-router-dom';
-import { useAuth }                   from '../../context/AuthContext';
-import { useCart }                   from '../../context/CartContext';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { useCart } from '../../context/CartContext';
 import {
   ShoppingCart,
   User as UserIcon,
-  Menu,
   X,
   LogOut,
   Settings,
-  Calendar,
-  Shield
 } from 'lucide-react';
-import { ref, onValue }              from 'firebase/database';
-import { database }                  from '../../config/firebase';
-import { SiteSettings }              from '../../types';
+import { ref, onValue } from 'firebase/database';
+import { database } from '../../config/firebase';
+import { SiteSettings } from '../../types';
 
 const Navbar: React.FC = () => {
-  const [isMenuOpen, setIsMenuOpen]         = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false); // for mobile sidebar
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [settings, setSettings]             = useState<SiteSettings[]>([]);
+  const [settings, setSettings] = useState<SiteSettings[]>([]);
   const { currentUser, loading: authLoading, logout } = useAuth();
-  const { getItemCount }                    = useCart();
-  const navigate                            = useNavigate();
+  const { getItemCount } = useCart();
+  const navigate = useNavigate();
+
+  // Separate refs for button and dropdown to fix type error
+  const userMenuButtonRef = useRef<HTMLButtonElement>(null);
+  const userMenuDropdownRef = useRef<HTMLDivElement>(null);
 
   // Load siteSettings for store name
   useEffect(() => {
     const settingsRef = ref(database, 'siteSettings');
-    const unsub = onValue(settingsRef, snap => {
+    const unsub = onValue(settingsRef, (snap) => {
       if (snap.exists()) {
         const data = snap.val();
-        setSettings(Object.keys(data).map(key => ({ id: key, ...data[key] })));
+        setSettings(Object.keys(data).map((key) => ({ id: key, ...data[key] })));
       }
     });
     return () => unsub();
   }, []);
 
-  const getSetting = (key: string) =>
-    settings.find(s => s.key === key)?.value || '';
+  // Close profile dropdown when clicking outside button or dropdown
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        userMenuButtonRef.current &&
+        userMenuDropdownRef.current &&
+        !userMenuButtonRef.current.contains(event.target as Node) &&
+        !userMenuDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsUserMenuOpen(false);
+      }
+    }
+    if (isUserMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isUserMenuOpen]);
 
-  const storeName    = getSetting('store_name') || 'Shop';
+  const getSetting = (key: string) => settings.find((s) => s.key === key)?.value || '';
+
+  const storeName = getSetting('store_name') || 'Shop';
   const storeInitial = storeName.charAt(0).toUpperCase();
 
   const handleLogout = async () => {
@@ -50,40 +70,124 @@ const Navbar: React.FC = () => {
   };
 
   const navLinks = [
-    { to: '/',       label: 'Home' },
+    { to: '/', label: 'Home' },
     { to: '/catalogue', label: 'Catalogue' },
-    { to: '/about',  label: 'About' },
-    { to: '/contact',label: 'Contact' },
+    { to: '/about', label: 'About' },
+    { to: '/contact', label: 'Contact' },
   ];
+
+  // Sidebar links same as navLinks for now
+  const sidebarLinks = navLinks;
 
   return (
     <nav className="bg-white shadow-lg sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          
+
+        {/* MOBILE NAVBAR */}
+        <div className="flex items-center justify-between h-14 md:hidden">
+
+          {/* Left: 2-line Hamburger */}
+          <button
+            onClick={() => setIsMenuOpen((o) => !o)}
+            aria-label="Toggle menu"
+            className="flex flex-col justify-center space-y-1.5 px-2"
+          >
+            <span
+              className={`block h-0.5 w-6 bg-gray-700 transition-transform origin-left ${
+                isMenuOpen ? 'rotate-45 translate-y-1.5' : ''
+              }`}
+            />
+            <span
+              className={`block h-0.5 w-6 bg-gray-700 transition-transform origin-left ${
+                isMenuOpen ? '-rotate-45 -translate-y-1.5' : ''
+              }`}
+            />
+          </button>
+
+          {/* Center: Logo */}
+          <Link to="/" className="flex items-center justify-center flex-1">
+            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+              {!authLoading && (
+                <span className="text-white font-bold text-lg">{storeInitial}</span>
+              )}
+            </div>
+          </Link>
+
+          {/* Right: Profile or Login */}
+          <div>
+            {!authLoading && currentUser ? (
+              <button
+                ref={userMenuButtonRef}
+                onClick={() => setIsUserMenuOpen((o) => !o)}
+                className="focus:outline-none"
+                aria-label="User menu"
+              >
+                {currentUser.profileImage ? (
+                  <img
+                    src={currentUser.profileImage}
+                    alt="Profile"
+                    className="w-8 h-8 rounded-full object-cover border-2 border-gray-200"
+                  />
+                ) : (
+                  <UserIcon className="w-8 h-8 text-gray-600 bg-gray-200 rounded-full p-1" />
+                )}
+              </button>
+            ) : (
+              <Link
+                to="/login"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded-md text-sm font-semibold transition-transform transform hover:scale-105"
+              >
+                Login
+              </Link>
+            )}
+          </div>
+        </div>
+
+        {/* Mobile Sidebar (slide-in) */}
+        <div
+          className={`fixed top-0 left-0 h-full w-64 bg-white shadow-lg transform transition-transform duration-300 z-50
+            ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        >
+          <div className="flex justify-between items-center px-4 h-14 border-b border-gray-200">
+            <div className="text-lg font-bold">{storeName}</div>
+            <button
+              onClick={() => setIsMenuOpen(false)}
+              aria-label="Close menu"
+              className="p-2"
+            >
+              <X className="w-6 h-6 text-gray-700" />
+            </button>
+          </div>
+          <nav className="mt-4 flex flex-col space-y-2 px-4">
+            {sidebarLinks.map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                className="text-gray-700 hover:text-blue-600 text-lg font-medium"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
+
+        {/* DESKTOP NAVBAR (unchanged) */}
+        <div className="hidden md:flex justify-between items-center h-16">
+
           {/* Logo + Store Name */}
           <Link to="/" className="flex items-center space-x-2">
-            {authLoading ? (
-              <div className="h-8 w-8 bg-gray-200 rounded-full animate-pulse" />
-            ) : (
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">
-                  {storeInitial}
-                </span>
-              </div>
-            )}
-            {authLoading ? (
-              <div className="h-6 w-24 bg-gray-200 rounded animate-pulse" />
-            ) : (
-              <span className="text-xl font-bold text-gray-900">
-                {storeName}
-              </span>
-            )}
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              {!authLoading && (
+                <span className="text-white font-bold text-lg">{storeInitial}</span>
+              )}
+            </div>
+            <span className="text-xl font-bold text-gray-900">{storeName}</span>
           </Link>
 
           {/* Desktop Nav Links */}
           <div className="hidden md:flex items-center space-x-8">
-            {navLinks.map(link => (
+            {navLinks.map((link) => (
               <Link
                 key={link.to}
                 to={link.to}
@@ -96,7 +200,6 @@ const Navbar: React.FC = () => {
 
           {/* Right Side: Cart + Auth Controls */}
           <div className="flex items-center space-x-4">
-            {/* Cart (only after authLoading && currentUser) */}
             {!authLoading && currentUser && (
               <Link
                 to="/cart"
@@ -111,20 +214,14 @@ const Navbar: React.FC = () => {
               </Link>
             )}
 
-            {/* Auth Controls */}
-            {authLoading ? (
-              // Skeleton placeholders
-              <div className="flex items-center space-x-2">
-                <div className="h-8 w-16 bg-gray-200 rounded animate-pulse" />
-                <div className="h-8 w-20 bg-gray-200 rounded animate-pulse" />
-                <div className="md:hidden h-6 w-6 bg-gray-200 rounded animate-pulse" />
-              </div>
-            ) : currentUser ? (
-              // User Dropdown
+            {/* User Dropdown */}
+            {currentUser ? (
               <div className="relative">
                 <button
-                  onClick={() => setIsUserMenuOpen(o => !o)}
+                  ref={userMenuButtonRef}
+                  onClick={() => setIsUserMenuOpen((o) => !o)}
                   className="flex items-center space-x-2 p-2 text-gray-700 hover:text-blue-600 transition-colors"
+                  aria-label="User menu toggle"
                 >
                   {currentUser.profileImage ? (
                     <img
@@ -139,14 +236,15 @@ const Navbar: React.FC = () => {
                     <div className="text-sm font-medium text-gray-900">
                       {currentUser.displayName || currentUser.email.split('@')[0]}
                     </div>
-                    <div className="text-xs text-gray-500 capitalize">
-                      {currentUser.role}
-                    </div>
+                    <div className="text-xs text-gray-500 capitalize">{currentUser.role}</div>
                   </div>
                 </button>
 
                 {isUserMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
+                  <div
+                    ref={userMenuDropdownRef}
+                    className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50"
+                  >
                     {/* User Info Header */}
                     <div className="px-4 py-3 border-b border-gray-100">
                       <div className="flex items-center space-x-3">
@@ -165,9 +263,7 @@ const Navbar: React.FC = () => {
                           <div className="text-sm font-medium text-gray-900 truncate">
                             {currentUser.displayName || 'User'}
                           </div>
-                          <div className="text-sm text-gray-500 truncate">
-                            {currentUser.email}
-                          </div>
+                          <div className="text-sm text-gray-500 truncate">{currentUser.email}</div>
                         </div>
                       </div>
                     </div>
@@ -176,14 +272,10 @@ const Navbar: React.FC = () => {
                     <div className="px-4 py-2 border-b border-gray-100">
                       <div className="space-y-2 text-xs text-gray-600">
                         <div className="flex items-center">
-                          <Shield className="w-3 h-3 mr-2" />
                           <span className="capitalize">{currentUser.role}</span>
                         </div>
                         <div className="flex items-center">
-                          <Calendar className="w-3 h-3 mr-2" />
-                          <span>
-                            Joined {new Date(currentUser.createdAt).toLocaleDateString()}
-                          </span>
+                          <span>Joined {new Date(currentUser.createdAt).toLocaleDateString()}</span>
                         </div>
                       </div>
                     </div>
@@ -218,48 +310,17 @@ const Navbar: React.FC = () => {
                 )}
               </div>
             ) : (
-              // Login / Sign Up Links
-              <div className="flex items-center space-x-2">
-                <Link
-                  to="/login"
-                  className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
-                >
-                  Login
-                </Link>
-                <Link
-                  to="/signup"
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
-                >
-                  Sign Up
-                </Link>
-                <button
-                  onClick={() => setIsMenuOpen(o => !o)}
-                  className="md:hidden p-2 text-gray-700 hover:text-blue-600 transition-colors"
-                >
-                  {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-                </button>
-              </div>
+              // No signup, only login on desktop
+              <Link
+                to="/login"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+              >
+                Login
+              </Link>
             )}
           </div>
         </div>
 
-        {/* Mobile Navigation for non-logged-in when menu open */}
-        {!authLoading && !currentUser && isMenuOpen && (
-          <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-gray-50">
-              {navLinks.map(link => (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 transition-colors"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </nav>
   );
