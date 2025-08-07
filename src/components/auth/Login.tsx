@@ -5,6 +5,7 @@ import {
   signInWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
+  sendPasswordResetEmail,
 } from 'firebase/auth';
 import {
   getDatabase,
@@ -28,6 +29,13 @@ const Login = () => {
   const [loginError, setLoginError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  // New states for forgot password
+  const [forgotPasswordMode, setForgotPasswordMode] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetMessage, setResetMessage] = useState('');
+  const [resetError, setResetError] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
 
   const handleGoogleSignIn = async () => {
     try {
@@ -78,6 +86,22 @@ const Login = () => {
     }
   };
 
+  // Forgot Password submit handler
+  const handleForgotPasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setResetMessage('');
+    setResetError('');
+    setResetLoading(true);
+    try {
+      await sendPasswordResetEmail(auth, resetEmail.trim().toLowerCase());
+      setResetMessage('Password reset email sent. Please check your inbox.');
+    } catch (error: any) {
+      setResetError(error.message || 'Failed to send reset email.');
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen w-full bg-gray-50 flex flex-col items-center justify-center px-4 py-12">
       {/* Logo & Branding */}
@@ -111,7 +135,7 @@ const Login = () => {
         </div>
 
         {/* Step 1: Email */}
-        {step === 1 && (
+        {step === 1 && !forgotPasswordMode && (
           <form onSubmit={handleEmailSubmit} className="space-y-6">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
@@ -140,7 +164,7 @@ const Login = () => {
         )}
 
         {/* Step 2: Password */}
-        {step === 2 && (
+        {step === 2 && !forgotPasswordMode && (
           <form onSubmit={handlePasswordSubmit} className="space-y-6">
             <div className="text-sm text-gray-700">
               Signed in as <span className="font-medium">{email}</span>{' '}
@@ -182,6 +206,22 @@ const Login = () => {
               {loginError && <p className="text-red-600 text-sm mt-1">{loginError}</p>}
             </div>
 
+            {/* Forgot Password link */}
+            <div className="text-right">
+              <button
+                type="button"
+                onClick={() => {
+                  setForgotPasswordMode(true);
+                  setResetEmail(email || ''); // prefills with current email if any
+                  setResetMessage('');
+                  setResetError('');
+                }}
+                className="text-blue-600 hover:underline text-sm"
+              >
+                Forgot password?
+              </button>
+            </div>
+
             <button
               type="submit"
               disabled={loading}
@@ -189,6 +229,51 @@ const Login = () => {
             >
               {loading ? 'Signing in...' : 'Sign in'}
             </button>
+          </form>
+        )}
+
+        {/* Forgot Password Mode */}
+        {forgotPasswordMode && (
+          <form onSubmit={handleForgotPasswordSubmit} className="space-y-6">
+            <div>
+              <label htmlFor="resetEmail" className="block text-sm font-medium text-gray-700 mb-1">
+                Enter your email to reset password
+              </label>
+              <input
+                type="email"
+                id="resetEmail"
+                value={resetEmail}
+                onChange={(e) => setResetEmail(e.target.value)}
+                required
+                autoFocus
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="you@example.com"
+              />
+              {resetError && <p className="text-red-600 text-sm mt-1">{resetError}</p>}
+              {resetMessage && <p className="text-green-600 text-sm mt-1">{resetMessage}</p>}
+            </div>
+
+            <button
+              type="submit"
+              disabled={resetLoading}
+              className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition disabled:opacity-50"
+            >
+              {resetLoading ? 'Sending reset email...' : 'Send reset email'}
+            </button>
+
+            <div className="text-center text-sm text-gray-600">
+              <button
+                type="button"
+                onClick={() => {
+                  setForgotPasswordMode(false);
+                  setResetError('');
+                  setResetMessage('');
+                }}
+                className="text-blue-600 hover:underline"
+              >
+                Back to login
+              </button>
+            </div>
           </form>
         )}
       </div>

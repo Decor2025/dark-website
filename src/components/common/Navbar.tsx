@@ -60,7 +60,7 @@ const Navbar: React.FC = () => {
 
   const getSetting = (key: string) => settings.find((s) => s.key === key)?.value || '';
 
-  const storeName = getSetting('store_name') || 'Shop';
+  const storeName = getSetting('store_name') || 'Decor Drapes';
   const storeInitial = storeName.charAt(0).toUpperCase();
 
   const handleLogout = async () => {
@@ -182,7 +182,7 @@ const Navbar: React.FC = () => {
                 <span className="text-white font-bold text-lg">{storeInitial}</span>
               )}
             </div>
-            <span className="text-xl font-bold text-gray-900">{storeName}</span>
+            <span className="text-xl font-bold text-gray-900">{storeName} </span>
           </Link>
 
           {/* Desktop Nav Links */}

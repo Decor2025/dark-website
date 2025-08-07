@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { User, Mail, Calendar, Shield, Camera, Edit, Save, X, Phone, MapPin, Briefcase, Globe } from 'lucide-react';
+import {
+  User, Mail, Calendar, Shield, Camera, Edit, Save, X, Phone, MapPin, Briefcase
+} from 'lucide-react';
 
 const Profile: React.FC = () => {
   const { currentUser, updateProfile } = useAuth();
@@ -11,7 +13,6 @@ const Profile: React.FC = () => {
     phone: currentUser?.phone || '',
     address: currentUser?.address || '',
     company: currentUser?.company || '',
-    website: currentUser?.website || '',
     bio: currentUser?.bio || '',
     profileImage: null as File | null,
   });
@@ -19,22 +20,30 @@ const Profile: React.FC = () => {
 
   if (!currentUser) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p>Please log in to view your profile.</p>
+      <div className="min-h-screen flex items-center justify-center text-gray-600">
+        Please log in to view your profile.
       </div>
     );
   }
+
+  // Profile completion logic
+  const completedFields = [
+    currentUser.displayName,
+    currentUser.phone,
+    currentUser.address,
+    currentUser.company,
+    currentUser.bio,
+    currentUser.profileImage || previewImage,
+  ];
+  const completedCount = completedFields.filter(Boolean).length;
+  const profileCompletion = Math.round((completedCount / completedFields.length) * 100);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setFormData({ ...formData, profileImage: file });
-      
-      // Create preview URL
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewImage(reader.result as string);
-      };
+      reader.onloadend = () => setPreviewImage(reader.result as string);
       reader.readAsDataURL(file);
     }
   };
@@ -42,13 +51,11 @@ const Profile: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     try {
       await updateProfile(formData.displayName, formData.profileImage || undefined, {
         phone: formData.phone,
         address: formData.address,
         company: formData.company,
-        website: formData.website,
         bio: formData.bio,
       });
       setIsEditing(false);
@@ -68,7 +75,6 @@ const Profile: React.FC = () => {
       phone: currentUser?.phone || '',
       address: currentUser?.address || '',
       company: currentUser?.company || '',
-      website: currentUser?.website || '',
       bio: currentUser?.bio || '',
       profileImage: null,
     });
@@ -76,312 +82,155 @@ const Profile: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header Card */}
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-12 relative">
-            <div className="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
-              <div className="relative">
-                {currentUser.profileImage || previewImage ? (
-                  <img
-                    src={previewImage || currentUser.profileImage}
-                    alt="Profile"
-                    className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"
-                  />
-                ) : (
-                  <div className="w-32 h-32 bg-white rounded-full flex items-center justify-center border-4 border-white shadow-lg">
-                    <User className="w-16 h-16 text-blue-600" />
-                  </div>
-                )}
-                
-                {isEditing && (
-                  <label className="absolute bottom-2 right-2 bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full cursor-pointer transition-colors shadow-lg">
-                    <Camera className="w-5 h-5" />
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                      className="hidden"
-                    />
-                  </label>
-                )}
-              </div>
-              
-              <div className="text-white text-center md:text-left flex-1">
-                <h1 className="text-3xl md:text-4xl font-bold mb-2">
-                  {currentUser.displayName || 'User Profile'}
-                </h1>
-                <p className="text-blue-100 text-lg mb-4">{currentUser.email}</p>
-                <div className="flex flex-wrap justify-center md:justify-start gap-4">
-                  <span className={`inline-flex px-4 py-2 rounded-full text-sm font-medium ${
-                    currentUser.role === 'admin'
-                      ? 'bg-purple-500 bg-opacity-20 text-purple-100 border border-purple-300'
-                      : currentUser.role === 'employee'
-                      ? 'bg-blue-500 bg-opacity-20 text-blue-100 border border-blue-300'
-                      : 'bg-green-500 bg-opacity-20 text-green-100 border border-green-300'
-                  }`}>
-                    <Shield className="w-4 h-4 mr-2" />
-                    {currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1)}
-                  </span>
-                  <span className="inline-flex px-4 py-2 rounded-full text-sm font-medium bg-white bg-opacity-20 text-white border border-white border-opacity-30">
-                    <Calendar className="w-4 h-4 mr-2" />
-                    Joined {new Date(currentUser.createdAt).toLocaleDateString()}
-                  </span>
-                </div>
-              </div>
-
-              {!isEditing && (
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 flex items-center backdrop-blur-sm border border-white border-opacity-30"
-                >
-                  <Edit className="w-5 h-5 mr-2" />
-                  Edit Profile
-                </button>
-              )}
+    <div className="min-h-screen bg-gray-100 py-10 px-4">
+      <div className="max-w-4xl mx-auto space-y-6">
+        
+        {/* Profile Completion Bar */}
+        <div className="bg-white p-4 rounded-xl shadow flex items-center justify-between">
+          <div className="flex-1 mr-4">
+            <p className="text-sm font-medium text-gray-700 mb-1">
+              Profile Completion: {profileCompletion}%
+            </p>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div
+                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${profileCompletion}%` }}
+              />
             </div>
           </div>
+          {profileCompletion < 100 && !isEditing && (
+            <button
+              onClick={() => setIsEditing(true)}
+              className="text-sm text-blue-600 hover:underline font-medium"
+            >
+              Complete Now
+            </button>
+          )}
         </div>
 
-        {/* Profile Details */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Personal Information */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-2xl shadow-lg p-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Personal Information</h2>
-              
-              {!isEditing ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-6">
-                    <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl">
-                      <Mail className="w-6 h-6 text-blue-600" />
-                      <div>
-                        <p className="text-sm font-medium text-gray-500">Email Address</p>
-                        <p className="text-gray-900 font-medium">{currentUser.email}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl">
-                      <User className="w-6 h-6 text-green-600" />
-                      <div>
-                        <p className="text-sm font-medium text-gray-500">Display Name</p>
-                        <p className="text-gray-900 font-medium">
-                          {currentUser.displayName || 'Not set'}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl">
-                      <Phone className="w-6 h-6 text-purple-600" />
-                      <div>
-                        <p className="text-sm font-medium text-gray-500">Phone Number</p>
-                        <p className="text-gray-900 font-medium">
-                          {currentUser.phone || 'Not provided'}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-6">
-                    <div className="flex items-start space-x-4 p-4 bg-gray-50 rounded-xl">
-                      <MapPin className="w-6 h-6 text-red-600 mt-1" />
-                      <div>
-                        <p className="text-sm font-medium text-gray-500">Address</p>
-                        <p className="text-gray-900 font-medium">
-                          {currentUser.address || 'Not provided'}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl">
-                      <Briefcase className="w-6 h-6 text-orange-600" />
-                      <div>
-                        <p className="text-sm font-medium text-gray-500">Company</p>
-                        <p className="text-gray-900 font-medium">
-                          {currentUser.company || 'Not provided'}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl">
-                      <Globe className="w-6 h-6 text-teal-600" />
-                      <div>
-                        <p className="text-sm font-medium text-gray-500">Website</p>
-                        <p className="text-gray-900 font-medium">
-                          {currentUser.website ? (
-                            <a href={currentUser.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                              {currentUser.website}
-                            </a>
-                          ) : (
-                            'Not provided'
-                          )}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Display Name
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.displayName}
-                        onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Enter your display name"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Phone Number
-                      </label>
-                      <input
-                        type="tel"
-                        value={formData.phone}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Enter your phone number"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Company
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.company}
-                        onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="Enter your company name"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Website
-                      </label>
-                      <input
-                        type="url"
-                        value={formData.website}
-                        onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="https://yourwebsite.com"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Address
-                    </label>
-                    <textarea
-                      value={formData.address}
-                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                      rows={3}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Enter your address"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Bio
-                    </label>
-                    <textarea
-                      value={formData.bio}
-                      onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                      rows={4}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Tell us about yourself..."
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Email Address
-                    </label>
-                    <input
-                      type="email"
-                      value={currentUser.email}
-                      disabled
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-gray-50 text-gray-500"
-                    />
-                    <p className="text-sm text-gray-500 mt-1">
-                      Email address cannot be changed
-                    </p>
-                  </div>
-                  
-                  <div className="flex space-x-4 pt-6">
-                    <button
-                      type="button"
-                      onClick={handleCancel}
-                      className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-3 px-6 rounded-xl font-medium transition-colors flex items-center justify-center"
-                    >
-                      <X className="w-5 h-5 mr-2" />
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-xl font-medium transition-colors disabled:opacity-50 flex items-center justify-center"
-                    >
-                      {loading ? (
-                        'Updating...'
-                      ) : (
-                        <>
-                          <Save className="w-5 h-5 mr-2" />
-                          Save Changes
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </form>
-              )}
-            </div>
-          </div>
-
-          {/* Account Summary */}
-          <div className="space-y-6">
-            <div className="bg-white rounded-2xl shadow-lg p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Account Summary</h3>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
-                  <span className="text-sm font-medium text-gray-600">Account Status</span>
-                  <span className="text-sm font-bold text-green-600">Active</span>
-                </div>
-                <div className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                  <span className="text-sm font-medium text-gray-600">Member Since</span>
-                  <span className="text-sm font-bold text-gray-900">
-                    {new Date(currentUser.createdAt).toLocaleDateString()}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
-                  <span className="text-sm font-medium text-gray-600">Role</span>
-                  <span className="text-sm font-bold text-purple-600 capitalize">
-                    {currentUser.role}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {currentUser.bio && (
-              <div className="bg-white rounded-2xl shadow-lg p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">About</h3>
-                <p className="text-gray-600 leading-relaxed">{currentUser.bio}</p>
+        {/* Profile Header */}
+        <div className="bg-white p-6 rounded-xl shadow flex flex-col md:flex-row items-center md:items-start md:space-x-6">
+          <div className="relative">
+            {currentUser.profileImage || previewImage ? (
+              <img
+                src={previewImage || currentUser.profileImage}
+                alt="Profile"
+                className="w-28 h-28 rounded-full object-cover border"
+              />
+            ) : (
+              <div className="w-28 h-28 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+                <User className="w-10 h-10" />
               </div>
             )}
+            {isEditing && (
+              <label className="absolute bottom-0 right-0 bg-gray-800 p-2 rounded-full cursor-pointer">
+                <Camera className="w-4 h-4 text-white" />
+                <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+              </label>
+            )}
           </div>
+          <div className="mt-4 md:mt-0 text-center md:text-left flex-1">
+            <h1 className="text-xl font-semibold text-gray-800">
+              {currentUser.displayName || 'User Profile'}
+            </h1>
+            <p className="text-sm text-gray-500">{currentUser.email}</p>
+            <div className="mt-2 flex flex-wrap gap-2 text-sm text-gray-600">
+              <span className="flex items-center gap-1">
+                <Shield className="w-4 h-4" /> {currentUser.role}
+              </span>
+              <span className="flex items-center gap-1">
+                <Calendar className="w-4 h-4" />
+                Joined {new Date(currentUser.createdAt).toLocaleDateString()}
+              </span>
+            </div>
+          </div>
+          {!isEditing && (
+            <button
+              onClick={() => setIsEditing(true)}
+              className="mt-4 md:mt-0 bg-gray-800 hover:bg-gray-700 text-white py-2 px-4 rounded-lg flex items-center gap-2"
+            >
+              <Edit className="w-4 h-4" />
+              Edit
+            </button>
+          )}
+        </div>
+
+        {/* Profile Info Section */}
+        <div className="bg-white p-6 rounded-xl shadow">
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">Personal Information</h2>
+
+          {!isEditing ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
+              <Info label="Phone" icon={Phone} value={currentUser.phone || ''} />
+              <Info label="Address" icon={MapPin} value={currentUser.address || ''} />
+              <Info label="Company" icon={Briefcase} value={currentUser.company || ''} />
+              {currentUser.bio && (
+                <div className="md:col-span-2">
+                  <Info label="About You" icon={User} value={currentUser.bio} multiline />
+                </div>
+              )}
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input label="Display Name" value={formData.displayName} onChange={(v) => setFormData({ ...formData, displayName: v })} />
+                <Input label="Phone" value={formData.phone} onChange={(v) => setFormData({ ...formData, phone: v })} />
+                <Input label="Company" value={formData.company} onChange={(v) => setFormData({ ...formData, company: v })} />
+                <Input label="Address" value={formData.address} onChange={(v) => setFormData({ ...formData, address: v })} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Bio</label>
+                <textarea
+                  rows={3}
+                  value={formData.bio}
+                  onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                  className="w-full border rounded-lg px-3 py-2 mt-1"
+                  placeholder="Tell us something about yourself"
+                />
+              </div>
+              <div className="flex justify-end space-x-3 pt-2">
+                <button type="button" onClick={handleCancel} className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg">
+                  <X className="w-4 h-4 inline mr-1" /> Cancel
+                </button>
+                <button type="submit" disabled={loading} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50">
+                  {loading ? 'Updating...' : (
+                    <>
+                      <Save className="w-4 h-4 inline mr-1" /> Save
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          )}
         </div>
       </div>
     </div>
   );
 };
+
+// Reusable Info display component
+const Info = ({ label, value, icon: Icon, multiline = false }: { label: string; value: string; icon: any; multiline?: boolean }) => (
+  <div className="flex items-start gap-3 bg-gray-50 p-3 rounded-lg">
+    <Icon className="w-5 h-5 text-gray-500 mt-1" />
+    <div>
+      <p className="text-sm text-gray-500">{label}</p>
+      <p className={`text-sm font-medium ${multiline ? 'whitespace-pre-line' : ''}`}>{value || 'Not provided'}</p>
+    </div>
+  </div>
+);
+
+// Reusable Input field
+const Input = ({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) => (
+  <div>
+    <label className="block text-sm font-medium text-gray-700">{label}</label>
+    <input
+      type="text"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="w-full border px-3 py-2 mt-1 rounded-lg"
+      placeholder={`Enter your ${label.toLowerCase()}`}
+    />
+  </div>
+);
 
 export default Profile;
