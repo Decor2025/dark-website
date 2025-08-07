@@ -160,63 +160,88 @@ const AdminDashboard: React.FC = () => {
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-white p-6 rounded-lg shadow-sm border">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total Users</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.totalUsers}</p>
-                  </div>
-                  <Users className="w-8 h-8 text-blue-500" />
-                </div>
-                <div className="mt-2 flex items-center text-sm text-green-600">
-                  <TrendingUp className="w-4 h-4 mr-1" />
-                  Active users
-                </div>
-              </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+  <div
+    className="bg-white p-6 rounded-lg shadow-sm border cursor-pointer hover:bg-gray-50 transition-colors"
+    onClick={() => setActiveTab('users')}
+    role="button"
+    tabIndex={0}
+    onKeyDown={(e) => { if (e.key === 'Enter') setActiveTab('users'); }}
+  >
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-sm font-medium text-gray-600">Total Users</p>
+        <p className="text-2xl font-bold text-gray-900">{stats.totalUsers}</p>
+      </div>
+      <Users className="w-8 h-8 text-blue-500" />
+    </div>
+    <div className="mt-2 flex items-center text-sm text-green-600">
+      <TrendingUp className="w-4 h-4 mr-1" />
+      Active users
+    </div>
+  </div>
 
-              <div className="bg-white p-6 rounded-lg shadow-sm border">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Products</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.totalProducts}</p>
-                  </div>
-                  <Package className="w-8 h-8 text-green-500" />
-                </div>
-                <div className="mt-2 flex items-center text-sm text-blue-600">
-                  <Package className="w-4 h-4 mr-1" />
-                  In catalog
-                </div>
-              </div>
+  <div
+    className="bg-white p-6 rounded-lg shadow-sm border cursor-pointer hover:bg-gray-50 transition-colors"
+    onClick={() => setActiveTab('products')}
+    role="button"
+    tabIndex={0}
+    onKeyDown={(e) => { if (e.key === 'Enter') setActiveTab('products'); }}
+  >
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-sm font-medium text-gray-600">Products</p>
+        <p className="text-2xl font-bold text-gray-900">{stats.totalProducts}</p>
+      </div>
+      <Package className="w-8 h-8 text-green-500" />
+    </div>
+    <div className="mt-2 flex items-center text-sm text-blue-600">
+      <Package className="w-4 h-4 mr-1" />
+      In catalog
+    </div>
+  </div>
 
-              <div className="bg-white p-6 rounded-lg shadow-sm border">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Inventory Items</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.totalInventory}</p>
-                  </div>
-                  <Package className="w-8 h-8 text-purple-500" />
-                </div>
-                <div className="mt-2 flex items-center text-sm text-purple-600">
-                  <BarChart3 className="w-4 h-4 mr-1" />
-                  Total items
-                </div>
-              </div>
+  <div
+    className="bg-white p-6 rounded-lg shadow-sm border cursor-pointer hover:bg-gray-50 transition-colors"
+    onClick={() => setActiveTab('inventory')}
+    role="button"
+    tabIndex={0}
+    onKeyDown={(e) => { if (e.key === 'Enter') setActiveTab('inventory'); }}
+  >
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-sm font-medium text-gray-600">Inventory Items</p>
+        <p className="text-2xl font-bold text-gray-900">{stats.totalInventory}</p>
+      </div>
+      <Package className="w-8 h-8 text-purple-500" />
+    </div>
+    <div className="mt-2 flex items-center text-sm text-purple-600">
+      <BarChart3 className="w-4 h-4 mr-1" />
+      Total items
+    </div>
+  </div>
 
-              <div className="bg-white p-6 rounded-lg shadow-sm border">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Messages</p>
-                    <p className="text-2xl font-bold text-gray-900">{stats.unreadMessages}</p>
-                  </div>
-                  <MessageSquare className="w-8 h-8 text-orange-500" />
-                </div>
-                <div className="mt-2 flex items-center text-sm text-orange-600">
-                  <Bell className="w-4 h-4 mr-1" />
-                  Unread
-                </div>
-              </div>
-            </div>
+  <div
+    className="bg-white p-6 rounded-lg shadow-sm border cursor-pointer hover:bg-gray-50 transition-colors"
+    onClick={() => setActiveTab('messages')}
+    role="button"
+    tabIndex={0}
+    onKeyDown={(e) => { if (e.key === 'Enter') setActiveTab('messages'); }}
+  >
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-sm font-medium text-gray-600">Messages</p>
+        <p className="text-2xl font-bold text-gray-900">{stats.unreadMessages}</p>
+      </div>
+      <MessageSquare className="w-8 h-8 text-orange-500" />
+    </div>
+    <div className="mt-2 flex items-center text-sm text-orange-600">
+      <Bell className="w-4 h-4 mr-1" />
+      Unread
+    </div>
+  </div>
+</div>
+
 
             {/* Alerts */}
             {stats.lowStockItems > 0 && (

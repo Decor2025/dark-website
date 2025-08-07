@@ -23,7 +23,7 @@ const ContactManagement: React.FC = () => {
           id: key,
           ...messagesData[key],
         }));
-        setMessages(messagesList.sort((a, b) => 
+        setMessages(messagesList.sort((a, b) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         ));
       } else {
@@ -67,7 +67,7 @@ const ContactManagement: React.FC = () => {
           respondedAt: new Date().toISOString(),
           isRead: true,
         });
-        
+
         toast.success('Response saved successfully!');
         setResponse('');
         setSelectedMessage(null);
@@ -103,10 +103,9 @@ const ContactManagement: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <h2 className="text-2xl font-bold text-gray-900">Contact Messages</h2>
-        
-        <div className="flex space-x-2">
+        <div className="flex flex-wrap gap-2">
           {['all', 'unread', 'read'].map((filterOption) => (
             <button
               key={filterOption}
@@ -128,26 +127,17 @@ const ContactManagement: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+      {/* Table view for desktop */}
+      <div className="hidden md:block bg-white rounded-lg shadow-md overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  From
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Subject
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Date
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">From</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -165,16 +155,12 @@ const ContactManagement: React.FC = () => {
                       )}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">{message.name}</div>
-                      <div className="text-sm text-gray-500">{message.email}</div>
-                    </div>
-                  </td>
                   <td className="px-6 py-4">
-                    <div className="text-sm text-gray-900 truncate max-w-xs">
-                      {message.subject}
-                    </div>
+                    <div className="text-sm font-medium text-gray-900">{message.name}</div>
+                    <div className="text-sm text-gray-500">{message.email}</div>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-900 truncate max-w-xs">
+                    {message.subject}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <div className="flex items-center">
@@ -182,7 +168,7 @@ const ContactManagement: React.FC = () => {
                       {new Date(message.createdAt).toLocaleDateString()}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <td className="px-6 py-4 text-sm font-medium">
                     <div className="flex space-x-2">
                       <button
                         onClick={() => {
@@ -210,7 +196,58 @@ const ContactManagement: React.FC = () => {
         </div>
       </div>
 
-      {/* Message Detail Modal */}
+      {/* Card view for mobile */}
+      <div className="md:hidden space-y-4">
+        {filteredMessages.map((message) => (
+          <div
+            key={message.id}
+            className={`rounded-lg border shadow-sm p-4 ${!message.isRead ? 'bg-blue-50' : 'bg-white'}`}
+          >
+            <div className="flex justify-between items-start">
+              <div>
+                <div className="text-lg font-semibold text-gray-800">{message.name}</div>
+                <div className="text-sm text-gray-500">{message.email}</div>
+              </div>
+              <div className="flex items-center space-x-1">
+                {message.isRead ? (
+                  <MailOpen className="w-5 h-5 text-gray-400" />
+                ) : (
+                  <Mail className="w-5 h-5 text-blue-600" />
+                )}
+                {message.response && <Reply className="w-4 h-4 text-green-600" />}
+              </div>
+            </div>
+
+            <div className="mt-2 text-sm text-gray-700">
+              <span className="font-medium">Subject:</span> {message.subject}
+            </div>
+            <div className="text-sm text-gray-500 mt-1">
+              <Clock className="w-4 h-4 inline-block mr-1" />
+              {new Date(message.createdAt).toLocaleDateString()}
+            </div>
+
+            <div className="mt-3 flex justify-end space-x-2">
+              <button
+                onClick={() => {
+                  setSelectedMessage(message);
+                  markAsRead(message.id);
+                }}
+                className="text-blue-600 hover:text-blue-800"
+              >
+                <Eye className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => deleteMessage(message.id)}
+                className="text-red-600 hover:text-red-800"
+              >
+                <Trash2 className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Modal */}
       {selectedMessage && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -227,7 +264,7 @@ const ContactManagement: React.FC = () => {
                 </div>
                 <button
                   onClick={() => setSelectedMessage(null)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 hover:text-gray-600 text-2xl font-bold"
                 >
                   ×
                 </button>
