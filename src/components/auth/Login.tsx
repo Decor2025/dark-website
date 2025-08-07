@@ -106,7 +106,7 @@ const Login = () => {
     <div className="min-h-screen w-full bg-gray-50 flex flex-col items-center justify-center px-4 py-12">
       {/* Logo & Branding */}
       <div className="text-center mb-8">
-        <img src="../2D2.png" alt="Decor Drapes Instyle" className="h-16 mx-auto mb-4" />
+        <img src="https://res.cloudinary.com/ds6um53cx/image/upload/v1754572073/eold8lngapg8mqff7pti.png" alt="Decor Drapes Instyle" className="h-16 mx-auto mb-4" />
         <h1 className="text-2xl font-bold text-gray-800">Decor Drapes Instyle</h1>
         <p className="text-sm text-gray-500 mt-1">Elegant Interiors. Effortlessly.</p>
       </div>
