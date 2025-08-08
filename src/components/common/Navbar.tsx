@@ -16,15 +16,18 @@ import { ref, onValue } from "firebase/database";
 import { database } from "../../config/firebase";
 import { SiteSettings } from "../../types";
 
+import TestimonialForm from '../testimonials/TestimonialForm'; // Adjust path accordingly
+
 type NavItem = {
   label: string;
   to?: string;
   icon?: JSX.Element;
 };
 
-
 const Navbar: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showTestimonialForm, setShowTestimonialForm] = useState(false);
+
   const [settings, setSettings] = useState<SiteSettings[]>([]);
   const { currentUser, loading: authLoading, logout } = useAuth();
   const navigate = useNavigate();
@@ -306,13 +309,15 @@ const Navbar: React.FC = () => {
                 >
                   Privacy Policy
                 </Link>
-                <Link
-                  to="/rate-us"
-                  onClick={() => setSidebarOpen(false)}
-                  className="block hover:underline"
+                <button
+                  onClick={() => {
+                    setSidebarOpen(false);
+                    setShowTestimonialForm(true);
+                  }}
+                  className="block hover:underline text-left w-full"
                 >
                   Rate Us
-                </Link>
+                </button>
               </div>
             </div>
 
@@ -353,6 +358,12 @@ const Navbar: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Testimonial Modal */}
+      <TestimonialForm
+        isOpen={showTestimonialForm}
+        onClose={() => setShowTestimonialForm(false)}
+      />
 
       <style>{`
         @keyframes slideInRight {
