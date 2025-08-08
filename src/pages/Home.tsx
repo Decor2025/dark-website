@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ref, onValue } from 'firebase/database';
 import { database } from '../config/firebase';
-import { useAuth } from '../context/AuthContext';
 import { Testimonial } from '../types';
-import Hero from '../components/Hero';                    // ← ensure this import
+import Hero from '../components/Hero';
 import TestimonialForm from '../components/testimonials/TestimonialForm';
 import {
   ArrowRight,
@@ -22,7 +21,6 @@ import {
 const Home: React.FC = () => {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [showTestimonialForm, setShowTestimonialForm] = useState(false);
-  const { currentUser } = useAuth();
 
   useEffect(() => {
     const testimonialsRef = ref(database, 'testimonials');
@@ -49,6 +47,7 @@ const Home: React.FC = () => {
 
   return (
     <div className="min-h-screen">
+
       {/* Enhanced Hero Section */}
       <Hero />
 

@@ -1,34 +1,36 @@
 // src/components/Navbar.tsx
-import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import { useCart } from '../../context/CartContext';
+import React, { useEffect, useState, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
-  ShoppingCart,
-  User as UserIcon,
+  Menu,
   X,
+  User as UserIcon,
   LogOut,
-  Settings,
-} from 'lucide-react';
-import { ref, onValue } from 'firebase/database';
-import { database } from '../../config/firebase';
-import { SiteSettings } from '../../types';
+  Users,
+  Info,
+  Home,
+  Phone,
+} from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
+import { ref, onValue } from "firebase/database";
+import { database } from "../../config/firebase";
+import { SiteSettings } from "../../types";
+
+type NavItem = {
+  label: string;
+  to?: string;
+  icon?: JSX.Element;
+};
+
 
 const Navbar: React.FC = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false); // for mobile sidebar
-  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [settings, setSettings] = useState<SiteSettings[]>([]);
   const { currentUser, loading: authLoading, logout } = useAuth();
-  const { getItemCount } = useCart();
   const navigate = useNavigate();
 
-  // Separate refs for button and dropdown to fix type error
-  const userMenuButtonRef = useRef<HTMLButtonElement>(null);
-  const userMenuDropdownRef = useRef<HTMLDivElement>(null);
-
-  // Load siteSettings for store name
   useEffect(() => {
-    const settingsRef = ref(database, 'siteSettings');
+    const settingsRef = ref(database, "siteSettings");
     const unsub = onValue(settingsRef, (snap) => {
       if (snap.exists()) {
         const data = snap.val();
@@ -38,291 +40,334 @@ const Navbar: React.FC = () => {
     return () => unsub();
   }, []);
 
-  // Close profile dropdown when clicking outside button or dropdown
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        userMenuButtonRef.current &&
-        userMenuDropdownRef.current &&
-        !userMenuButtonRef.current.contains(event.target as Node) &&
-        !userMenuDropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsUserMenuOpen(false);
-      }
-    }
-    if (isUserMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isUserMenuOpen]);
-
-  const getSetting = (key: string) => settings.find((s) => s.key === key)?.value || '';
-
-  const storeName = getSetting('store_name') || 'Decor Drapes';
+  const getSetting = (key: string) =>
+    settings.find((s) => s.key === key)?.value || "";
+  const storeName = getSetting("store_name") || "Decor Drapes";
   const storeInitial = storeName.charAt(0).toUpperCase();
 
+  const displayName =
+    currentUser?.displayName || currentUser?.email?.split?.("@")?.[0] || "User";
+
   const handleLogout = async () => {
-    await logout();
-    navigate('/');
-    setIsUserMenuOpen(false);
+    try {
+      await logout();
+    } finally {
+      setSidebarOpen(false);
+      navigate("/");
+    }
   };
 
-  const navLinks = [
-    { to: '/', label: 'Home' },
-    { to: '/catalogue', label: 'Catalogue' },
-    { to: '/about', label: 'About' },
-    { to: '/contact', label: 'Contact' },
+  // Nav items for desktop and sidebar
+  const navLinks: NavItem[] = [
+    { label: "Home", to: "/", icon: <Home size={16} /> },
+    { label: "Catalogue", to: "/catalogue", icon: <Users size={16} /> },
+    { label: "About Us", to: "/about", icon: <Info size={16} /> },
+    { label: "Contact Us", to: "/contact", icon: <Phone size={16} /> },
   ];
 
-  // Sidebar links same as navLinks for now
-  const sidebarLinks = navLinks;
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+  const profileButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    function onClickOutside(e: MouseEvent) {
+      if (
+        profileMenuOpen &&
+        profileMenuRef.current &&
+        profileButtonRef.current &&
+        !profileMenuRef.current.contains(e.target as Node) &&
+        !profileButtonRef.current.contains(e.target as Node)
+      ) {
+        setProfileMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, [profileMenuOpen]);
 
   return (
-    <nav className="bg-white shadow-lg sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-        {/* MOBILE NAVBAR */}
-        <div className="flex items-center justify-between h-14 md:hidden">
-
-          {/* Left: 2-line Hamburger */}
-          <button
-            onClick={() => setIsMenuOpen((o) => !o)}
-            aria-label="Toggle menu"
-            className="flex flex-col justify-center space-y-1.5 px-2"
-          >
-            <span
-              className={`block h-0.5 w-6 bg-gray-700 transition-transform origin-left ${
-                isMenuOpen ? 'rotate-45 translate-y-1.5' : ''
-              }`}
-            />
-            <span
-              className={`block h-0.5 w-6 bg-gray-700 transition-transform origin-left ${
-                isMenuOpen ? '-rotate-45 -translate-y-1.5' : ''
-              }`}
-            />
-          </button>
-
-          {/* Center: Logo */}
-          <Link to="/" className="flex items-center justify-center flex-1">
-            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-              {!authLoading && (
-                <span className="text-white font-bold text-lg">{storeInitial}</span>
-              )}
+    <>
+      <nav className="bg-white border-b shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-14">
+          {/* Left: Logo */}
+          <Link to="/" className="flex items-center gap-2">
+            <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-lg">{storeInitial}</span>
             </div>
+            <span className="font-semibold text-gray-800">{storeName}</span>
           </Link>
 
-          {/* Right: Profile or Login */}
-          <div>
+          {/* Desktop nav menu */}
+          <div className="hidden md:flex items-center space-x-10">
+            {navLinks.map(({ label, to }) => (
+              <Link
+                key={label}
+                to={to || "/"}
+                className="text-gray-700 hover:text-blue-600 text-sm font-medium transition"
+              >
+                {label}
+              </Link>
+            ))}
+
+            {/* Login/Profile */}
             {!authLoading && currentUser ? (
-              <button
-                ref={userMenuButtonRef}
-                onClick={() => setIsUserMenuOpen((o) => !o)}
-                className="focus:outline-none"
-                aria-label="User menu"
-              >
-                {currentUser.profileImage ? (
-                  <img
-                    src={currentUser.profileImage}
-                    alt="Profile"
-                    className="w-8 h-8 rounded-full object-cover border-2 border-gray-200"
-                  />
-                ) : (
-                  <UserIcon className="w-8 h-8 text-gray-600 bg-gray-200 rounded-full p-1" />
-                )}
-              </button>
-            ) : (
-              <Link
-                to="/login"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded-md text-sm font-semibold transition-transform transform hover:scale-105"
-              >
-                Login
-              </Link>
-            )}
-          </div>
-        </div>
-
-        {/* Mobile Sidebar (slide-in) */}
-        <div
-          className={`fixed top-0 left-0 h-full w-64 bg-white shadow-lg transform transition-transform duration-300 z-50
-            ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}
-        >
-          <div className="flex justify-between items-center px-4 h-14 border-b border-gray-200">
-            <div className="text-lg font-bold">{storeName}</div>
-            <button
-              onClick={() => setIsMenuOpen(false)}
-              aria-label="Close menu"
-              className="p-2"
-            >
-              <X className="w-6 h-6 text-gray-700" />
-            </button>
-          </div>
-          <nav className="mt-4 flex flex-col space-y-2 px-4">
-            {sidebarLinks.map((link) => (
-              <Link
-                key={link.to}
-                to={link.to}
-                className="text-gray-700 hover:text-blue-600 text-lg font-medium"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
-        </div>
-
-        {/* DESKTOP NAVBAR (unchanged) */}
-        <div className="hidden md:flex justify-between items-center h-16">
-
-          {/* Logo + Store Name */}
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              {!authLoading && (
-                <span className="text-white font-bold text-lg">{storeInitial}</span>
-              )}
-            </div>
-            <span className="text-xl font-bold text-gray-900">{storeName} </span>
-          </Link>
-
-          {/* Desktop Nav Links */}
-          <div className="hidden md:flex items-center space-x-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.to}
-                to={link.to}
-                className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
-              >
-                {link.label}
-              </Link>
-            ))}
-          </div>
-
-          {/* Right Side: Cart + Auth Controls */}
-          <div className="flex items-center space-x-4">
-            {!authLoading && currentUser && (
-              <Link
-                to="/cart"
-                className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors"
-              >
-                <ShoppingCart className="w-6 h-6" />
-                {getItemCount() > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                    {getItemCount()}
-                  </span>
-                )}
-              </Link>
-            )}
-
-            {/* User Dropdown */}
-            {currentUser ? (
               <div className="relative">
                 <button
-                  ref={userMenuButtonRef}
-                  onClick={() => setIsUserMenuOpen((o) => !o)}
-                  className="flex items-center space-x-2 p-2 text-gray-700 hover:text-blue-600 transition-colors"
-                  aria-label="User menu toggle"
+                  ref={profileButtonRef}
+                  onClick={() => setProfileMenuOpen((o) => !o)}
+                  className="flex items-center gap-2 focus:outline-none"
+                  aria-haspopup="true"
+                  aria-expanded={profileMenuOpen}
                 >
                   {currentUser.profileImage ? (
                     <img
                       src={currentUser.profileImage}
-                      alt="Profile"
-                      className="w-8 h-8 rounded-full object-cover border-2 border-gray-200"
+                      alt="Avatar"
+                      className="w-8 h-8 rounded-full object-cover border border-gray-200"
                     />
                   ) : (
-                    <UserIcon className="w-8 h-8 text-gray-600 bg-gray-200 rounded-full p-1" />
-                  )}
-                  <div className="hidden md:block text-left">
-                    <div className="text-sm font-medium text-gray-900">
-                      {currentUser.displayName || currentUser.email.split('@')[0]}
+                    <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200">
+                      <UserIcon size={16} />
                     </div>
-                    <div className="text-xs text-gray-500 capitalize">{currentUser.role}</div>
-                  </div>
+                  )}
+                  <span className="text-sm text-gray-700">{displayName}</span>
                 </button>
 
-                {isUserMenuOpen && (
+                {profileMenuOpen && (
                   <div
-                    ref={userMenuDropdownRef}
-                    className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50"
+                    ref={profileMenuRef}
+                    className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 py-2 z-50"
                   >
-                    {/* User Info Header */}
-                    <div className="px-4 py-3 border-b border-gray-100">
-                      <div className="flex items-center space-x-3">
-                        {currentUser.profileImage ? (
-                          <img
-                            src={currentUser.profileImage}
-                            alt="Profile"
-                            className="w-12 h-12 rounded-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
-                            <UserIcon className="w-6 h-6 text-gray-600" />
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium text-gray-900 truncate">
-                            {currentUser.displayName || 'User'}
-                          </div>
-                          <div className="text-sm text-gray-500 truncate">{currentUser.email}</div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* User Details */}
-                    <div className="px-4 py-2 border-b border-gray-100">
-                      <div className="space-y-2 text-xs text-gray-600">
-                        <div className="flex items-center">
-                          <span className="capitalize">{currentUser.role}</span>
-                        </div>
-                        <div className="flex items-center">
-                          <span>Joined {new Date(currentUser.createdAt).toLocaleDateString()}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Menu Items */}
                     <Link
                       to="/profile"
-                      className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                      onClick={() => setIsUserMenuOpen(false)}
+                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                      onClick={() => setProfileMenuOpen(false)}
                     >
-                      <UserIcon className="w-4 h-4 mr-2" /> My Profile
+                      My Profile
                     </Link>
-                    {(currentUser.role === 'admin' || currentUser.role === 'employee') && (
+                    {(currentUser.role === "admin" ||
+                      currentUser.role === "employee") && (
                       <Link
                         to="/admin"
-                        className="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                        onClick={() => setIsUserMenuOpen(false)}
+                        className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                        onClick={() => setProfileMenuOpen(false)}
                       >
-                        <Settings className="w-4 h-4 mr-2" />
-                        {currentUser.role === 'admin' ? 'Admin Panel' : 'Dashboard'}
+                        {currentUser.role === "admin"
+                          ? "Admin Panel"
+                          : "Dashboard"}
                       </Link>
                     )}
-                    <div className="border-t border-gray-100 mt-2 pt-2">
-                      <button
-                        onClick={handleLogout}
-                        className="flex items-center w-full px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                      >
-                        <LogOut className="w-4 h-4 mr-2" /> Logout
-                      </button>
-                    </div>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50"
+                    >
+                      Logout
+                    </button>
                   </div>
                 )}
               </div>
             ) : (
-              // No signup, only login on desktop
               <Link
                 to="/login"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                className="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50 transition"
               >
                 Login
               </Link>
             )}
           </div>
-        </div>
 
-      </div>
-    </nav>
+          {/* Mobile: Login button outside sidebar */}
+          <div className="flex items-center gap-2 md:hidden">
+            {!authLoading && currentUser ? (
+              <Link
+                to="/profile"
+                className="flex items-center gap-1 px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50 transition"
+              >
+                {currentUser.profileImage ? (
+                  <img
+                    src={currentUser.profileImage}
+                    alt="Avatar"
+                    className="w-6 h-6 rounded-full object-cover border border-gray-200"
+                  />
+                ) : (
+                  <UserIcon size={16} className="text-gray-700" />
+                )}
+                <span className="text-gray-700 text-sm truncate max-w-[80px]">
+                  {displayName}
+                </span>
+              </Link>
+            ) : (
+              <Link
+                to="/login"
+                className="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50 transition"
+              >
+                Login
+              </Link>
+            )}
+
+            {/* Hamburger */}
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="p-2 rounded-md hover:bg-gray-100"
+              aria-label="Open menu"
+            >
+              <Menu size={20} />
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      {/* Mobile Sidebar */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 z-50 flex">
+          <div
+            className="flex-1 bg-black bg-opacity-30"
+            onClick={() => setSidebarOpen(false)}
+          />
+          <div className="w-72 bg-white h-full shadow-xl p-4 flex flex-col justify-between animate-slideInRight">
+            <div>
+              <div className="flex justify-between items-center border-b border-gray-200 pb-3 mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">
+                    {storeInitial}
+                  </div>
+                  <div>
+                    <div className="font-semibold text-sm">{storeName}</div>
+                    <div className="text-xs text-gray-500">Menu</div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSidebarOpen(false)}
+                  className="p-2 hover:bg-gray-100 rounded-md"
+                  aria-label="Close menu"
+                >
+                  <X size={22} />
+                </button>
+              </div>
+
+              <div className="mb-6 border-b pb-4">
+                {!authLoading && currentUser ? (
+                  <div className="flex items-center gap-3">
+                    {currentUser.profileImage ? (
+                      <img
+                        src={currentUser.profileImage}
+                        alt="Avatar"
+                        className="w-12 h-12 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                        <UserIcon size={18} />
+                      </div>
+                    )}
+                    <div>
+                      <div className="font-medium text-sm">{displayName}</div>
+                      <div className="text-xs text-gray-500 capitalize">
+                        {currentUser.role || "Member"}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="text-sm font-medium text-gray-800">Welcome</div>
+                    <div className="text-xs text-gray-500 mb-2">
+                      Sign in to access your account
+                    </div>
+                    <Link
+                      to="/login"
+                      onClick={() => setSidebarOpen(false)}
+                      className="inline-block px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50"
+                    >
+                      Login
+                    </Link>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-2">
+                {navLinks.map(({ label, to, icon }, idx) => (
+                  <Link
+                    key={idx}
+                    to={to || "/"}
+                    onClick={() => setSidebarOpen(false)}
+                    className="py-2 px-2 rounded hover:bg-gray-100 flex items-center gap-2"
+                  >
+                    {icon && <span className="text-gray-500">{icon}</span>}
+                    <span>{label}</span>
+                  </Link>
+                ))}
+              </div>
+
+              {/* Optional small footer links */}
+              <div className="text-xs text-gray-500 mt-6 mb-4">
+                <Link
+                  to="/privacy-policy"
+                  onClick={() => setSidebarOpen(false)}
+                  className="block mb-1 hover:underline"
+                >
+                  Privacy Policy
+                </Link>
+                <Link
+                  to="/rate-us"
+                  onClick={() => setSidebarOpen(false)}
+                  className="block hover:underline"
+                >
+                  Rate Us
+                </Link>
+              </div>
+            </div>
+
+            <div className="border-t pt-4 flex flex-col gap-2">
+              {!authLoading && currentUser ? (
+                <>
+                  <Link
+                    to="/profile"
+                    onClick={() => setSidebarOpen(false)}
+                    className="py-2 px-2 rounded hover:bg-gray-100 flex items-center gap-2"
+                  >
+                    <UserIcon size={18} />
+                    My Profile
+                  </Link>
+                  {(currentUser.role === "admin" ||
+                    currentUser.role === "employee") && (
+                    <Link
+                      to="/admin"
+                      onClick={() => setSidebarOpen(false)}
+                      className="py-2 px-2 rounded hover:bg-gray-100 flex items-center gap-2"
+                    >
+                      <Users size={18} />
+                      {currentUser.role === "admin" ? "Admin Panel" : "Dashboard"}
+                    </Link>
+                  )}
+                  <button
+                    onClick={handleLogout}
+                    className="text-red-600 py-2 px-2 rounded hover:bg-red-50 text-left flex items-center gap-2"
+                  >
+                    <LogOut size={18} />
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <span className="text-gray-500 text-sm">Not signed in</span>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes slideInRight {
+          from {
+            transform: translateX(100%);
+          }
+          to {
+            transform: translateX(0);
+          }
+        }
+        .animate-slideInRight {
+          animation: slideInRight 0.3s ease forwards;
+        }
+      `}</style>
+    </>
   );
 };
 
