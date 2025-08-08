@@ -6,7 +6,6 @@ import { useAuth } from '../../context/AuthContext';
 import { SiteSettings, TeamMember } from '../../types';
 import { 
   Settings, 
-  Save, 
   Plus, 
   Edit, 
   Trash2, 
