@@ -24,7 +24,7 @@ function LayoutWrapper() {
   const hideHeaderFooter = ["/login", "/signup"].includes(location.pathname);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-w-[380px] min-h-screen bg-gray-50">
       {!hideHeaderFooter && <Navbar />}
       <main>
         <Routes>

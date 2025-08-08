@@ -206,7 +206,7 @@ const CatalogueWithPopupRating: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-6 px-4 max-w-7xl mx-auto">
+    <div className="min-w-[380px] min-h-screen bg-gray-50 py-6 px-4 max-w-7xl mx-auto">
       {/* Header */}
       <header className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-3xl font-bold text-gray-900">Product Catalogue</h1>
@@ -358,7 +358,8 @@ const CatalogueWithPopupRating: React.FC = () => {
                       </span>
                     ))}
                   </div>
-                  <div className="text-gray-600 text-sm">{selectedProduct.ratingCount || 0} rating{(selectedProduct.ratingCount || 0) !== 1 ? 's' : ''}</div>
+                  <div className="text-gray-600 text-sm">
+                    {selectedProduct.ratingCount || 0} rating{(selectedProduct.ratingCount || 0) !== 1 ? 's' : ''}</div>
                 </div>
               </div>
             </section>
