@@ -219,7 +219,7 @@ const CatalogueWithPopupRating: React.FC = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
           <select
-            className="px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500"
+            className="px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 max-w-full truncate"
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as any)}
           >
@@ -254,17 +254,10 @@ const CatalogueWithPopupRating: React.FC = () => {
               </div>
               <h3 className="font-semibold text-lg">{product.name}</h3>
               <p className="text-gray-500 text-sm mt-1 mb-0.5
-              
-  line-clamp-1 sm:line-clamp-4">
-  {product.description}
-</p>
 
-
-
-
-
-
-
+                line-clamp-1 sm:line-clamp-4">
+                {product.description}
+              </p>
               <div className="mt-auto flex flex-wrap items-center justify-between pt-3 border-t gap-2">
                 <div className="flex items-center gap-1 flex-shrink-0">
                   {[1, 2, 3, 4, 5].map((star) => (
