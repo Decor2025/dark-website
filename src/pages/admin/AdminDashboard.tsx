@@ -6,7 +6,6 @@ import { ref, onValue, off } from 'firebase/database';
 import { 
   Users, 
   Package, 
-  ShoppingCart, 
   MessageSquare, 
   Settings, 
   BarChart3,
@@ -14,7 +13,6 @@ import {
   X,
   Bell,
   TrendingUp,
-  DollarSign,
   AlertTriangle
 } from 'lucide-react';
 

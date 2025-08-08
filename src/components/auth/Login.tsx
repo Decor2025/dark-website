@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import {
   getAuth,
   signInWithEmailAndPassword,
@@ -63,7 +64,7 @@ const Login = () => {
       if (exists) {
         setStep(2);
       } else {
-        setEmailError('No account found with this email.');
+        setEmailError('No account found with this email');
       }
     } catch {
       setEmailError('Could not check email. Try again.');
@@ -104,11 +105,20 @@ const Login = () => {
 
   return (
     <div className="min-h-screen w-full bg-gray-50 flex flex-col items-center justify-center px-4 py-12">
-      {/* Logo & Branding */}
       <div className="text-center mb-8">
-        <img src="https://res.cloudinary.com/ds6um53cx/image/upload/v1754572073/eold8lngapg8mqff7pti.png" alt="Decor Drapes Instyle" className="h-16 mx-auto mb-4" />
-        <h1 className="text-2xl font-bold text-gray-800">Decor Drapes Instyle</h1>
-        <p className="text-sm text-gray-500 mt-1">Elegant Interiors. Effortlessly.</p>
+        <Link to="/" className="inline-block">
+          <img
+            src="https://res.cloudinary.com/ds6um53cx/image/upload/v1754572073/eold8lngapg8mqff7pti.png"
+            alt="Decor Drapes Instyle"
+            className="h-16 mx-auto mb-4"
+          />
+          <h1 className="text-2xl font-bold text-gray-800">
+            Decor Drapes Instyle
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Elegant Interiors. Effortlessly.
+          </p>
+        </Link>
       </div>
 
       {/* Login Card */}
@@ -124,7 +134,9 @@ const Login = () => {
             alt="Google"
             className="h-5 w-5"
           />
-          <span className="text-sm font-medium text-gray-700">Continue with Google</span>
+          <span className="text-sm font-medium text-gray-700">
+            Continue with Google
+          </span>
         </button>
 
         {/* Divider */}
@@ -138,8 +150,11 @@ const Login = () => {
         {step === 1 && !forgotPasswordMode && (
           <form onSubmit={handleEmailSubmit} className="space-y-6">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Email Address
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Email
               </label>
               <input
                 type="email"
@@ -149,16 +164,18 @@ const Login = () => {
                 required
                 autoFocus
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="you@example.com"
+                placeholder="Enter your email"
               />
-              {emailError && <p className="text-red-600 text-sm mt-1">{emailError}</p>}
+              {emailError && (
+                <p className="text-red-600 text-sm mt-1">{emailError}</p>
+              )}
             </div>
             <button
               type="submit"
               disabled={loading}
               className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition disabled:opacity-50"
             >
-              {loading ? 'Checking...' : 'Continue'}
+              {loading ? "Checking..." : "Continue"}
             </button>
           </form>
         )}
@@ -167,14 +184,14 @@ const Login = () => {
         {step === 2 && !forgotPasswordMode && (
           <form onSubmit={handlePasswordSubmit} className="space-y-6">
             <div className="text-sm text-gray-700">
-              Signed in as <span className="font-medium">{email}</span>{' '}
+              Signed in as <span className="font-medium">{email}</span>{" "}
               <button
                 type="button"
                 onClick={() => {
                   setStep(1);
-                  setEmailError('');
-                  setPassword('');
-                  setLoginError('');
+                  setEmailError("");
+                  setPassword("");
+                  setLoginError("");
                 }}
                 className="text-blue-600 hover:underline ml-2"
               >
@@ -183,11 +200,14 @@ const Login = () => {
             </div>
 
             <div className="relative">
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Password
               </label>
               <input
-                type={showPassword ? 'text' : 'password'}
+                type={showPassword ? "text" : "password"}
                 id="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -203,7 +223,9 @@ const Login = () => {
               >
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
-              {loginError && <p className="text-red-600 text-sm mt-1">{loginError}</p>}
+              {loginError && (
+                <p className="text-red-600 text-sm mt-1">{loginError}</p>
+              )}
             </div>
 
             {/* Forgot Password link */}
@@ -212,9 +234,9 @@ const Login = () => {
                 type="button"
                 onClick={() => {
                   setForgotPasswordMode(true);
-                  setResetEmail(email || ''); // prefills with current email if any
-                  setResetMessage('');
-                  setResetError('');
+                  setResetEmail(email || ""); // prefills with current email if any
+                  setResetMessage("");
+                  setResetError("");
                 }}
                 className="text-blue-600 hover:underline text-sm"
               >
@@ -227,7 +249,7 @@ const Login = () => {
               disabled={loading}
               className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition disabled:opacity-50"
             >
-              {loading ? 'Signing in...' : 'Sign in'}
+              {loading ? "Signing in..." : "Sign in"}
             </button>
           </form>
         )}
@@ -236,7 +258,10 @@ const Login = () => {
         {forgotPasswordMode && (
           <form onSubmit={handleForgotPasswordSubmit} className="space-y-6">
             <div>
-              <label htmlFor="resetEmail" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="resetEmail"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Enter your email to reset password
               </label>
               <input
@@ -249,8 +274,12 @@ const Login = () => {
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="you@example.com"
               />
-              {resetError && <p className="text-red-600 text-sm mt-1">{resetError}</p>}
-              {resetMessage && <p className="text-green-600 text-sm mt-1">{resetMessage}</p>}
+              {resetError && (
+                <p className="text-red-600 text-sm mt-1">{resetError}</p>
+              )}
+              {resetMessage && (
+                <p className="text-green-600 text-sm mt-1">{resetMessage}</p>
+              )}
             </div>
 
             <button
@@ -258,7 +287,7 @@ const Login = () => {
               disabled={resetLoading}
               className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition disabled:opacity-50"
             >
-              {resetLoading ? 'Sending reset email...' : 'Send reset email'}
+              {resetLoading ? "Sending reset email..." : "Send reset email"}
             </button>
 
             <div className="text-center text-sm text-gray-600">
@@ -266,8 +295,8 @@ const Login = () => {
                 type="button"
                 onClick={() => {
                   setForgotPasswordMode(false);
-                  setResetError('');
-                  setResetMessage('');
+                  setResetError("");
+                  setResetMessage("");
                 }}
                 className="text-blue-600 hover:underline"
               >

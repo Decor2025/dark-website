@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ref, onValue } from 'firebase/database';
 import { database } from '../config/firebase';
-import { Testimonial } from '../types';
+import { Testimonial, Product, InventoryItem } from '../types';
 import Hero from '../components/Hero';
+import ProductModal from '../components/product/ProductModal';
+
 import TestimonialForm from '../components/testimonials/TestimonialForm';
+import ProductCard from '../components/product/ProductCard';
 import {
   ArrowRight,
-  ShoppingBag,
   Users,
   Shield,
   Phone,
@@ -22,9 +24,15 @@ const Home: React.FC = () => {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [showTestimonialForm, setShowTestimonialForm] = useState(false);
 
+  // Products & Inventory states for catalogue preview
+  const [products, setProducts] = useState<Product[]>([]);
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
   useEffect(() => {
+    // Fetch testimonials
     const testimonialsRef = ref(database, 'testimonials');
-    const unsubscribe = onValue(testimonialsRef, (snapshot) => {
+    const unsubscribeTestimonials = onValue(testimonialsRef, (snapshot) => {
       if (snapshot.exists()) {
         const testimonialsData = snapshot.val();
         const testimonialsList: Testimonial[] = Object.keys(testimonialsData)
@@ -35,9 +43,66 @@ const Home: React.FC = () => {
         setTestimonials(testimonialsList);
       }
     });
-    return () => unsubscribe();
+
+    // Fetch products
+    const productsRef = ref(database, 'products');
+    const unsubscribeProducts = onValue(productsRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const productsData = snapshot.val();
+        const productsList: Product[] = Object.keys(productsData).map(key => ({
+          id: key,
+          ...productsData[key],
+        }));
+        setProducts(productsList);
+      } else {
+        setProducts([]);
+      }
+    });
+
+    // Fetch inventory
+    const inventoryRef = ref(database, 'inventory');
+    const unsubscribeInventory = onValue(inventoryRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const inventoryData = snapshot.val();
+        const inventoryList: InventoryItem[] = Object.keys(inventoryData)
+          .map(key => ({
+            id: key,
+            ...inventoryData[key],
+          }))
+          .filter(item => item.isActive && item.currentStock > 0);
+        setInventory(inventoryList);
+      } else {
+        setInventory([]);
+      }
+    });
+
+    return () => {
+      unsubscribeTestimonials();
+      unsubscribeProducts();
+      unsubscribeInventory();
+    };
   }, []);
 
+  // Combine inventory to product format
+  const inventoryAsProducts: Product[] = inventory.map(item => ({
+    id: item.id,
+    name: item.name,
+    description: item.description,
+    price: item.sellingPrice,
+    category: item.category,
+    imageUrl: item.imageUrl || '',
+    stock: item.currentStock,
+    createdAt: item.createdAt,
+    updatedAt: item.lastUpdated,
+  }));
+
+  // Combined full product list
+  const allProducts = [...products, ...inventoryAsProducts];
+
+  // Take first 4 for preview on home
+  const previewProducts = allProducts.slice(0, 4);
+
+  // Your features array unchanged
   const features = [
     { icon: Award, title: "Premium Quality", description: "Carefully curated selection of high-quality products that meet the highest standards" },
     { icon: Clock, title: "Fast Delivery", description: "Quick and reliable delivery service to get your products when you need them" },
@@ -48,8 +113,29 @@ const Home: React.FC = () => {
   return (
     <div className="min-h-screen">
 
-      {/* Enhanced Hero Section */}
+      {/* Hero Section */}
       <Hero />
+
+      {/* Catalogue Preview Section */}
+      <section className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center mb-12">
+            <h2 className="text-4xl font-bold text-gray-900">Featured Products</h2>
+            <Link
+              to="/catalogue"
+              className="inline-flex items-center text-blue-600 hover:text-blue-700 font-semibold"
+            >
+              View Full Catalogue <ArrowRight className="ml-2 w-5 h-5" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {previewProducts.map(product => (
+              <ProductCard key={product.id} product={product} onViewDetails={() => setSelectedProduct(product)} />
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Why Choose Us Section */}
       <section className="py-24 bg-white">
@@ -203,7 +289,7 @@ const Home: React.FC = () => {
               className="group bg-gradient-to-br from-green-50 to-green-100 p-8 rounded-2xl hover:shadow-lg transition-all duration-300 text-center transform hover:-translate-y-1"
             >
               <div className="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                <ShoppingBag className="w-6 h-6 text-white" />
+                <Star className="w-6 h-6 text-white" />
               </div>
               <h3 className="text-lg font-semibold mb-2 text-gray-900">Catalogue</h3>
               <p className="text-gray-600 text-sm">Browse our complete product range</p>
@@ -233,6 +319,21 @@ const Home: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {/* Product Modal */}
+      {selectedProduct && (
+        <ProductModal
+          product={selectedProduct}
+          isOpen={!!selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+        />
+      )}
+
+      {/* Testimonial Form Modal */}
+      <TestimonialForm
+        isOpen={showTestimonialForm}
+        onClose={() => setShowTestimonialForm(false)}
+      />
     </div>
   );
 };
