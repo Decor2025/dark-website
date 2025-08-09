@@ -10,6 +10,7 @@ import {
   signInWithPopup,
   GoogleAuthProvider,
   User,
+  onAuthStateChanged,
 } from 'firebase/auth';
 import {
   getDatabase,
@@ -48,6 +49,16 @@ function firebaseErrorToMessage(errorCode: string): string {
 
 const Login = () => {
   const navigate = useNavigate();
+
+  // Redirect if user is logged in and email verified
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user && user.emailVerified) {
+        navigate('/profile');
+      }
+    });
+    return () => unsubscribe();
+  }, [navigate]);
 
   const [step, setStep] = useState<
     'email' | 'login' | 'forgot_password' | 'signup_name' | 'signup_password' | 'verify_email'
@@ -126,7 +137,7 @@ const Login = () => {
       if (user.emailVerified) {
         setEmailVerified(true);
         clearInterval(interval);
-        navigate('/');
+        navigate('/profile');
       }
     }, 3000);
   };
@@ -178,7 +189,7 @@ const Login = () => {
         setLoading(false);
         return;
       }
-      navigate('/');
+      navigate('/profile');
     } catch (err: any) {
       setLoginError(firebaseErrorToMessage(err.code || ''));
     }
@@ -256,7 +267,7 @@ const Login = () => {
       }
       // Save user to DB with displayName from Google profile
       await saveUserToDB(result.user, result.user.displayName || '');
-      navigate('/');
+      navigate('/profile');
     } catch (err: any) {
       setShowGoogleError(firebaseErrorToMessage(err.code || ''));
     }
@@ -277,7 +288,7 @@ const Login = () => {
       )}
       <button
         className="mt-4 text-blue-600"
-        onClick={() => navigate('/')}
+        onClick={() => navigate('/profile')}
       >
         Verify later
       </button>
