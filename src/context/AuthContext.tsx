@@ -1,5 +1,13 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User as FirebaseUser, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
+import { 
+  User as FirebaseUser, 
+  onAuthStateChanged, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  signOut,
+  sendEmailVerification as firebaseSendEmailVerification,
+  reload as firebaseReloadUser
+} from 'firebase/auth';
 import { ref, get, set } from 'firebase/database';
 import { auth, database } from '../config/firebase';
 import { uploadToCloudinary } from '../config/cloudinary';
@@ -13,6 +21,8 @@ interface AuthContextType {
   signup: (email: string, password: string, role?: 'customer' | 'employee' | 'editor' | 'viewer') => Promise<void>;
   logout: () => Promise<void>;
   updateProfile: (displayName: string, profileImage?: File, additionalData?: any) => Promise<void>;
+  sendEmailVerification: () => Promise<void>;
+  reloadUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -47,6 +57,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         email: result.user.email!,
         role,
         createdAt: new Date().toISOString(),
+        emailVerified: result.user.emailVerified, // Add email verification status
       };
       
       await set(ref(database, `users/${result.user.uid}`), userData);
@@ -95,22 +106,78 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw error;
     }
   };
+
+  const sendEmailVerification = async () => {
+    if (!auth.currentUser) {
+      throw new Error('No authenticated user');
+    }
+    
+    if (auth.currentUser.emailVerified) {
+      toast.success('Email is already verified!');
+      return;
+    }
+
+    try {
+      await firebaseSendEmailVerification(auth.currentUser);
+      toast.success('Verification email sent! Please check your inbox.');
+    } catch (error: any) {
+      toast.error(`Failed to send verification email: ${error.message}`);
+      throw error;
+    }
+  };
+
+  const reloadUser = async () => {
+    if (!auth.currentUser) {
+      throw new Error('No authenticated user');
+    }
+
+    try {
+      // Reload Firebase authentication state
+      await firebaseReloadUser(auth.currentUser);
+      
+      // Update user in database
+      const userRef = ref(database, `users/${auth.currentUser.uid}`);
+      const snapshot = await get(userRef);
+      
+      if (snapshot.exists()) {
+        const updatedUser = {
+          ...snapshot.val(),
+          emailVerified: auth.currentUser.emailVerified,
+        } as User;
+        
+        setCurrentUser(updatedUser);
+        toast.success('User data refreshed!');
+      }
+    } catch (error: any) {
+      toast.error(`Failed to reload user: ${error.message}`);
+      throw error;
+    }
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
       if (firebaseUser) {
         try {
           const userRef = ref(database, `users/${firebaseUser.uid}`);
           const snapshot = await get(userRef);
+          
           if (snapshot.exists()) {
-            setCurrentUser(snapshot.val() as User);
+            // Merge Firebase auth data with database user data
+            const userData = snapshot.val() as User;
+            setCurrentUser({
+              ...userData,
+              emailVerified: firebaseUser.emailVerified,
+            });
           } else {
-            // If user data doesn't exist, create it with customer role
+            // Create new user in database if not exists
             const userData: User = {
               uid: firebaseUser.uid,
               email: firebaseUser.email!,
               role: 'customer',
               createdAt: new Date().toISOString(),
+              emailVerified: firebaseUser.emailVerified,
             };
+            
             await set(userRef, userData);
             setCurrentUser(userData);
           }
@@ -134,6 +201,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signup,
     logout,
     updateProfile,
+    sendEmailVerification,
+    reloadUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

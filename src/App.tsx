@@ -1,14 +1,14 @@
-
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
+
 import Navbar from "./components/common/Navbar";
 import Footer from "./components/common/Footer";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+
 import Home from "./pages/Home";
 import Login from "./components/auth/Login";
-
 import Catalogue from "./pages/Catalogue";
 import Cart from "./pages/Cart";
 import Profile from "./pages/Profile";
@@ -19,9 +19,12 @@ import Estimate from "./pages/Estimate";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import FaviconUpdater from "./components/FaviconUpdater";
 
+// Yahan apna ResetPassword component import karna mat bhool
+import ResetPassword from "./pages/ResetPassword";
+
 function LayoutWrapper() {
   const location = useLocation();
-  const hideHeaderFooter = ["/login", "/signup"].includes(location.pathname);
+  const hideHeaderFooter = location.pathname.startsWith("/reset-password") || location.pathname === "/login";
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -30,22 +33,17 @@ function LayoutWrapper() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
-
           <Route path="/catalogue" element={<Catalogue />} />
+          <Route path="/cart" element={<Cart />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/estimate" element={<Estimate />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
 
+          {/* Reset Password Route */}
+          <Route path="/reset-password" element={<ResetPassword />} />
+
           {/* Protected Routes */}
-          <Route
-            path="/cart"
-            element={
-              <ProtectedRoute>
-                <Cart />
-              </ProtectedRoute>
-            }
-          />
           <Route
             path="/profile"
             element={

@@ -1,13 +1,41 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import {
-  User, Mail, Calendar, Shield, Camera, Edit, Save, X, Phone, MapPin, Briefcase
+  User, Mail, Calendar, Shield, Camera, Edit, Save, X, Phone, 
+  MapPin, Briefcase, CheckCircle, RefreshCw
 } from 'lucide-react';
 
+// Define types for AuthContext to include email verification
+interface AuthUser {
+  uid: string;
+  email: string;
+  displayName: string;
+  emailVerified: boolean;
+  phone?: string;
+  address?: string;
+  company?: string;
+  bio?: string;
+  profileImage?: string;
+  role: string;
+  createdAt: string;
+}
+
+interface AuthContextType {
+  currentUser: AuthUser | null;
+  updateProfile: (
+    displayName: string, 
+    profileImage?: File, 
+    other?: { phone?: string; address?: string; company?: string; bio?: string }
+  ) => Promise<void>;
+  sendEmailVerification?: () => Promise<void>;
+}
+
 const Profile: React.FC = () => {
-  const { currentUser, updateProfile } = useAuth();
+  const { currentUser, updateProfile, sendEmailVerification } = useAuth() as AuthContextType;
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [verificationLoading, setVerificationLoading] = useState(false);
+  const [verificationSent, setVerificationSent] = useState(false);
   const [formData, setFormData] = useState({
     displayName: currentUser?.displayName || '',
     phone: currentUser?.phone || '',
@@ -26,7 +54,7 @@ const Profile: React.FC = () => {
     );
   }
 
-  // Profile completion logic
+  // Profile completion logic - include email verification as a field
   const completedFields = [
     currentUser.displayName,
     currentUser.phone,
@@ -34,6 +62,7 @@ const Profile: React.FC = () => {
     currentUser.company,
     currentUser.bio,
     currentUser.profileImage || previewImage,
+    currentUser.emailVerified,
   ];
   const completedCount = completedFields.filter(Boolean).length;
   const profileCompletion = Math.round((completedCount / completedFields.length) * 100);
@@ -79,6 +108,21 @@ const Profile: React.FC = () => {
       profileImage: null,
     });
     setPreviewImage(null);
+  };
+
+  const handleSendVerification = async () => {
+    if (!sendEmailVerification) return;
+    
+    setVerificationLoading(true);
+    try {
+      await sendEmailVerification();
+      setVerificationSent(true);
+      setTimeout(() => setVerificationSent(false), 5000);
+    } catch (error) {
+      console.error('Error sending verification email:', error);
+    } finally {
+      setVerificationLoading(false);
+    }
   };
 
   return (
@@ -133,7 +177,51 @@ const Profile: React.FC = () => {
             <h1 className="text-xl font-semibold text-gray-800">
               {currentUser.displayName || 'User Profile'}
             </h1>
-            <p className="text-sm text-gray-500">{currentUser.email}</p>
+            
+            {/* Email Verification Section */}
+            <div className="mt-1 flex flex-col items-center md:items-start">
+              <div className="flex items-center">
+                <Mail className="w-4 h-4 text-gray-500 mr-1" />
+                <span className="text-sm text-gray-500">{currentUser.email}</span>
+                
+                {currentUser.emailVerified ? (
+                  <span className="ml-2 flex items-center text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">
+                    <CheckCircle className="w-3 h-3 mr-1" /> Verified
+                  </span>
+                ) : (
+                  <span className="ml-2 flex items-center text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full">
+                    Unverified
+                  </span>
+                )}
+              </div>
+              
+              {!currentUser.emailVerified && sendEmailVerification && (
+                <div className="mt-1">
+                  <button
+                    onClick={handleSendVerification}
+                    disabled={verificationLoading || verificationSent}
+                    className={`text-xs flex items-center ${
+                      verificationSent 
+                        ? 'text-green-600' 
+                        : 'text-blue-600 hover:underline'
+                    }`}
+                  >
+                    {verificationLoading ? (
+                      <>
+                        <RefreshCw className="w-3 h-3 mr-1 animate-spin" /> Sending...
+                      </>
+                    ) : verificationSent ? (
+                      <>
+                        <CheckCircle className="w-3 h-3 mr-1" /> Verification email sent!
+                      </>
+                    ) : (
+                      'Send verification email'
+                    )}
+                  </button>
+                </div>
+              )}
+            </div>
+            
             <div className="mt-2 flex flex-wrap gap-2 text-sm text-gray-600">
               <span className="flex items-center gap-1">
                 <Shield className="w-4 h-4" /> {currentUser.role}
