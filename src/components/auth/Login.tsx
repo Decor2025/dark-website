@@ -5,10 +5,11 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   sendEmailVerification,
+  sendPasswordResetEmail,
   signOut,
-  User as FirebaseUser,
-  GoogleAuthProvider,
   signInWithPopup,
+  GoogleAuthProvider,
+  User,
 } from 'firebase/auth';
 import {
   getDatabase,
@@ -20,21 +21,42 @@ import {
   set,
 } from 'firebase/database';
 import { Eye, EyeOff } from 'lucide-react';
-import uploadGooglePhoto from './helper';
+import uploadGooglePhoto from './helper'; // tera helper
 
 const auth = getAuth();
 const db = getDatabase();
+const provider = new GoogleAuthProvider();
+
+function firebaseErrorToMessage(errorCode: string): string {
+  switch (errorCode) {
+    case 'auth/email-already-in-use':
+      return 'This email is already in use.';
+    case 'auth/invalid-email':
+      return 'Invalid email address.';
+    case 'auth/weak-password':
+      return 'Password should be at least 6 characters.';
+    case 'auth/user-not-found':
+      return 'No user found with this email.';
+    case 'auth/wrong-password':
+      return 'Incorrect password.';
+    case 'auth/too-many-requests':
+      return 'Too many attempts. Please try again later.';
+    default:
+      return 'Something went wrong. Please try again.';
+  }
+}
 
 const Login = () => {
   const navigate = useNavigate();
 
-  type Step = 'email' | 'login' | 'signup_name' | 'signup_password' | 'verify_email';
-  const [step, setStep] = useState<Step>('email');
+  const [step, setStep] = useState<
+    'email' | 'login' | 'forgot_password' | 'signup_name' | 'signup_password' | 'verify_email'
+  >('email');
 
   const [email, setEmail] = useState('');
+  const [userExists, setUserExists] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [tempEmailError, setTempEmailError] = useState('');
-  const [userExists, setUserExists] = useState(false);
 
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -45,14 +67,17 @@ const Login = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [signupError, setSignupError] = useState('');
 
+  const [forgotPasswordError, setForgotPasswordError] = useState('');
+  const [forgotPasswordSuccess, setForgotPasswordSuccess] = useState('');
+
   const [loading, setLoading] = useState(false);
+
   const [verificationSent, setVerificationSent] = useState(false);
   const [emailVerified, setEmailVerified] = useState(false);
 
-  const [showGoogleModal, setShowGoogleModal] = useState(false);
-  const [googleUser, setGoogleUser] = useState<FirebaseUser | null>(null);
-  const [googleDisplayName, setGoogleDisplayName] = useState('');
+  const [showGoogleError, setShowGoogleError] = useState('');
 
+  // Check disposable email API
   async function isDisposableEmail(email: string) {
     try {
       const domain = email.split('@')[1];
@@ -60,17 +85,19 @@ const Login = () => {
       const data = await res.json();
       return data.disposable;
     } catch {
-      return false;
+      return false; // fail-safe
     }
   }
 
+  // Check if user exists in Realtime DB
   const checkEmailExists = async (email: string) => {
     const q = query(ref(db, 'users'), orderByChild('email'), equalTo(email.trim().toLowerCase()));
     const snapshot = await get(q);
     return snapshot.exists();
   };
 
-  const saveUserToDB = async (user: FirebaseUser, name: string) => {
+  // Save new user to DB
+  const saveUserToDB = async (user: User, name: string) => {
     let cloudinaryImageUrl = '';
     try {
       if (user.photoURL) {
@@ -82,7 +109,7 @@ const Login = () => {
     }
 
     const userData = {
-      displayName: name,
+      displayName: name || user.displayName || '',
       uid: user.uid,
       email: user.email,
       profileImage: cloudinaryImageUrl,
@@ -92,7 +119,8 @@ const Login = () => {
     await set(ref(db, `users/${user.uid}`), userData);
   };
 
-  const pollEmailVerification = (user: FirebaseUser) => {
+  // Poll for email verification (every 3 sec)
+  const pollEmailVerification = (user: User) => {
     const interval = setInterval(async () => {
       await user.reload();
       if (user.emailVerified) {
@@ -103,6 +131,9 @@ const Login = () => {
     }, 3000);
   };
 
+  // --- Handlers ---
+
+  // Step 1: Email submit
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setEmailError('');
@@ -115,6 +146,7 @@ const Login = () => {
       return;
     }
 
+    // Check disposable email
     const disposable = await isDisposableEmail(email);
     if (disposable) {
       setTempEmailError('Temporary/disposable emails are not allowed.');
@@ -133,11 +165,11 @@ const Login = () => {
     setLoading(false);
   };
 
+  // Step 2 login submit
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError('');
     setLoading(true);
-
     try {
       await signInWithEmailAndPassword(auth, email, password);
       if (!auth.currentUser?.emailVerified) {
@@ -148,11 +180,32 @@ const Login = () => {
       }
       navigate('/');
     } catch (err: any) {
-      setLoginError(err.message || 'Login failed');
+      setLoginError(firebaseErrorToMessage(err.code || ''));
     }
     setLoading(false);
   };
 
+  // Forgot Password submit
+  const handleForgotPasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotPasswordError('');
+    setForgotPasswordSuccess('');
+    setLoading(true);
+    if (!email || !email.includes('@')) {
+      setForgotPasswordError('Please enter a valid email.');
+      setLoading(false);
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      setForgotPasswordSuccess('Password reset email sent. Please check your inbox.');
+    } catch (err: any) {
+      setForgotPasswordError(firebaseErrorToMessage(err.code || ''));
+    }
+    setLoading(false);
+  };
+
+  // Step 2a Signup Name Submit
   const handleSignupNameSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSignupError('');
@@ -163,6 +216,7 @@ const Login = () => {
     setStep('signup_password');
   };
 
+  // Step 3a Signup Password Submit
   const handleSignupPasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSignupError('');
@@ -175,76 +229,41 @@ const Login = () => {
       return;
     }
     setLoading(true);
-
     try {
-      const newUserCredential = await createUserWithEmailAndPassword(auth, email, signupPassword);
-      await sendEmailVerification(newUserCredential.user);
-      await saveUserToDB(newUserCredential.user, displayName);
+      const newUser = await createUserWithEmailAndPassword(auth, email, signupPassword);
+      await sendEmailVerification(newUser.user);
+      await saveUserToDB(newUser.user, displayName);
       setVerificationSent(true);
       setStep('verify_email');
-      pollEmailVerification(newUserCredential.user);
+      pollEmailVerification(newUser.user);
     } catch (err: any) {
-      setSignupError(err.message || 'Signup failed');
+      setSignupError(firebaseErrorToMessage(err.code || ''));
     }
     setLoading(false);
   };
 
+  // Google sign in (no modal)
   const handleGoogleSignIn = async () => {
-    setSignupError('');
+    setShowGoogleError('');
     setLoading(true);
-    const provider = new GoogleAuthProvider();
-
     try {
       const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      setEmail(user.email || '');
-      setGoogleUser(user);
-
-      const exists = await checkEmailExists(user.email || '');
-
-      if (exists) {
-        navigate('/');
-      } else {
-        setGoogleDisplayName(user.displayName || '');
-        setShowGoogleModal(true);
+      if (!result.user.emailVerified) {
+        setShowGoogleError('Please verify your Google email before continuing.');
+        await signOut(auth);
+        setLoading(false);
+        return;
       }
-    } catch (err: any) {
-      setSignupError(err.message || 'Google Sign-in failed');
-    }
-    setLoading(false);
-  };
-
-  const handleGoogleModalSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!googleDisplayName.trim()) {
-      setSignupError('Please enter your name.');
-      return;
-    }
-    if (!googleUser) return;
-    setSignupError('');
-    setLoading(true);
-
-    try {
-      await saveUserToDB(googleUser, googleDisplayName);
-      setShowGoogleModal(false);
+      // Save user to DB with displayName from Google profile
+      await saveUserToDB(result.user, result.user.displayName || '');
       navigate('/');
     } catch (err: any) {
-      setSignupError(err.message || 'Failed to save user data.');
+      setShowGoogleError(firebaseErrorToMessage(err.code || ''));
     }
     setLoading(false);
   };
 
-  const handleGoogleModalCancel = async () => {
-    if (auth.currentUser) await signOut(auth);
-    setShowGoogleModal(false);
-    setGoogleUser(null);
-    setGoogleDisplayName('');
-  };
-
-  // Animate form container fade/slide on step change
-  // We'll use Tailwind transition + opacity + translate-y
-  // This requires key to remount div on step change for transition
-
+  // Verification Step Component
   const VerificationStep = () => (
     <div className="text-center space-y-4">
       <p className="text-lg font-semibold">
@@ -257,74 +276,12 @@ const Login = () => {
         <p className="text-gray-600 italic">Waiting for verification...</p>
       )}
       <button
-        className="mt-4 underline text-blue-600"
-        onClick={() => {
-          setStep('email');
-          setEmail('');
-          setPassword('');
-          setDisplayName('');
-          setSignupPassword('');
-          setConfirmPassword('');
-          setVerificationSent(false);
-          setEmailVerified(false);
-        }}
+        className="mt-4 text-blue-600"
+        onClick={() => navigate('/')}
       >
-        Cancel and start over
+        Verify later
       </button>
     </div>
-  );
-
-  const GoogleModal = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 px-4">
-      <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-lg">
-        <h2 className="text-xl font-semibold mb-4">Confirm Your Name</h2>
-        <form onSubmit={handleGoogleModalSubmit} className="space-y-4">
-          <input
-            type="text"
-            value={googleDisplayName}
-            onChange={(e) => setGoogleDisplayName(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded"
-            placeholder="Your full name"
-            required
-            autoFocus
-          />
-          {signupError && <p className="text-red-600 text-sm">{signupError}</p>}
-          <div className="flex justify-end space-x-2">
-            <button
-              type="button"
-              onClick={handleGoogleModalCancel}
-              disabled={loading}
-              className="px-4 py-2 border rounded hover:bg-gray-100"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-            >
-              {loading ? 'Saving...' : 'Save'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-
-  const GoogleSignInButton = () => (
-    <button
-      type="button"
-      onClick={handleGoogleSignIn}
-      disabled={loading}
-      className="w-full flex justify-center items-center space-x-2 py-3 border rounded-lg hover:bg-gray-100 transition disabled:opacity-50"
-    >
-      <img
-        src="https://res.cloudinary.com/ds6um53cx/image/upload/v1754724780/gm6n2dnvsxtwspjot4p3.png"
-        alt="Google"
-        className="h-5 w-5"
-      />
-      <span className="font-medium text-gray-700">Continue with Google</span>
-    </button>
   );
 
   return (
@@ -341,105 +298,195 @@ const Login = () => {
         </Link>
       </div>
 
-      <div className="w-full max-w-md bg-white shadow-xl rounded-2xl p-8 space-y-6">
-        {/* Google always visible on top */}
-        <GoogleSignInButton />
+      <div className="w-full max-w-md bg-white shadow-xl rounded-2xl p-4 md:p-8 lg:p-8 space-y-6">
+        {/* Google Sign In Button */}
+        <button
+          type="button"
+          onClick={handleGoogleSignIn}
+          className="w-full flex justify-center items-center gap-2 border border-gray-300 py-3 rounded-lg hover:bg-gray-50 transition disabled:opacity-50"
+          disabled={loading}
+        >
+          <img
+            src="https://res.cloudinary.com/ds6um53cx/image/upload/v1754730922/goypyiizaob8qcc6luzj.png"
+            alt="Google"
+            className="h-5 w-5"
+          />
+          <span className="text-sm font-medium text-gray-700">Continue with Google</span>
+        </button>
+        {showGoogleError && (
+          <p className="text-red-600 text-center mt-1">{showGoogleError}</p>
+        )}
 
-        {/* Divider with OR */}
-        <div className="flex items-center my-6">
-          <hr className="flex-grow border-gray-300" />
-          <span className="mx-4 text-gray-400 text-sm select-none">or</span>
-          <hr className="flex-grow border-gray-300" />
+        {/* Divider */}
+        <div className="flex items-center space-x-4 my-4">
+          <div className="flex-grow border-t border-gray-300"></div>
+          <span className="text-gray-400 text-sm">or</span>
+          <div className="flex-grow border-t border-gray-300"></div>
         </div>
 
-        {/* Form container with fade & slide animation on step change */}
-        <div
-          key={step} // remount div to retrigger animation on step change
-          className="transition-all duration-500 ease-in-out opacity-0 translate-y-4 animate-fade-in"
-          style={{ animationFillMode: 'forwards' }}
-        >
-          {step === 'email' && (
-            <form onSubmit={handleEmailSubmit} className="space-y-6">
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter your email"
-                  autoComplete="email"
-                />
-                {emailError && <p className="text-red-600 text-sm mt-1">{emailError}</p>}
-                {tempEmailError && <p className="text-red-600 text-sm mt-1">{tempEmailError}</p>}
-              </div>
+        {/* Step 1: Email */}
+        {step === 'email' && (
+          <form onSubmit={handleEmailSubmit} className="space-y-6">
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                Email
+              </label>
+              <input
+                type="email"
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter your email"
+              />
+              {emailError && <p className="text-red-600 text-sm mt-1">{emailError}</p>}
+              {tempEmailError && <p className="text-red-600 text-sm mt-1">{tempEmailError}</p>}
+            </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition disabled:opacity-50"
+            >
+              {loading ? 'Checking...' : 'Continue'}
+            </button>
+          </form>
+        )}
+
+        {/* Step 2 login */}
+        {step === 'login' && (
+          <form onSubmit={handleLoginSubmit} className="space-y-6">
+            <div className="text-sm text-gray-700 mb-2">
+              Signed in as <strong>{email}</strong>{' '}
               <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition disabled:opacity-50"
+                type="button"
+                className="text-blue-600 hover:underline ml-2"
+                onClick={() => {
+                  setStep('email');
+                  setEmail('');
+                  setPassword('');
+                  setLoginError('');
+                }}
               >
-                {loading ? 'Checking...' : 'Continue'}
+                Change
               </button>
-            </form>
-          )}
+            </div>
 
-          {step === 'login' && (
-            <form onSubmit={handleLoginSubmit} className="space-y-6">
-              <div className="text-sm text-gray-700 mb-2">
-                Signed in as <strong>{email}</strong>{' '}
-                <button
-                  type="button"
-                  className="text-blue-600 hover:underline ml-2"
-                  onClick={() => {
-                    setStep('email');
-                    setEmail('');
-                    setPassword('');
-                    setLoginError('');
-                  }}
-                >
-                  Change
-                </button>
-              </div>
-
-              <div className="relative">
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                  Password
-                </label>
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  id="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter your password"
-                  autoComplete="current-password"
-                />
-                <button
-                  type="button"
-                  className="absolute top-10 right-4 text-gray-500"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
-                {loginError && <p className="text-red-600 text-sm mt-1">{loginError}</p>}
-              </div>
-
+            <div className="relative">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                Password
+              </label>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter your password"
+              />
               <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition disabled:opacity-50"
+                type="button"
+                className="absolute top-10 right-4 text-gray-500"
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex={-1}
               >
-                {loading ? 'Signing in...' : 'Sign in'}
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
-            </form>
-          )}
+              {loginError && <p className="text-red-600 text-sm mt-1">{loginError}</p>}
+            </div>
 
-          {step === 'signup_name' && (
+            <div className="flex justify-between items-center">
+              <button
+                type="button"
+                className="text-sm text-blue-600 hover:underline"
+                onClick={() => {
+                  setForgotPasswordError('');
+                  setForgotPasswordSuccess('');
+                  setStep('forgot_password');
+                }}
+              >
+                Forgot password?
+              </button>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition disabled:opacity-50"
+            >
+              {loading ? 'Signing in...' : 'Sign in'}
+            </button>
+          </form>
+        )}
+
+        {/* Forgot Password Step */}
+        {step === 'forgot_password' && (
+          <form onSubmit={handleForgotPasswordSubmit} className="space-y-6">
+            <div>
+              <label htmlFor="forgotEmail" className="block text-sm font-medium text-gray-700 mb-1">
+                Enter your email to reset password
+              </label>
+              <input
+                type="email"
+                id="forgotEmail"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Your email"
+              />
+              {forgotPasswordError && <p className="text-red-600 text-sm mt-1">{forgotPasswordError}</p>}
+              {forgotPasswordSuccess && <p className="text-green-600 text-sm mt-1">{forgotPasswordSuccess}</p>}
+            </div>
+
+            <div className="flex justify-between items-center">
+              <button
+                type="button"
+                className="text-sm text-gray-600 hover:underline"
+                onClick={() => {
+                  setForgotPasswordError('');
+                  setForgotPasswordSuccess('');
+                  setPassword('');
+                  setLoginError('');
+                  setStep('login');
+                }}
+              >
+                Back to login
+              </button>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition disabled:opacity-50"
+            >
+              {loading ? 'Sending reset email...' : 'Send Reset Email'}
+            </button>
+          </form>
+        )}
+
+        {/* Step 3a signup name */}
+        {step === 'signup_name' && (
+          <>
+            <div className="text-sm text-gray-700 mb-4">
+              Creating account for <strong>{email}</strong>{' '}
+              <button
+                type="button"
+                className="text-blue-600 hover:underline ml-2"
+                onClick={() => {
+                  setStep('email');
+                  setEmail('');
+                  setDisplayName('');
+                  setSignupPassword('');
+                  setConfirmPassword('');
+                  setSignupError('');
+                }}
+              >
+                Change
+              </button>
+            </div>
+
             <form onSubmit={handleSignupNameSubmit} className="space-y-6">
               <div>
                 <label htmlFor="displayName" className="block text-sm font-medium text-gray-700 mb-1">
@@ -453,8 +500,6 @@ const Login = () => {
                   required
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Your full name"
-                  autoComplete="name"
-                  autoFocus
                 />
                 {signupError && <p className="text-red-600 text-sm mt-1">{signupError}</p>}
               </div>
@@ -467,11 +512,28 @@ const Login = () => {
                 Continue
               </button>
             </form>
-          )}
+          </>
+        )}
 
-          {step === 'signup_password' && (
+        {/* Step 3b signup password */}
+        {step === 'signup_password' && (
+          <>
+            <div className="text-sm text-gray-700 mb-4">
+              Creating account for <strong>{email}</strong>{' '}
+              <button
+                type="button"
+                className="text-blue-600 hover:underline ml-2"
+                onClick={() => {
+                  setStep('signup_name');
+                  setSignupError('');
+                }}
+              >
+                Change
+              </button>
+            </div>
+
             <form onSubmit={handleSignupPasswordSubmit} className="space-y-6">
-              <div>
+              <div className="relative">
                 <label htmlFor="signupPassword" className="block text-sm font-medium text-gray-700 mb-1">
                   Password
                 </label>
@@ -483,10 +545,17 @@ const Login = () => {
                   required
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Create a password"
-                  autoComplete="new-password"
                 />
+                <button
+                  type="button"
+                  className="absolute top-10 right-4 text-gray-500"
+                  onClick={() => setShowPassword(!showPassword)}
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
               </div>
-              <div>
+              <div className="relative">
                 <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
                   Confirm Password
                 </label>
@@ -498,8 +567,8 @@ const Login = () => {
                   required
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Confirm your password"
-                  autoComplete="new-password"
                 />
+                {/* No toggle button here for confirmPassword for simplicity */}
                 {signupError && <p className="text-red-600 text-sm mt-1">{signupError}</p>}
               </div>
 
@@ -522,16 +591,14 @@ const Login = () => {
                 {loading ? 'Creating account...' : 'Create Account'}
               </button>
             </form>
-          )}
+          </>
+        )}
 
-          {step === 'verify_email' && <VerificationStep />}
-        </div>
+        {/* Step 4 verify email */}
+        {step === 'verify_email' && <VerificationStep />}
       </div>
-
-      {showGoogleModal && <GoogleModal />}
     </div>
   );
 };
 
 export default Login;
-

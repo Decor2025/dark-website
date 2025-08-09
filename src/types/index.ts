@@ -10,6 +10,7 @@ export interface User {
   bio?: string;
   role: 'admin' | 'employee' | 'customer' | 'editor' | 'viewer';
   createdAt: string;
+  emailVerified?: boolean; 
 }
 
 export interface Product {
