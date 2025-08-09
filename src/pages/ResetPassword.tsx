@@ -6,6 +6,7 @@ import {
   verifyPasswordResetCode,
   confirmPasswordReset,
 } from "firebase/auth";
+import { Mail, Lock, AlertTriangle, CheckCircle } from "lucide-react";
 
 export default function ResetPassword() {
   const auth = getAuth();
@@ -13,7 +14,7 @@ export default function ResetPassword() {
   const navigate = useNavigate();
 
   const [oobCode, setOobCode] = useState<string | null>(null);
-  const [email, setEmail] = useState<string>("");
+  const [email, setEmail] = useState("");
   const [emailSent, setEmailSent] = useState(false);
   const [verifiedEmail, setVerifiedEmail] = useState<string | null>(null);
   const [password, setPassword] = useState("");
@@ -98,13 +99,27 @@ export default function ResetPassword() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-md bg-white rounded-lg shadow-md p-8">
-        <h2 className="text-2xl font-normal mb-6 text-center text-gray-900">
+      <div className="w-full max-w-lg bg-white rounded-2xl shadow-lg p-6 sm:p-10">
+        <h2 className="text-2xl font-semibold mb-6 text-center text-gray-900">
           Reset Password
         </h2>
 
         {error && (
-          <p className="mb-4 text-sm text-red-600 font-medium">{error}</p>
+          <div className="flex justify-center mb-4">
+            <div className="flex items-center gap-2 px-4 py-3 bg-red-50 text-red-700 text-sm rounded-md">
+              <AlertTriangle size={18} className="shrink-0" />
+              <span>{error}</span>
+            </div>
+          </div>
+        )}
+
+        {message && (
+          <div className="flex justify-center mb-4">
+            <div className="flex items-center gap-2 px-4 py-3 bg-green-50 text-green-700 text-sm rounded-md">
+              <CheckCircle size={18} className="shrink-0" />
+              <span>{message}</span>
+            </div>
+          </div>
         )}
 
         {oobCode && verifiedEmail ? (
@@ -114,20 +129,19 @@ export default function ResetPassword() {
               <strong className="text-blue-600">{verifiedEmail}</strong>
             </p>
 
-            <form onSubmit={handleResetPassword} className="space-y-4">
-              <div>
-                <label
-                  htmlFor="password"
-                  className="block mb-1 text-gray-700 font-normal text-sm"
-                >
-                  New Password
-                </label>
+            <form onSubmit={handleResetPassword} className="space-y-5">
+              {/* Password */}
+              <div className="relative">
+                <Lock
+                  size={18}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                />
                 <input
                   id="password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   placeholder="Enter new password"
                   required
                   minLength={6}
@@ -135,19 +149,24 @@ export default function ResetPassword() {
                 />
               </div>
 
-              <div>
-                <label
-                  htmlFor="confirmPassword"
-                  className="block mb-1 text-gray-700 font-normal text-sm"
-                >
-                  Confirm Password
-                </label>
+              {/* Password instruction */}
+              <div className="bg-blue-50 text-blue-700 text-xs p-3 rounded-lg">
+                Your password must be at least 6 characters and include a mix
+                of letters, numbers, and special characters for better security.
+              </div>
+
+              {/* Confirm Password */}
+              <div className="relative">
+                <Lock
+                  size={18}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                />
                 <input
                   id="confirmPassword"
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   placeholder="Confirm new password"
                   required
                   minLength={6}
@@ -155,15 +174,11 @@ export default function ResetPassword() {
                 />
               </div>
 
-              <p className="text-xs text-gray-600 mt-1 mb-3 leading-tight">
-                Your password must be at least 6 characters and include a mix
-                of letters, numbers, and special characters for better security.
-              </p>
-
+              {/* Submit */}
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition text-sm font-medium"
+                className="w-full bg-blue-600 text-white py-2.5 rounded-lg hover:bg-blue-700 transition text-sm font-medium"
               >
                 {loading ? "Resetting..." : "Reset Password"}
               </button>
@@ -176,20 +191,18 @@ export default function ResetPassword() {
               link.
             </p>
             {!emailSent ? (
-              <form onSubmit={handleSendResetEmail} className="space-y-4">
-                <div>
-                  <label
-                    htmlFor="email"
-                    className="block mb-1 text-gray-700 font-normal text-sm"
-                  >
-                    Email Address
-                  </label>
+              <form onSubmit={handleSendResetEmail} className="space-y-5">
+                <div className="relative">
+                  <Mail
+                    size={18}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  />
                   <input
                     id="email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                     placeholder="Enter your email"
                     required
                     autoComplete="email"
@@ -198,7 +211,7 @@ export default function ResetPassword() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition text-sm font-medium"
+                  className="w-full bg-blue-600 text-white py-2.5 rounded-lg hover:bg-blue-700 transition text-sm font-medium"
                 >
                   {loading ? "Sending..." : "Send Reset Link"}
                 </button>
