@@ -1,4 +1,4 @@
-import React from "react";
+
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./context/AuthContext";
@@ -24,7 +24,7 @@ function LayoutWrapper() {
   const hideHeaderFooter = ["/login", "/signup"].includes(location.pathname);
 
   return (
-    <div className="min-w-[380px] min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50">
       {!hideHeaderFooter && <Navbar />}
       <main>
         <Routes>

@@ -206,29 +206,34 @@ const CatalogueWithPopupRating: React.FC = () => {
   }
 
   return (
-    <div className="min-w-[380px] min-h-screen bg-gray-50 py-6 px-4 max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gray-50 py-6 px-4 max-w-7xl mx-auto">
       {/* Header */}
-      <header className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h1 className="text-3xl font-bold text-gray-900">Product Catalogue</h1>
-        <div className="flex items-center gap-3 w-full sm:w-auto">
-          <input
-            type="text"
-            placeholder="Search products..."
-            className="flex-grow sm:flex-none px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          <select
-            className="px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 max-w-full truncate"
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as any)}
-          >
-            <option value="newest">Newest First</option>
-            <option value="name">Name A–Z</option>
-            <option value="category">Category</option>
-          </select>
-        </div>
-      </header>
+      {/* Header */}
+<header className="mb-6">
+  <div className="flex flex-col gap-4">
+    <h1 className="text-3xl font-bold text-gray-900">Product Catalogue</h1>
+    
+    <div className="flex flex-col xs:flex-row gap-3">
+      <input
+        type="text"
+        placeholder="Search products..."
+        className="w-full xs:flex-1 px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+      />
+      
+      <select
+        className="w-full xs:w-auto px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500"
+        value={sortBy}
+        onChange={(e) => setSortBy(e.target.value as any)}
+      >
+        <option value="newest">Newest First</option>
+        <option value="name">Name A–Z</option>
+        <option value="category">Category</option>
+      </select>
+    </div>
+  </div>
+</header>
 
       {/* Products Grid */}
       {filteredProducts.length === 0 ? (
