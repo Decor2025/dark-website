@@ -2,11 +2,11 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from "react-route
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
-
+import Verified from './pages/Verified';
 import Navbar from "./components/common/Navbar";
 import Footer from "./components/common/Footer";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
-
+import NotFound from './pages/NotFound';
 import Home from "./pages/Home";
 import Login from "./components/auth/Login";
 import Catalogue from "./pages/Catalogue";
@@ -24,7 +24,11 @@ import ResetPassword from "./pages/ResetPassword";
 
 function LayoutWrapper() {
   const location = useLocation();
-  const hideHeaderFooter = location.pathname.startsWith("/reset-password") || location.pathname === "/login";
+  const hideHeaderFooter =
+    location.pathname.startsWith("/reset-password") ||
+    location.pathname === "/login" ||
+    location.pathname === "/verified";
+
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -42,7 +46,7 @@ function LayoutWrapper() {
 
           {/* Reset Password Route */}
           <Route path="/reset-password" element={<ResetPassword />} />
-
+          <Route path="/verified" element={<Verified />} />
           {/* Protected Routes */}
           <Route
             path="/profile"
@@ -60,6 +64,7 @@ function LayoutWrapper() {
               </ProtectedRoute>
             }
           />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
       {!hideHeaderFooter && <Footer />}
@@ -89,5 +94,6 @@ function App() {
     </AuthProvider>
   );
 }
+
 
 export default App;
