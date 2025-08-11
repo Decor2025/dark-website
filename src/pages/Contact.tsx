@@ -1,22 +1,22 @@
-import React, { useState, useEffect } from "react";
-import { ref, push, onValue } from "firebase/database";
-import { database } from "../config/firebase";
-import { Mail, Phone, MapPin, Send } from "lucide-react";
-import toast from "react-hot-toast";
-import { SiteSettings } from "../types";
+import React, { useState, useEffect } from 'react';
+import { ref, push, onValue } from 'firebase/database';
+import { database } from '../config/firebase';
+import { Mail, Phone, MapPin, Send } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { SiteSettings } from '../types';
 
 const Contact: React.FC = () => {
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    subject: "",
-    message: "",
+    name: '',
+    email: '',
+    subject: '',
+    message: '',
   });
   const [loading, setLoading] = useState(false);
   const [settings, setSettings] = useState<SiteSettings[]>([]);
 
   useEffect(() => {
-    const settingsRef = ref(database, "siteSettings");
+    const settingsRef = ref(database, 'siteSettings');
     const unsubscribe = onValue(settingsRef, (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.val();
@@ -33,7 +33,7 @@ const Contact: React.FC = () => {
 
   const getSetting = (key: string) => {
     const setting = settings.find((s) => s.key === key);
-    return setting?.value || "";
+    return setting?.value || '';
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -41,7 +41,7 @@ const Contact: React.FC = () => {
     setLoading(true);
 
     try {
-      const contactRef = ref(database, "contactMessages");
+      const contactRef = ref(database, 'contactMessages');
       await push(contactRef, {
         ...formData,
         isRead: false,
@@ -49,18 +49,16 @@ const Contact: React.FC = () => {
       });
 
       toast.success("Message sent successfully! We'll get back to you soon.");
-      setFormData({ name: "", email: "", subject: "", message: "" });
+      setFormData({ name: '', email: '', subject: '', message: '' });
     } catch (error) {
-      toast.error("Failed to send message. Please try again.");
-      console.error("Error sending contact message:", error);
+      toast.error('Failed to send message. Please try again.');
+      console.error('Error sending contact message:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
@@ -140,6 +138,7 @@ const Contact: React.FC = () => {
                   </div>
                 </div>
               </div>
+
               {/* Business Hours */}
               <div className="mt-8">
                 <h3 className="font-semibold text-gray-900 mb-4">
@@ -153,9 +152,7 @@ const Contact: React.FC = () => {
                     .split(",")
                     .map((segment, idx) => (
                       <div className="flex justify-between" key={idx}>
-                        {/* before the colon */}
                         <span>{segment.split(":")[0].trim()}</span>
-                        {/* after the colon */}
                         <span>{segment.split(":")[1].trim()}</span>
                       </div>
                     ))}
@@ -171,15 +168,10 @@ const Contact: React.FC = () => {
                 Send us a Message
               </h2>
 
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-6" noValidate>
                 <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <label
-                      htmlFor="name"
-                      className="block text-sm font-medium text-gray-700 mb-2"
-                    >
-                      Full Name
-                    </label>
+                  {/* Floating input: Full Name */}
+                  <div className="relative z-0 w-full group">
                     <input
                       type="text"
                       id="name"
@@ -187,18 +179,20 @@ const Contact: React.FC = () => {
                       required
                       value={formData.name}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Your full name"
+                      className="block py-2.5 px-0 w-full text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                      placeholder=" "
+                      autoComplete="off"
                     />
+                    <label
+                      htmlFor="name"
+                      className="absolute text-sm text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 left-0 origin-[0] peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:-translate-y-6 peer-focus:scale-75"
+                    >
+                      Full Name
+                    </label>
                   </div>
 
-                  <div>
-                    <label
-                      htmlFor="email"
-                      className="block text-sm font-medium text-gray-700 mb-2"
-                    >
-                      Email Address
-                    </label>
+                  {/* Floating input: Email */}
+                  <div className="relative z-0 w-full group">
                     <input
                       type="email"
                       id="email"
@@ -206,19 +200,21 @@ const Contact: React.FC = () => {
                       required
                       value={formData.email}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="your.email@example.com"
+                      className="block py-2.5 px-0 w-full text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                      placeholder=" "
+                      autoComplete="off"
                     />
+                    <label
+                      htmlFor="email"
+                      className="absolute text-sm text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 left-0 origin-[0] peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:-translate-y-6 peer-focus:scale-75"
+                    >
+                      Email Address
+                    </label>
                   </div>
                 </div>
 
-                <div>
-                  <label
-                    htmlFor="subject"
-                    className="block text-sm font-medium text-gray-700 mb-2"
-                  >
-                    Subject
-                  </label>
+                {/* Floating input: Subject */}
+                <div className="relative z-0 w-full group">
                   <input
                     type="text"
                     id="subject"
@@ -226,18 +222,20 @@ const Contact: React.FC = () => {
                     required
                     value={formData.subject}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="What is this about?"
+                    className="block py-2.5 px-0 w-full text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                    placeholder=" "
+                    autoComplete="off"
                   />
+                  <label
+                    htmlFor="subject"
+                    className="absolute text-sm text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 left-0 origin-[0] peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:-translate-y-6 peer-focus:scale-75"
+                  >
+                    Subject
+                  </label>
                 </div>
 
-                <div>
-                  <label
-                    htmlFor="message"
-                    className="block text-sm font-medium text-gray-700 mb-2"
-                  >
-                    Message
-                  </label>
+                {/* Floating textarea: Message */}
+                <div className="relative z-0 w-full group">
                   <textarea
                     id="message"
                     name="message"
@@ -245,9 +243,15 @@ const Contact: React.FC = () => {
                     rows={6}
                     value={formData.message}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Tell us more about your inquiry..."
+                    className="block py-2.5 px-0 w-full text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 resize-none appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                    placeholder=" "
                   />
+                  <label
+                    htmlFor="message"
+                    className="absolute text-sm text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 left-0 origin-[0] peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:-translate-y-6 peer-focus:scale-75"
+                  >
+                    Message
+                  </label>
                 </div>
 
                 <button
