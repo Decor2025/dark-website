@@ -18,7 +18,8 @@ import Contact from "./pages/Contact";
 import Estimate from "./pages/Estimate";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import FaviconUpdater from "./components/FaviconUpdater";
-import AuthBridge from "../src/context/Auth"
+import AuthBridge from "../src/context/Auth";
+import OurWorkPublic from "../src/pages/OurWorkPublic"
 
 // Yahan apna ResetPassword component import karna mat bhool
 import ResetPassword from "./pages/ResetPassword";
@@ -26,9 +27,10 @@ import ResetPassword from "./pages/ResetPassword";
 function LayoutWrapper() {
   const location = useLocation();
   const hideHeaderFooter =
-    location.pathname.startsWith("/reset-password") ||
+    location.pathname.startsWith("/auth/reset-password") ||
     location.pathname === "/login" ||
-    location.pathname === "/verified";
+    location.pathname === "/admin" ||
+    location.pathname === "/auth/verified";
 
 
   return (
@@ -44,7 +46,7 @@ function LayoutWrapper() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/estimate" element={<Estimate />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
-
+          <Route path="/our-work" element={<OurWorkPublic />} />
           {/* Reset Password Route */}
           <Route path="/auth" element={<AuthBridge />} />
           <Route path="/auth/reset-password" element={<ResetPassword />} />

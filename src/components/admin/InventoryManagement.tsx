@@ -1,71 +1,79 @@
-import React, { useState, useEffect } from 'react';
-import { ref, onValue, set, push, remove } from 'firebase/database';
-import { database } from '../../config/firebase';
-import { fetchInventoryFromGoogleSheets, syncInventoryToFirebase } from '../../config/googleSheets';
-import { useAuth } from '../../context/AuthContext';
-import { InventoryItem, InventoryTransaction, InventoryGroup } from '../../types';
-import { 
-  Package, 
+import React, { useState, useEffect } from "react";
+import { ref, onValue, set, push, remove } from "firebase/database";
+import { database } from "../../config/firebase";
+import {
+  fetchInventoryFromGoogleSheets,
+  syncInventoryToFirebase,
+} from "../../config/googleSheets";
+import { useAuth } from "../../context/AuthContext";
+import StockGroupManagement from "./StockGroupManagement";
+import {
+  InventoryItem,
+  InventoryTransaction,
+  InventoryGroup,
+} from "../../types";
+import {
+  Package,
   RefreshCw,
-  Download, 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Search, 
+  Download,
+  Plus,
+  Edit,
+  Trash2,
+  Search,
   Filter,
   AlertTriangle,
   TrendingUp,
   TrendingDown,
   FileText,
   Users,
-  ExternalLink
-} from 'lucide-react';
-import toast from 'react-hot-toast';
+  ExternalLink,
+} from "lucide-react";
+import toast from "react-hot-toast";
 
 const InventoryManagement: React.FC = () => {
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [transactions, setTransactions] = useState<InventoryTransaction[]>([]);
   const [groups, setGroups] = useState<InventoryGroup[]>([]);
-  const [activeTab, setActiveTab] = useState('items');
+  const [activeTab, setActiveTab] = useState("items");
   const [showForm, setShowForm] = useState(false);
   const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
   const [loading, setLoading] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('all');
-  const [groupFilter, setGroupFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [groupFilter, setGroupFilter] = useState("all");
   const [syncing, setSyncing] = useState(false);
   const { currentUser } = useAuth();
 
   const [formData, setFormData] = useState({
-    sku: '',
-    name: '',
-    description: '',
-    category: '',
-    unit: 'pcs',
-    unitType: 'piece' as 'sqft' | 'meter' | 'piece' | 'kg' | 'liter',
-    costPrice: '',
-    sellingPrice: '',
-    pricePerUnit: '',
-    currentStock: '',
-    minimumStock: '',
-    maximumStock: '',
-    reorderLevel: '',
-    location: '',
-    supplier: '',
-    barcode: '',
-    imageUrl: '',
-    groupTag: '',
-    width: '',
-    height: '',
+    sku: "",
+    name: "",
+    description: "",
+    category: "",
+    unit: "pcs",
+    unitType: "piece" as "sqft" | "meter" | "piece" | "kg" | "liter",
+    costPrice: "",
+    sellingPrice: "",
+    pricePerUnit: "",
+    currentStock: "",
+    minimumStock: "",
+    maximumStock: "",
+    reorderLevel: "",
+    location: "",
+    supplier: "",
+    barcode: "",
+    imageUrl: "",
+    groupTag: "",
+    width: "",
+    height: "",
   });
 
   useEffect(() => {
     // Load inventory items
-    const inventoryRef = ref(database, 'inventory');
+    const inventoryRef = ref(database, "inventory");
     const unsubscribeInventory = onValue(inventoryRef, (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.val();
-        const items: InventoryItem[] = Object.keys(data).map(key => ({
+        const items: InventoryItem[] = Object.keys(data).map((key) => ({
           id: key,
           ...data[key],
         }));
@@ -74,26 +82,30 @@ const InventoryManagement: React.FC = () => {
     });
 
     // Load transactions
-    const transactionsRef = ref(database, 'inventoryTransactions');
+    const transactionsRef = ref(database, "inventoryTransactions");
     const unsubscribeTransactions = onValue(transactionsRef, (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.val();
-        const txns: InventoryTransaction[] = Object.keys(data).map(key => ({
+        const txns: InventoryTransaction[] = Object.keys(data).map((key) => ({
           id: key,
           ...data[key],
         }));
-        setTransactions(txns.sort((a, b) => 
-          new Date(b.performedAt).getTime() - new Date(a.performedAt).getTime()
-        ));
+        setTransactions(
+          txns.sort(
+            (a, b) =>
+              new Date(b.performedAt).getTime() -
+              new Date(a.performedAt).getTime()
+          )
+        );
       }
     });
 
     // Load inventory groups
-    const groupsRef = ref(database, 'inventoryGroups');
+    const groupsRef = ref(database, "inventoryGroups");
     const unsubscribeGroups = onValue(groupsRef, (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.val();
-        const groupList: InventoryGroup[] = Object.keys(data).map(key => ({
+        const groupList: InventoryGroup[] = Object.keys(data).map((key) => ({
           id: key,
           ...data[key],
         }));
@@ -112,13 +124,13 @@ const InventoryManagement: React.FC = () => {
     setSyncing(true);
     try {
       const sheetsData = await fetchInventoryFromGoogleSheets();
-      
+
       // Add new data from Google Sheets
-      const inventoryRef = ref(database, 'inventory');
+      const inventoryRef = ref(database, "inventory");
       for (const item of sheetsData) {
         // Check if item already exists
-        const existingItems = inventory.filter(inv => inv.sku === item.sku);
-        
+        const existingItems = inventory.filter((inv) => inv.sku === item.sku);
+
         if (existingItems.length > 0) {
           // Update existing item
           const existingItem = existingItems[0];
@@ -127,30 +139,31 @@ const InventoryManagement: React.FC = () => {
             ...existingItem,
             ...item,
             lastUpdated: new Date().toISOString(),
-            updatedBy: currentUser?.email || 'admin',
+            updatedBy: currentUser?.email || "admin",
             isActive: true,
           });
         } else {
           const newItemRef = push(inventoryRef);
-const cleanItem = Object.fromEntries(
-  Object.entries({
-    ...item,
-    lastUpdated: new Date().toISOString(),
-    updatedBy: currentUser?.email || 'admin',
-    createdAt: new Date().toISOString(),
-    isActive: true,
-  }).filter(([_, value]) => value !== undefined)
-);
+          const cleanItem = Object.fromEntries(
+            Object.entries({
+              ...item,
+              lastUpdated: new Date().toISOString(),
+              updatedBy: currentUser?.email || "admin",
+              createdAt: new Date().toISOString(),
+              isActive: true,
+            }).filter(([_, value]) => value !== undefined)
+          );
 
-await set(newItemRef, cleanItem);
-
+          await set(newItemRef, cleanItem);
         }
       }
-      
+
       toast.success(`Synced ${sheetsData.length} items from Google Sheets!`);
     } catch (error) {
-      toast.error('Failed to sync from Google Sheets. Check your configuration.');
-      console.error('Sync error:', error);
+      toast.error(
+        "Failed to sync from Google Sheets. Check your configuration."
+      );
+      console.error("Sync error:", error);
     } finally {
       setSyncing(false);
     }
@@ -163,7 +176,7 @@ await set(newItemRef, cleanItem);
         name: item.name,
         description: item.description,
         category: item.category,
-        unitType: item.unitType || 'piece',
+        unitType: item.unitType || "piece",
         pricePerUnit: item.pricePerUnit || item.sellingPrice,
         costPrice: item.costPrice,
         sellingPrice: item.sellingPrice,
@@ -178,13 +191,13 @@ await set(newItemRef, cleanItem);
         groupTag: item.groupTag,
         width: item.width,
         height: item.height,
-        unit: item.unit
+        unit: item.unit,
       };
-      
+
       await updateGoogleSheetsInventory(sheetsItem);
-      console.log('Successfully synced to Google Sheets');
+      console.log("Successfully synced to Google Sheets");
     } catch (error) {
-      console.error('Failed to sync to Google Sheets:', error);
+      console.error("Failed to sync to Google Sheets:", error);
     }
   };
   const handleSubmit = async (e: React.FormEvent) => {
@@ -201,7 +214,9 @@ await set(newItemRef, cleanItem);
         unitType: formData.unitType,
         costPrice: parseFloat(formData.costPrice),
         sellingPrice: parseFloat(formData.sellingPrice),
-        pricePerUnit: parseFloat(formData.pricePerUnit) || parseFloat(formData.sellingPrice),
+        pricePerUnit:
+          parseFloat(formData.pricePerUnit) ||
+          parseFloat(formData.sellingPrice),
         currentStock: parseInt(formData.currentStock),
         minimumStock: parseInt(formData.minimumStock),
         maximumStock: parseInt(formData.maximumStock),
@@ -210,10 +225,10 @@ await set(newItemRef, cleanItem);
         supplier: formData.supplier,
         barcode: formData.barcode,
         lastUpdated: new Date().toISOString(),
-        updatedBy: currentUser?.email || 'admin',
+        updatedBy: currentUser?.email || "admin",
         isActive: true,
-        imageUrl: formData.imageUrl || '',
-        groupTag: formData.groupTag || '',
+        imageUrl: formData.imageUrl || "",
+        groupTag: formData.groupTag || "",
         width: parseFloat(formData.width) || undefined,
         height: parseFloat(formData.height) || undefined,
         ...(editingItem ? {} : { createdAt: new Date().toISOString() }),
@@ -224,20 +239,23 @@ await set(newItemRef, cleanItem);
         await set(itemRef, itemData);
         // Sync to Google Sheets
         await syncToGoogleSheets({ ...editingItem, ...itemData });
-        toast.success('Inventory item updated successfully!');
+        toast.success("Inventory item updated successfully!");
       } else {
-        const inventoryRef = ref(database, 'inventory');
+        const inventoryRef = ref(database, "inventory");
         const newItemRef = push(inventoryRef);
         await set(newItemRef, itemData);
         // Sync to Google Sheets
-        await syncToGoogleSheets({ id: newItemRef.key!, ...itemData } as InventoryItem);
-        toast.success('Inventory item added successfully!');
+        await syncToGoogleSheets({
+          id: newItemRef.key!,
+          ...itemData,
+        } as InventoryItem);
+        toast.success("Inventory item added successfully!");
       }
 
       resetForm();
     } catch (error) {
-      toast.error('Failed to save inventory item');
-      console.error('Error saving inventory item:', error);
+      toast.error("Failed to save inventory item");
+      console.error("Error saving inventory item:", error);
     } finally {
       setLoading(false);
     }
@@ -251,7 +269,7 @@ await set(newItemRef, cleanItem);
       description: item.description,
       category: item.category,
       unit: item.unit,
-      unitType: item.unitType || 'piece',
+      unitType: item.unitType || "piece",
       costPrice: item.costPrice.toString(),
       sellingPrice: item.sellingPrice.toString(),
       pricePerUnit: (item.pricePerUnit || item.sellingPrice).toString(),
@@ -261,50 +279,50 @@ await set(newItemRef, cleanItem);
       reorderLevel: item.reorderLevel.toString(),
       location: item.location,
       supplier: item.supplier,
-      barcode: item.barcode || '',
-      imageUrl: item.imageUrl || '',
-      groupTag: item.groupTag || '',
-      width: item.width?.toString() || '',
-      height: item.height?.toString() || '',
+      barcode: item.barcode || "",
+      imageUrl: item.imageUrl || "",
+      groupTag: item.groupTag || "",
+      width: item.width?.toString() || "",
+      height: item.height?.toString() || "",
     });
     setShowForm(true);
   };
 
   const handleDelete = async (itemId: string) => {
-    if (confirm('Are you sure you want to delete this inventory item?')) {
+    if (confirm("Are you sure you want to delete this inventory item?")) {
       try {
         const itemRef = ref(database, `inventory/${itemId}`);
         await remove(itemRef);
-        toast.success('Inventory item deleted successfully!');
+        toast.success("Inventory item deleted successfully!");
       } catch (error) {
-        toast.error('Failed to delete inventory item');
-        console.error('Error deleting inventory item:', error);
+        toast.error("Failed to delete inventory item");
+        console.error("Error deleting inventory item:", error);
       }
     }
   };
 
   const resetForm = () => {
     setFormData({
-      sku: '',
-      name: '',
-      description: '',
-      category: '',
-      unit: 'pcs',
-      unitType: 'piece',
-      costPrice: '',
-      sellingPrice: '',
-      pricePerUnit: '',
-      currentStock: '',
-      minimumStock: '',
-      maximumStock: '',
-      reorderLevel: '',
-      location: '',
-      supplier: '',
-      barcode: '',
-      imageUrl: '',
-      groupTag: '',
-      width: '',
-      height: '',
+      sku: "",
+      name: "",
+      description: "",
+      category: "",
+      unit: "pcs",
+      unitType: "piece",
+      costPrice: "",
+      sellingPrice: "",
+      pricePerUnit: "",
+      currentStock: "",
+      minimumStock: "",
+      maximumStock: "",
+      reorderLevel: "",
+      location: "",
+      supplier: "",
+      barcode: "",
+      imageUrl: "",
+      groupTag: "",
+      width: "",
+      height: "",
     });
     setEditingItem(null);
     setShowForm(false);
@@ -312,60 +330,96 @@ await set(newItemRef, cleanItem);
 
   const exportToCSV = () => {
     const headers = [
-      'SKU', 'Name', 'Description', 'Category', 'Unit', 'Cost Price', 
-      'Selling Price', 'Current Stock', 'Minimum Stock', 'Maximum Stock',
-      'Reorder Level', 'Location', 'Supplier', 'Barcode'
+      "SKU",
+      "Name",
+      "Description",
+      "Category",
+      "Unit",
+      "Cost Price",
+      "Selling Price",
+      "Current Stock",
+      "Minimum Stock",
+      "Maximum Stock",
+      "Reorder Level",
+      "Location",
+      "Supplier",
+      "Barcode",
     ];
-    
-    const csvContent = [
-      headers.join(','),
-      ...inventory.map(item => [
-        item.sku, item.name, item.description, item.category, item.unit,
-        item.costPrice, item.sellingPrice, item.currentStock, item.minimumStock,
-        item.maximumStock, item.reorderLevel, item.location, item.supplier, item.barcode || ''
-      ].join(','))
-    ].join('\n');
 
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const csvContent = [
+      headers.join(","),
+      ...inventory.map((item) =>
+        [
+          item.sku,
+          item.name,
+          item.description,
+          item.category,
+          item.unit,
+          item.costPrice,
+          item.sellingPrice,
+          item.currentStock,
+          item.minimumStock,
+          item.maximumStock,
+          item.reorderLevel,
+          item.location,
+          item.supplier,
+          item.barcode || "",
+        ].join(",")
+      ),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = 'inventory.csv';
+    a.download = "inventory.csv";
     a.click();
     window.URL.revokeObjectURL(url);
   };
 
-  const filteredInventory = inventory.filter(item => {
-    const matchesSearch = (item.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         (item.sku || '').toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = categoryFilter === 'all' || item.category === categoryFilter;
-    const matchesGroup = groupFilter === 'all' || item.groupTag === groupFilter;
+  const filteredInventory = inventory.filter((item) => {
+    const matchesSearch =
+      (item.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (item.sku || "").toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory =
+      categoryFilter === "all" || item.category === categoryFilter;
+    const matchesGroup = groupFilter === "all" || item.groupTag === groupFilter;
     return matchesSearch && matchesCategory && matchesGroup;
   });
 
-  const categories = Array.from(new Set(inventory.map(item => item.category)));
-  const groupTags = Array.from(new Set(inventory.map(item => item.groupTag).filter(Boolean)));
-  const lowStockItems = inventory.filter(item => item.currentStock <= item.reorderLevel);
+  const categories = Array.from(
+    new Set(inventory.map((item) => item.category))
+  );
+  const groupTags = Array.from(
+    new Set(inventory.map((item) => item.groupTag).filter(Boolean))
+  );
+  const lowStockItems = inventory.filter(
+    (item) => item.currentStock <= item.reorderLevel
+  );
 
   const tabs = [
-    { id: 'items', label: 'Inventory Items', icon: Package },
-    { id: 'transactions', label: 'Transaction History', icon: FileText },
-    { id: 'groups', label: 'Inventory Groups', icon: Users },
+    { id: "items", label: "Inventory Items", icon: Package },
+    { id: "transactions", label: "Transaction History", icon: FileText },
+    { id: "groups", label: "Inventory Groups", icon: Users },
   ];
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
-        <h2 className="text-2xl font-bold text-gray-900">Inventory Management</h2>
-        
+        <h2 className="text-2xl font-bold text-gray-900">
+          Inventory Management
+        </h2>
+
         <div className="flex flex-wrap gap-2">
           <button
             onClick={syncFromGoogleSheets}
             disabled={syncing}
             className="bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center"
           >
-            <RefreshCw className={`w-4 h-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
-            {syncing ? 'Syncing...' : 'Sync from Google Sheets'}
+            <RefreshCw
+              className={`w-4 h-4 mr-2 ${syncing ? "animate-spin" : ""}`}
+            />
+            {syncing ? "Syncing..." : "Sync from Google Sheets"}
           </button>
           <a
             href="https://docs.google.com/spreadsheets"
@@ -398,7 +452,9 @@ await set(newItemRef, cleanItem);
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
           <div className="flex items-center">
             <AlertTriangle className="w-5 h-5 text-yellow-600 mr-2" />
-            <h3 className="text-lg font-medium text-yellow-800">Low Stock Alert</h3>
+            <h3 className="text-lg font-medium text-yellow-800">
+              Low Stock Alert
+            </h3>
           </div>
           <p className="text-yellow-700 mt-1">
             {lowStockItems.length} items are at or below reorder level
@@ -415,8 +471,8 @@ await set(newItemRef, cleanItem);
               onClick={() => setActiveTab(tab.id)}
               className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors flex items-center ${
                 activeTab === tab.id
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  ? "border-blue-500 text-blue-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               }`}
             >
               <tab.icon className="w-4 h-4 mr-2" />
@@ -427,7 +483,7 @@ await set(newItemRef, cleanItem);
       </div>
 
       {/* Tab Content */}
-      {activeTab === 'items' && (
+      {activeTab === "items" && (
         <>
           {/* Search and Filter */}
           <div className="flex flex-col lg:flex-row gap-4 mb-6">
@@ -447,8 +503,10 @@ await set(newItemRef, cleanItem);
               className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">All Categories</option>
-              {categories.map(category => (
-                <option key={category} value={category}>{category}</option>
+              {categories.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
               ))}
             </select>
             <select
@@ -457,8 +515,10 @@ await set(newItemRef, cleanItem);
               className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">All Groups</option>
-              {groupTags.map(tag => (
-                <option key={tag} value={tag}>{tag}</option>
+              {groupTags.map((tag) => (
+                <option key={tag} value={tag}>
+                  {tag}
+                </option>
               ))}
             </select>
           </div>
@@ -488,10 +548,19 @@ await set(newItemRef, cleanItem);
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredInventory.map((item) => (
-                    <tr key={item.id} className={item.currentStock <= item.reorderLevel ? 'bg-yellow-50' : ''}>
+                    <tr
+                      key={item.id}
+                      className={
+                        item.currentStock <= item.reorderLevel
+                          ? "bg-yellow-50"
+                          : ""
+                      }
+                    >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
-                          <div className="text-sm font-medium text-gray-900">{item.name}</div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {item.name}
+                          </div>
                           {item.imageUrl && (
                             <img
                               src={item.imageUrl}
@@ -499,8 +568,12 @@ await set(newItemRef, cleanItem);
                               className="w-12 h-12 object-cover rounded mt-2"
                             />
                           )}
-                          <div className="text-sm text-gray-500">SKU: {item.sku}</div>
-                          <div className="text-sm text-gray-500">{item.category}</div>
+                          <div className="text-sm text-gray-500">
+                            SKU: {item.sku}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {item.category}
+                          </div>
                           {item.groupTag && (
                             <span className="inline-block px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full mt-1">
                               {item.groupTag}
@@ -513,18 +586,26 @@ await set(newItemRef, cleanItem);
                           {item.currentStock} {item.unit}
                         </div>
                         <div className="text-sm text-gray-500">
-                          Min: {item.minimumStock} | Reorder: {item.reorderLevel}
+                          Min: {item.minimumStock} | Reorder:{" "}
+                          {item.reorderLevel}
                         </div>
                         {item.width && item.height && (
                           <div className="text-sm text-gray-500">
-                            Dimensions: {item.width} × {item.height} {item.unitType}
+                            Dimensions: {item.width} × {item.height}{" "}
+                            {item.unitType}
                           </div>
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">₹{item.pricePerUnit || item.sellingPrice}</div>
-                        <div className="text-sm text-gray-500">per {item.unitType || item.unit}</div>
-                        <div className="text-sm text-gray-500">Cost: ₹{item.costPrice}</div>
+                        <div className="text-sm text-gray-900">
+                          ₹{item.pricePerUnit || item.sellingPrice}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          per {item.unitType || item.unit}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          Cost: ₹{item.costPrice}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {item.location}
@@ -554,7 +635,7 @@ await set(newItemRef, cleanItem);
         </>
       )}
 
-      {activeTab === 'transactions' && (
+      {activeTab === "transactions" && (
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
@@ -582,28 +663,36 @@ await set(newItemRef, cleanItem);
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {transactions.map((transaction) => {
-                  const item = inventory.find(i => i.id === transaction.inventoryItemId);
+                  const item = inventory.find(
+                    (i) => i.id === transaction.inventoryItemId
+                  );
                   return (
                     <tr key={transaction.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {new Date(transaction.performedAt).toLocaleString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {item?.name || 'Unknown Item'}
+                        {item?.name || "Unknown Item"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          transaction.type === 'purchase' ? 'bg-green-100 text-green-800' :
-                          transaction.type === 'sale' ? 'bg-blue-100 text-blue-800' :
-                          transaction.type === 'damage' ? 'bg-red-100 text-red-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
+                        <span
+                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            transaction.type === "purchase"
+                              ? "bg-green-100 text-green-800"
+                              : transaction.type === "sale"
+                              ? "bg-blue-100 text-blue-800"
+                              : transaction.type === "damage"
+                              ? "bg-red-100 text-red-800"
+                              : "bg-gray-100 text-gray-800"
+                          }`}
+                        >
                           {transaction.type}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         <div className="flex items-center">
-                          {transaction.type === 'purchase' || transaction.type === 'return' ? (
+                          {transaction.type === "purchase" ||
+                          transaction.type === "return" ? (
                             <TrendingUp className="w-4 h-4 text-green-600 mr-1" />
                           ) : (
                             <TrendingDown className="w-4 h-4 text-red-600 mr-1" />
@@ -625,44 +714,57 @@ await set(newItemRef, cleanItem);
           </div>
         </div>
       )}
+      {activeTab === "groups" && <StockGroupManagement />}
 
       {/* Add/Edit Item Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
             <h3 className="text-lg font-semibold mb-4">
-              {editingItem ? 'Edit Inventory Item' : 'Add New Inventory Item'}
+              {editingItem ? "Edit Inventory Item" : "Add New Inventory Item"}
             </h3>
-            
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">SKU *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    SKU *
+                  </label>
                   <input
                     type="text"
                     required
                     value={formData.sku}
-                    onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, sku: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Name *
+                  </label>
                   <input
                     type="text"
                     required
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Description
+                </label>
                 <textarea
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   rows={3}
                 />
@@ -670,20 +772,31 @@ await set(newItemRef, cleanItem);
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Category *
+                  </label>
                   <input
                     type="text"
                     required
                     value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, category: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Unit Type</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Unit Type
+                  </label>
                   <select
                     value={formData.unitType}
-                    onChange={(e) => setFormData({ ...formData, unitType: e.target.value as any })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        unitType: e.target.value as any,
+                      })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="piece">Pieces</option>
@@ -694,11 +807,15 @@ await set(newItemRef, cleanItem);
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Location
+                  </label>
                   <input
                     type="text"
                     value={formData.location}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, location: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -706,27 +823,35 @@ await set(newItemRef, cleanItem);
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Cost Price (₹)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Cost Price (₹)
+                  </label>
                   <input
                     type="number"
                     step="0.01"
                     value={formData.costPrice}
-                    onChange={(e) => setFormData({ ...formData, costPrice: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, costPrice: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Price per Unit (₹) *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Price per Unit (₹) *
+                  </label>
                   <input
                     type="number"
                     step="0.01"
                     required
                     value={formData.pricePerUnit}
-                    onChange={(e) => setFormData({ 
-                      ...formData, 
-                      pricePerUnit: e.target.value,
-                      sellingPrice: e.target.value 
-                    })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        pricePerUnit: e.target.value,
+                        sellingPrice: e.target.value,
+                      })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -734,39 +859,55 @@ await set(newItemRef, cleanItem);
 
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Current Stock *</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Current Stock *
+                  </label>
                   <input
                     type="number"
                     required
                     value={formData.currentStock}
-                    onChange={(e) => setFormData({ ...formData, currentStock: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, currentStock: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Min Stock</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Min Stock
+                  </label>
                   <input
                     type="number"
                     value={formData.minimumStock}
-                    onChange={(e) => setFormData({ ...formData, minimumStock: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, minimumStock: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Max Stock</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Max Stock
+                  </label>
                   <input
                     type="number"
                     value={formData.maximumStock}
-                    onChange={(e) => setFormData({ ...formData, maximumStock: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, maximumStock: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Reorder Level</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Reorder Level
+                  </label>
                   <input
                     type="number"
                     value={formData.reorderLevel}
-                    onChange={(e) => setFormData({ ...formData, reorderLevel: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, reorderLevel: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -774,20 +915,28 @@ await set(newItemRef, cleanItem);
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Supplier</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Supplier
+                  </label>
                   <input
                     type="text"
                     value={formData.supplier}
-                    onChange={(e) => setFormData({ ...formData, supplier: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, supplier: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Barcode</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Barcode
+                  </label>
                   <input
                     type="text"
                     value={formData.barcode}
-                    onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, barcode: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -795,51 +944,64 @@ await set(newItemRef, cleanItem);
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Image URL
+                  </label>
                   <input
                     type="url"
                     value={formData.imageUrl}
-                    onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, imageUrl: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="https://example.com/image.jpg"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Group Tag</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Group Tag
+                  </label>
                   <input
                     type="text"
                     value={formData.groupTag}
-                    onChange={(e) => setFormData({ ...formData, groupTag: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, groupTag: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="e.g., Premium, Budget, Luxury"
                   />
                 </div>
               </div>
 
-              {(formData.unitType === 'sqft' || formData.unitType === 'meter') && (
+              {(formData.unitType === "sqft" ||
+                formData.unitType === "meter") && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Width ({formData.unitType === 'sqft' ? 'ft' : 'm'})
+                      Width ({formData.unitType === "sqft" ? "ft" : "m"})
                     </label>
                     <input
                       type="number"
                       step="0.1"
                       value={formData.width}
-                      onChange={(e) => setFormData({ ...formData, width: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, width: e.target.value })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="Width"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Height ({formData.unitType === 'sqft' ? 'ft' : 'm'})
+                      Height ({formData.unitType === "sqft" ? "ft" : "m"})
                     </label>
                     <input
                       type="number"
                       step="0.1"
                       value={formData.height}
-                      onChange={(e) => setFormData({ ...formData, height: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, height: e.target.value })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="Height"
                     />
@@ -860,7 +1022,7 @@ await set(newItemRef, cleanItem);
                   disabled={loading}
                   className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium transition-colors disabled:opacity-50"
                 >
-                  {loading ? 'Saving...' : editingItem ? 'Update' : 'Add'}
+                  {loading ? "Saving..." : editingItem ? "Update" : "Add"}
                 </button>
               </div>
             </form>

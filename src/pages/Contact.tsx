@@ -1,22 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { ref, push, onValue } from 'firebase/database';
-import { database } from '../config/firebase';
-import { Mail, Phone, MapPin, Send } from 'lucide-react';
-import toast from 'react-hot-toast';
-import { SiteSettings } from '../types';
+import React, { useState, useEffect } from "react";
+import { ref, push, onValue } from "firebase/database";
+import { database } from "../config/firebase";
+import { Mail, Phone, MapPin, Send } from "lucide-react";
+import toast from "react-hot-toast";
+import { SiteSettings } from "../types";
 
 const Contact: React.FC = () => {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: '',
+    name: "",
+    email: "",
+    subject: "",
+    message: "",
   });
   const [loading, setLoading] = useState(false);
   const [settings, setSettings] = useState<SiteSettings[]>([]);
 
   useEffect(() => {
-    const settingsRef = ref(database, 'siteSettings');
+    const settingsRef = ref(database, "siteSettings");
     const unsubscribe = onValue(settingsRef, (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.val();
@@ -33,7 +33,7 @@ const Contact: React.FC = () => {
 
   const getSetting = (key: string) => {
     const setting = settings.find((s) => s.key === key);
-    return setting?.value || '';
+    return setting?.value || "";
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -41,7 +41,7 @@ const Contact: React.FC = () => {
     setLoading(true);
 
     try {
-      const contactRef = ref(database, 'contactMessages');
+      const contactRef = ref(database, "contactMessages");
       await push(contactRef, {
         ...formData,
         isRead: false,
@@ -49,16 +49,18 @@ const Contact: React.FC = () => {
       });
 
       toast.success("Message sent successfully! We'll get back to you soon.");
-      setFormData({ name: '', email: '', subject: '', message: '' });
+      setFormData({ name: "", email: "", subject: "", message: "" });
     } catch (error) {
-      toast.error('Failed to send message. Please try again.');
-      console.error('Error sending contact message:', error);
+      toast.error("Failed to send message. Please try again.");
+      console.error("Error sending contact message:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,

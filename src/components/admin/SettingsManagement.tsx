@@ -16,7 +16,8 @@ import {
   Store,
   Eye,
   EyeOff,
-  Camera
+  Camera,
+  Menu
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -29,6 +30,7 @@ const SettingsManagement: React.FC = () => {
   const [showMemberForm, setShowMemberForm] = useState(false);
   const { currentUser } = useAuth();
   const [imageLoading, setImageLoading] = useState<Record<string, boolean>>({});
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   const [memberForm, setMemberForm] = useState({
     name: '',
@@ -79,7 +81,6 @@ const SettingsManagement: React.FC = () => {
 
   const initializeDefaultSettings = async () => {
     const defaultSettings = [
-      // General Settings
       {
         category: "general",
         key: "site_title",
@@ -108,8 +109,6 @@ const SettingsManagement: React.FC = () => {
         type: "image",
         label: "Favicon",
       },
-
-      // Store Settings
       {
         category: "store",
         key: "store_name",
@@ -138,8 +137,6 @@ const SettingsManagement: React.FC = () => {
         type: "textarea",
         label: "Store Address",
       },
-
-      // Contact Settings
       {
         category: "contact",
         key: "primary_email",
@@ -168,8 +165,6 @@ const SettingsManagement: React.FC = () => {
         type: "text",
         label: "Secondary Phone",
       },
-
-      // Social Media
       {
         category: "social",
         key: "facebook_url",
@@ -198,8 +193,6 @@ const SettingsManagement: React.FC = () => {
         type: "url",
         label: "LinkedIn URL",
       },
-
-      // SEO Settings
       {
         category: "seo",
         key: "meta_keywords",
@@ -210,8 +203,7 @@ const SettingsManagement: React.FC = () => {
       {
         category: "seo",
         key: "meta_description",
-        value:
-          "Your trusted business partner providing premium products and exceptional service.",
+        value: "Your trusted business partner providing premium products and exceptional service.",
         type: "textarea",
         label: "Meta Description",
       },
@@ -239,8 +231,7 @@ const SettingsManagement: React.FC = () => {
       {
         category: "general",
         key: "hero_tagline",
-        value:
-          "Launch an elegant, high‑performance e‑commerce site in minutes. Free estimate, secure payments, and 24/7 support included.",
+        value: "Launch an elegant, high‑performance e‑commerce site in minutes. Free estimate, secure payments, and 24/7 support included.",
         type: "textarea",
         label: "Hero Tagline",
       },
@@ -259,37 +250,35 @@ const SettingsManagement: React.FC = () => {
 
   const updateSetting = async (settingId: string, value: string, imageFile?: File) => {
     setLoading(true);
-  try {
-    let finalValue = value;
+    try {
+      let finalValue = value;
 
-    if (imageFile) {
-      // turn on spinner for this setting
-      setImageLoading(prev => ({ ...prev, [settingId]: true }));
-      finalValue = await uploadToCloudinary(imageFile);
-    }
+      if (imageFile) {
+        setImageLoading(prev => ({ ...prev, [settingId]: true }));
+        finalValue = await uploadToCloudinary(imageFile);
+      }
 
-    const setting = settings.find(s => s.id === settingId);
-    if (setting) {
-      const settingRef = ref(database, `siteSettings/${settingId}`);
-      await set(settingRef, {
-        ...setting,
-        value: finalValue,
-        updatedAt: new Date().toISOString(),
-        updatedBy: currentUser?.email || 'admin',
-      });
-      toast.success('Setting updated successfully!');
+      const setting = settings.find(s => s.id === settingId);
+      if (setting) {
+        const settingRef = ref(database, `siteSettings/${settingId}`);
+        await set(settingRef, {
+          ...setting,
+          value: finalValue,
+          updatedAt: new Date().toISOString(),
+          updatedBy: currentUser?.email || 'admin',
+        });
+        toast.success('Setting updated successfully!');
+      }
+    } catch (error) {
+      toast.error('Failed to update setting');
+      console.error('Error updating setting:', error);
+    } finally {
+      if (imageFile) {
+        setImageLoading(prev => ({ ...prev, [settingId]: false }));
+      }
+      setLoading(false);
     }
-  } catch (error) {
-    toast.error('Failed to update setting');
-    console.error('Error updating setting:', error);
-  } finally {
-    // clear loading for this setting (and overall)
-    if (imageFile) {
-      setImageLoading(prev => ({ ...prev, [settingId]: false }));
-    }
-    setLoading(false);
   }
-}
 
   const handleMemberSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -399,47 +388,47 @@ const SettingsManagement: React.FC = () => {
           />
         );
       case 'image':
-  return (
-    <div className="space-y-2">
-      {setting.value && (
-        <img
-          src={setting.value}
-          alt={setting.label}
-          className="w-32 h-32 object-cover rounded-lg border"
-        />
-      )}
-      <label
-        htmlFor={`file-input-${setting.id}`}
-        className={`inline-flex items-center px-4 py-2 border rounded-md cursor-pointer 
-          ${
-            imageLoading[setting.id]
-              ? "opacity-50 cursor-wait"
-              : "hover:bg-gray-100"
-          }
-        `}
-      >
-        {imageLoading[setting.id]
-          ? "Uploading…"
-          : setting.value
-          ? "Change Image"
-          : "Upload Image"}
-        <Upload className="w-4 h-4 ml-2" />
-      </label>
-      <input
-        id={`file-input-${setting.id}`}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        disabled={imageLoading[setting.id]}
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) {
-            updateSetting(setting.id, setting.value, file);
-          }
-        }}
-      />
-    </div>
-  );
+        return (
+          <div className="space-y-2">
+            {setting.value && (
+              <img
+                src={setting.value}
+                alt={setting.label}
+                className="w-32 h-32 object-cover rounded-lg border"
+              />
+            )}
+            <label
+              htmlFor={`file-input-${setting.id}`}
+              className={`inline-flex items-center px-4 py-2 border rounded-md cursor-pointer 
+                ${
+                  imageLoading[setting.id]
+                    ? "opacity-50 cursor-wait"
+                    : "hover:bg-gray-100"
+                }
+              `}
+            >
+              {imageLoading[setting.id]
+                ? "Uploading…"
+                : setting.value
+                ? "Change Image"
+                : "Upload Image"}
+              <Upload className="w-4 h-4 ml-2" />
+            </label>
+            <input
+              id={`file-input-${setting.id}`}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              disabled={imageLoading[setting.id]}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  updateSetting(setting.id, setting.value, file);
+                }
+              }}
+            />
+          </div>
+        );
       case 'boolean':
         return (
           <label className="flex items-center">
@@ -468,55 +457,54 @@ const SettingsManagement: React.FC = () => {
     if (activeTab === 'team') {
       return (
         <div className="space-y-6">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <h3 className="text-lg font-semibold">Team Management</h3>
             <button
               onClick={() => setShowMemberForm(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg font-medium transition-colors flex items-center whitespace-nowrap"
             >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Team Member
+              <Plus className="w-4 h-4 mr-1 sm:mr-2" />
+              <span className="text-sm sm:text-base">Add Team Member</span>
             </button>
           </div>
 
-          {/* Team Members Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {teamMembers.map((member) => (
-              <div key={member.id} className="bg-white p-6 rounded-lg shadow-md">
+              <div key={member.id} className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
                 <div className="text-center">
                   <img
                     src={member.image || 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg'}
                     alt={member.name}
-                    className="w-20 h-20 rounded-full object-cover mx-auto mb-4"
+                    className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover mx-auto mb-3 sm:mb-4"
                   />
-                  <h4 className="text-lg font-semibold">{member.name}</h4>
-                  <p className="text-blue-600 font-medium">{member.position}</p>
-                  <p className="text-gray-600 text-sm mt-2 line-clamp-3">{member.bio}</p>
+                  <h4 className="text-base sm:text-lg font-semibold">{member.name}</h4>
+                  <p className="text-blue-600 text-sm sm:text-base font-medium">{member.position}</p>
+                  <p className="text-gray-600 text-xs sm:text-sm mt-1 sm:mt-2 line-clamp-3">{member.bio}</p>
                   
-                  <div className="flex items-center justify-center mt-4 space-x-2">
+                  <div className="flex items-center justify-center mt-3 sm:mt-4 space-x-1 sm:space-x-2">
                     {member.isActive ? (
-                      <Eye className="w-4 h-4 text-green-600" />
+                      <Eye className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" />
                     ) : (
-                      <EyeOff className="w-4 h-4 text-gray-400" />
+                      <EyeOff className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
                     )}
-                    <span className={`text-sm ${member.isActive ? 'text-green-600' : 'text-gray-400'}`}>
+                    <span className={`text-xs sm:text-sm ${member.isActive ? 'text-green-600' : 'text-gray-400'}`}>
                       {member.isActive ? 'Active' : 'Inactive'}
                     </span>
                   </div>
 
-                  <div className="flex space-x-2 mt-4">
+                  <div className="flex space-x-2 mt-3 sm:mt-4">
                     <button
                       onClick={() => editMember(member)}
-                      className="flex-1 bg-blue-100 hover:bg-blue-200 text-blue-700 py-2 px-3 rounded-lg font-medium transition-colors flex items-center justify-center"
+                      className="flex-1 bg-blue-100 hover:bg-blue-200 text-blue-700 py-1.5 px-2 sm:py-2 sm:px-3 rounded-lg font-medium transition-colors flex items-center justify-center text-xs sm:text-sm"
                     >
-                      <Edit className="w-4 h-4 mr-1" />
+                      <Edit className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                       Edit
                     </button>
                     <button
                       onClick={() => deleteMember(member.id)}
-                      className="flex-1 bg-red-100 hover:bg-red-200 text-red-700 py-2 px-3 rounded-lg font-medium transition-colors flex items-center justify-center"
+                      className="flex-1 bg-red-100 hover:bg-red-200 text-red-700 py-1.5 px-2 sm:py-2 sm:px-3 rounded-lg font-medium transition-colors flex items-center justify-center text-xs sm:text-sm"
                     >
-                      <Trash2 className="w-4 h-4 mr-1" />
+                      <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                       Delete
                     </button>
                   </div>
@@ -525,29 +513,28 @@ const SettingsManagement: React.FC = () => {
             ))}
           </div>
 
-          {/* Team Member Form Modal */}
           {showMemberForm && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-              <div className="bg-white rounded-lg max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-2 sm:p-4 z-50">
+              <div className="bg-white rounded-lg w-full max-w-md mx-2 sm:mx-0 p-3 sm:p-6 max-h-[90vh] overflow-y-auto">
                 <h3 className="text-lg font-semibold mb-4">
                   {editingMember ? 'Edit Team Member' : 'Add Team Member'}
                 </h3>
                 
-                <form onSubmit={handleMemberSubmit} className="space-y-4">
+                <form onSubmit={handleMemberSubmit} className="space-y-3 sm:space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                       Profile Photo
                     </label>
-                    <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-3 sm:space-x-4">
                       {(memberForm.imageFile || editingMember?.image) && (
                         <img
                           src={memberForm.imageFile ? URL.createObjectURL(memberForm.imageFile) : editingMember?.image}
                           alt="Preview"
-                          className="w-16 h-16 rounded-full object-cover"
+                          className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover"
                         />
                       )}
-                      <label className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-lg font-medium transition-colors cursor-pointer flex items-center">
-                        <Camera className="w-4 h-4 mr-2" />
+                      <label className="bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg font-medium transition-colors cursor-pointer flex items-center text-xs sm:text-sm">
+                        <Camera className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                         Choose Photo
                         <input
                           type="file"
@@ -566,7 +553,7 @@ const SettingsManagement: React.FC = () => {
                       required
                       value={memberForm.name}
                       onChange={(e) => setMemberForm({ ...memberForm, name: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-2.5 py-1.5 sm:px-3 sm:py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
 
@@ -577,7 +564,7 @@ const SettingsManagement: React.FC = () => {
                       required
                       value={memberForm.position}
                       onChange={(e) => setMemberForm({ ...memberForm, position: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-2.5 py-1.5 sm:px-3 sm:py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
 
@@ -587,7 +574,7 @@ const SettingsManagement: React.FC = () => {
                       required
                       value={memberForm.bio}
                       onChange={(e) => setMemberForm({ ...memberForm, bio: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-2.5 py-1.5 sm:px-3 sm:py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       rows={3}
                     />
                   </div>
@@ -598,7 +585,7 @@ const SettingsManagement: React.FC = () => {
                       type="email"
                       value={memberForm.email}
                       onChange={(e) => setMemberForm({ ...memberForm, email: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-2.5 py-1.5 sm:px-3 sm:py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
 
@@ -608,7 +595,7 @@ const SettingsManagement: React.FC = () => {
                       type="url"
                       value={memberForm.linkedin}
                       onChange={(e) => setMemberForm({ ...memberForm, linkedin: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-2.5 py-1.5 sm:px-3 sm:py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
 
@@ -618,7 +605,7 @@ const SettingsManagement: React.FC = () => {
                       type="url"
                       value={memberForm.twitter}
                       onChange={(e) => setMemberForm({ ...memberForm, twitter: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-2.5 py-1.5 sm:px-3 sm:py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
 
@@ -634,18 +621,18 @@ const SettingsManagement: React.FC = () => {
                     </label>
                   </div>
 
-                  <div className="flex space-x-4 pt-4">
+                  <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 pt-3 sm:pt-4">
                     <button
                       type="button"
                       onClick={resetMemberForm}
-                      className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium transition-colors"
+                      className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-1.5 sm:py-2 px-4 rounded-lg font-medium transition-colors text-sm sm:text-base"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={loading}
-                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium transition-colors disabled:opacity-50"
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-1.5 sm:py-2 px-4 rounded-lg font-medium transition-colors disabled:opacity-50 text-sm sm:text-base"
                     >
                       {loading ? 'Saving...' : editingMember ? 'Update' : 'Add'}
                     </button>
@@ -661,18 +648,18 @@ const SettingsManagement: React.FC = () => {
     const filteredSettings = settings.filter(setting => setting.category === activeTab);
 
     return (
-      <div className="space-y-6">
-        <h3 className="text-lg font-semibold capitalize">{activeTab} Settings</h3>
+      <div className="space-y-4 sm:space-y-6">
+        <h3 className="text-base sm:text-lg font-semibold capitalize">{activeTab} Settings</h3>
         
-        <div className="grid gap-6">
+        <div className="grid gap-4 sm:gap-6">
           {filteredSettings.map((setting) => (
-            <div key={setting.id} className="bg-white p-6 rounded-lg shadow-md">
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+            <div key={setting.id} className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
+              <div className="mb-3 sm:mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
                   {setting.label}
                 </label>
                 {setting.description && (
-                  <p className="text-sm text-gray-500 mb-2">{setting.description}</p>
+                  <p className="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">{setting.description}</p>
                 )}
                 {renderSettingField(setting)}
               </div>
@@ -687,23 +674,51 @@ const SettingsManagement: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-gray-900">Settings Management</h2>
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+          Settings Management
+        </h2>
+      </div>
+
+      {/* Mobile Menu Button */}
+      <div className="sm:hidden">
+        <button
+          onClick={() => setShowMobileMenu(!showMobileMenu)}
+          className="w-full flex items-center justify-between bg-white p-3 rounded-lg shadow-md"
+        >
+          <div className="flex items-center">
+            {tabs.find((tab) => tab.id === activeTab)?.icon &&
+              React.createElement(
+                tabs.find((tab) => tab.id === activeTab)
+                  ?.icon as React.ComponentType<{ className?: string }>,
+                { className: "w-4 h-4 mr-2" }
+              )}
+            <span>{tabs.find((tab) => tab.id === activeTab)?.label}</span>
+          </div>
+          <Menu className="w-5 h-5" />
+        </button>
       </div>
 
       {/* Settings Tabs */}
       <div className="bg-white rounded-lg shadow-md">
         <div className="border-b border-gray-200">
-          <nav className="flex space-x-8 px-6">
+          <nav
+            className={`${
+              showMobileMenu ? "block" : "hidden"
+            } sm:flex space-x-0 sm:space-x-8 px-0 sm:px-6 flex-col sm:flex-row`}
+          >
             {tabs.map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors flex items-center ${
+                onClick={() => {
+                  setActiveTab(tab.id);
+                  setShowMobileMenu(false);
+                }}
+                className={`py-3 px-4 sm:py-4 sm:px-2 border-b-0 sm:border-b-2 font-medium text-sm transition-colors flex items-center w-full text-left sm:w-auto ${
                   activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? "bg-gray-50 text-blue-600 sm:bg-transparent sm:border-blue-500"
+                    : "text-gray-500 hover:text-gray-700 hover:bg-gray-50 sm:hover:bg-transparent sm:hover:border-gray-300"
                 }`}
               >
                 <tab.icon className="w-4 h-4 mr-2" />
@@ -713,9 +728,7 @@ const SettingsManagement: React.FC = () => {
           </nav>
         </div>
 
-        <div className="p-6">
-          {renderTabContent()}
-        </div>
+        <div className="p-3 sm:p-6">{renderTabContent()}</div>
       </div>
     </div>
   );
