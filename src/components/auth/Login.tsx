@@ -10,7 +10,6 @@ import {
   signInWithPopup,
   GoogleAuthProvider,
   User,
-  onAuthStateChanged,
 } from 'firebase/auth';
 import {
   getDatabase,
@@ -22,7 +21,7 @@ import {
   set,
 } from 'firebase/database';
 import { Eye, EyeOff } from 'lucide-react';
-import uploadGooglePhoto from './helper'; // tera helper
+import uploadGooglePhoto from './helper';
 
 const auth = getAuth();
 const db = getDatabase();
@@ -49,16 +48,7 @@ function firebaseErrorToMessage(errorCode: string): string {
 
 const Login = () => {
   const navigate = useNavigate();
-
-  // Redirect if user is logged in and email verified
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user && user.emailVerified) {
-        navigate('/profile');
-      }
-    });
-    return () => unsubscribe();
-  }, [navigate]);
+  const [authChecked, setAuthChecked] = useState(false);
 
   const [step, setStep] = useState<
     'email' | 'login' | 'forgot_password' | 'signup_name' | 'signup_password' | 'verify_email'
@@ -88,7 +78,18 @@ const Login = () => {
 
   const [showGoogleError, setShowGoogleError] = useState('');
 
-  // Check disposable email API
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user && user.emailVerified) {
+        navigate('/');
+      } else {
+        setAuthChecked(true);
+      }
+    });
+    
+    return unsubscribe;
+  }, [navigate]);
+
   async function isDisposableEmail(email: string) {
     try {
       const domain = email.split('@')[1];
@@ -96,18 +97,16 @@ const Login = () => {
       const data = await res.json();
       return data.disposable;
     } catch {
-      return false; // fail-safe
+      return false;
     }
   }
 
-  // Check if user exists in Realtime DB
   const checkEmailExists = async (email: string) => {
     const q = query(ref(db, 'users'), orderByChild('email'), equalTo(email.trim().toLowerCase()));
     const snapshot = await get(q);
     return snapshot.exists();
   };
 
-  // Save new user to DB
   const saveUserToDB = async (user: User, name: string) => {
     let cloudinaryImageUrl = '';
     try {
@@ -130,21 +129,17 @@ const Login = () => {
     await set(ref(db, `users/${user.uid}`), userData);
   };
 
-  // Poll for email verification (every 3 sec)
   const pollEmailVerification = (user: User) => {
     const interval = setInterval(async () => {
       await user.reload();
       if (user.emailVerified) {
         setEmailVerified(true);
         clearInterval(interval);
-        navigate('/profile');
+        navigate('/');
       }
     }, 3000);
   };
 
-  // --- Handlers ---
-
-  // Step 1: Email submit
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setEmailError('');
@@ -157,7 +152,6 @@ const Login = () => {
       return;
     }
 
-    // Check disposable email
     const disposable = await isDisposableEmail(email);
     if (disposable) {
       setTempEmailError('Temporary/disposable emails are not allowed.');
@@ -176,7 +170,6 @@ const Login = () => {
     setLoading(false);
   };
 
-  // Step 2 login submit
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError('');
@@ -189,14 +182,13 @@ const Login = () => {
         setLoading(false);
         return;
       }
-      navigate('/profile');
+      navigate('/');
     } catch (err: any) {
       setLoginError(firebaseErrorToMessage(err.code || ''));
     }
     setLoading(false);
   };
 
-  // Forgot Password submit
   const handleForgotPasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setForgotPasswordError('');
@@ -216,7 +208,6 @@ const Login = () => {
     setLoading(false);
   };
 
-  // Step 2a Signup Name Submit
   const handleSignupNameSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSignupError('');
@@ -227,7 +218,6 @@ const Login = () => {
     setStep('signup_password');
   };
 
-  // Step 3a Signup Password Submit
   const handleSignupPasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSignupError('');
@@ -253,7 +243,6 @@ const Login = () => {
     setLoading(false);
   };
 
-  // Google sign in (no modal)
   const handleGoogleSignIn = async () => {
     setShowGoogleError('');
     setLoading(true);
@@ -265,16 +254,14 @@ const Login = () => {
         setLoading(false);
         return;
       }
-      // Save user to DB with displayName from Google profile
       await saveUserToDB(result.user, result.user.displayName || '');
-      navigate('/profile');
+      navigate('/');
     } catch (err: any) {
       setShowGoogleError(firebaseErrorToMessage(err.code || ''));
     }
     setLoading(false);
   };
 
-  // Verification Step Component
   const VerificationStep = () => (
     <div className="text-center space-y-4">
       <p className="text-lg font-semibold">
@@ -288,12 +275,23 @@ const Login = () => {
       )}
       <button
         className="mt-4 text-blue-600"
-        onClick={() => navigate('/profile')}
+        onClick={() => navigate('/')}
       >
         Verify later
       </button>
     </div>
   );
+
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen w-full bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Please wait...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen w-full bg-gray-50 flex flex-col items-center justify-center px-4 py-12">
@@ -310,7 +308,6 @@ const Login = () => {
       </div>
 
       <div className="w-full max-w-md bg-white shadow-xl rounded-2xl p-4 md:p-8 lg:p-8 space-y-6">
-        {/* Google Sign In Button */}
         <button
           type="button"
           onClick={handleGoogleSignIn}
@@ -322,20 +319,20 @@ const Login = () => {
             alt="Google"
             className="h-5 w-5"
           />
-          <span className="text-sm font-medium text-gray-700">Continue with Google</span>
+          <span className="text-sm font-medium text-gray-700">
+            {loading ? 'Signing in...' : 'Continue with Google'}
+          </span>
         </button>
         {showGoogleError && (
           <p className="text-red-600 text-center mt-1">{showGoogleError}</p>
         )}
 
-        {/* Divider */}
         <div className="flex items-center space-x-4 my-4">
           <div className="flex-grow border-t border-gray-300"></div>
           <span className="text-gray-400 text-sm">or</span>
           <div className="flex-grow border-t border-gray-300"></div>
         </div>
 
-        {/* Step 1: Email */}
         {step === 'email' && (
           <form onSubmit={handleEmailSubmit} className="space-y-6">
             <div>
@@ -364,7 +361,6 @@ const Login = () => {
           </form>
         )}
 
-        {/* Step 2 login */}
         {step === 'login' && (
           <form onSubmit={handleLoginSubmit} className="space-y-6">
             <div className="text-sm text-gray-700 mb-2">
@@ -431,7 +427,6 @@ const Login = () => {
           </form>
         )}
 
-        {/* Forgot Password Step */}
         {step === 'forgot_password' && (
           <form onSubmit={handleForgotPasswordSubmit} className="space-y-6">
             <div>
@@ -477,7 +472,6 @@ const Login = () => {
           </form>
         )}
 
-        {/* Step 3a signup name */}
         {step === 'signup_name' && (
           <>
             <div className="text-sm text-gray-700 mb-4">
@@ -526,7 +520,6 @@ const Login = () => {
           </>
         )}
 
-        {/* Step 3b signup password */}
         {step === 'signup_password' && (
           <>
             <div className="text-sm text-gray-700 mb-4">
@@ -579,7 +572,6 @@ const Login = () => {
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Confirm your password"
                 />
-                {/* No toggle button here for confirmPassword for simplicity */}
                 {signupError && <p className="text-red-600 text-sm mt-1">{signupError}</p>}
               </div>
 
@@ -605,7 +597,6 @@ const Login = () => {
           </>
         )}
 
-        {/* Step 4 verify email */}
         {step === 'verify_email' && <VerificationStep />}
       </div>
     </div>
