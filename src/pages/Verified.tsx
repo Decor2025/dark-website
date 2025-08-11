@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { getAuth, applyActionCode } from "firebase/auth";
 
@@ -175,7 +175,7 @@ export default function Verified() {
                       .then(() => {
                         setStatus("success");
                         setMessage("Your email has been successfully verified!");
-                        redirectTo("/login");
+                        
                       })
                       .catch((err: any) => {
                         const reason =
@@ -198,7 +198,7 @@ export default function Verified() {
 
           {/* small helper text */}
           <p className="text-xs text-gray-400 mt-4">
-            You will be redirected automatically in a few seconds.
+            Ready to roll? Tap above to jump in!
           </p>
         </div>
       </div>
