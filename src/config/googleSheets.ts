@@ -52,51 +52,9 @@ export const SHEETS_COLUMN_MAPPING = {
   S: "height",
 };
 
-export async function updateGoogleSheetsInventory(item: any, rowIndex: number) {
-  const accessToken = await getAccessToken();
-  const values = [[
-    item.sku, item.name, item.description, item.category, item.unitType,
-    item.pricePerUnit, item.costPrice, item.sellingPrice, item.currentStock,
-    item.minimumStock, item.maximumStock, item.reorderLevel, item.location,
-    item.supplier, item.barcode, item.imageUrl, item.groupTag, item.width, item.height
-  ]];
-
-  const range = `${GOOGLE_SHEETS_CONFIG.sheetName}!A${rowIndex + 2}:S${rowIndex + 2}`;
-  const res = await fetch(
-    `https://sheets.googleapis.com/v4/spreadsheets/${GOOGLE_SHEETS_CONFIG.spreadsheetId}/values/${range}?valueInputOption=RAW`,
-    {
-      method: 'PUT',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ values })
-    }
-  );
-
-  if (!res.ok) throw new Error(await res.text());
-  console.log(`✅ Google Sheets updated for SKU: ${item.sku}`);
-}
-
-export function syncInventoryToFirebase() {
-  const inventory = await fetchInventoryFromGoogleSheets();
-  for (const item of inventory) {
-    await setDoc(doc(db, 'inventory', item.sku), item, { merge: true });
-  }
-  console.log(`✅ Synced ${inventory.length} items to Firebase`);
-}
 
 
-export async function syncFirebaseToSheets() {
-  const querySnapshot = await getDocs(collection(db, 'inventory'));
-  const allItems: any[] = [];
-  querySnapshot.forEach(docSnap => allItems.push(docSnap.data()));
 
-  for (let i = 0; i < allItems.length; i++) {
-    await updateGoogleSheetsInventory(allItems[i], i);
-  }
-  console.log(`✅ Synced ${allItems.length} items from Firebase to Sheets`);
-}
 export const fetchInventoryFromGoogleSheets = async (): Promise<
   GoogleSheetsRow[]
 > => {
@@ -173,7 +131,7 @@ export const fetchInventoryFromGoogleSheets = async (): Promise<
   }
 };
 
-export function updateGoogleSheetsInventory = async (
+export const updateGoogleSheetsInventory = async (
   item: GoogleSheetsRow,
   rowIndex?: number
 ): Promise<boolean> => {
@@ -233,7 +191,7 @@ export function updateGoogleSheetsInventory = async (
   }
 };
 
-export function addToGoogleSheets = async (
+export const addToGoogleSheets = async (
   item: GoogleSheetsRow
 ): Promise<boolean> => {
   try {
@@ -291,7 +249,7 @@ async function getAccessToken(): Promise<string> {
   return "your-access-token";
 }
 
-export function deleteFromGoogleSheets = async (sku: string): Promise<boolean> => {
+export const deleteFromGoogleSheets = async (sku: string): Promise<boolean> => {
   try {
     // First, find the row with the SKU
     const data = await fetchInventoryFromGoogleSheets();
