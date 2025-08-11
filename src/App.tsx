@@ -18,6 +18,7 @@ import Contact from "./pages/Contact";
 import Estimate from "./pages/Estimate";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import FaviconUpdater from "./components/FaviconUpdater";
+import AuthBridge from "../src/context/Auth"
 
 // Yahan apna ResetPassword component import karna mat bhool
 import ResetPassword from "./pages/ResetPassword";
@@ -45,8 +46,9 @@ function LayoutWrapper() {
           <Route path="/privacy" element={<PrivacyPolicy />} />
 
           {/* Reset Password Route */}
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/verified" element={<Verified />} />
+          <Route path="/auth" element={<AuthBridge />} />
+          <Route path="/auth/reset-password" element={<ResetPassword />} />
+          <Route path="/auth/verified" element={<Verified />} />
           {/* Protected Routes */}
           <Route
             path="/profile"
