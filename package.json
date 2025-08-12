@@ -15,6 +15,7 @@
     "cloudinary": "^2.7.0",
     "firebase": "^12.1.0",
     "firebase-admin": "^13.4.0",
+    "framer-motion": "^12.23.12",
     "googleapis": "^154.1.0",
     "lucide-react": "^0.344.0",
     "node-fetch": "^3.3.2",

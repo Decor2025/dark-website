@@ -15,7 +15,7 @@ export default function ProductCard({
 
   return (
     <div
-      className="cursor-pointer bg-white rounded-xl shadow-md hover:shadow-lg transition flex flex-col w-40 overflow-hidden"
+      className="cursor-pointer bg-white rounded-xl shadow-md hover:shadow-lg transition flex flex-col w-40 md:w-60 lg:w-100 overflow-hidden"
       onClick={onViewDetails}
       role="button"
       tabIndex={0}
