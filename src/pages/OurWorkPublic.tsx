@@ -41,10 +41,10 @@ const OurWorkPublic: React.FC<OurWorkPublicProps> = ({
     
     const updateColumns = () => {
       const width = window.innerWidth;
-      if (width < 640) setColumns(2);    // Mobile: 2 columns
-      else if (width < 768) setColumns(3); // Small screens: 3 columns
-      else if (width < 1024) setColumns(4); // Tablets: 4 columns
-      else setColumns(5);                // Desktops: 5 columns
+      if (width < 640) setColumns(2);        // Mobile
+      else if (width < 768) setColumns(3);   // Small screens
+      else if (width < 1024) setColumns(4);  // Tablets
+      else setColumns(5);                     // Desktops
     };
 
     updateColumns();
@@ -90,7 +90,7 @@ const OurWorkPublic: React.FC<OurWorkPublicProps> = ({
     return columnsArr;
   }, [items, columns, horizontalPreview]);
 
-  // Skeleton loader with random heights
+  // Skeleton loader with random heights for masonry feel
   const Skeleton = () => (
     <div 
       className="animate-pulse bg-gray-300 rounded-lg w-full"
@@ -156,7 +156,7 @@ const OurWorkPublic: React.FC<OurWorkPublicProps> = ({
   };
 
   return (
-    <div className={horizontalPreview ? "" : "max-w-7xl mx-auto px-4 py-8"}>
+    <div className={horizontalPreview ? "w-full" : "max-w-7xl mx-auto px-4 py-8"}>
       {!horizontalPreview && (
         <h1 className="text-3xl font-bold text-center mb-8">
           Our Work
@@ -167,26 +167,22 @@ const OurWorkPublic: React.FC<OurWorkPublicProps> = ({
       {horizontalPreview ? (
         <div className="flex gap-4 w-full overflow-x-auto pb-4 hide-scrollbar">
           {loading
-            ? Array(previewCount || 8)
-                .fill(0)
-                .map((_, i) => <Skeleton key={i} />)
+            ? Array(previewCount || 8).fill(0).map((_, i) => <Skeleton key={i} />)
             : items.map((item, i) => renderItem(item, i))}
         </div>
       ) : (
         /* Masonry grid mode */
-        <div 
-          className="masonry-grid" 
-          style={{ 
+        <div
+          className="masonry-grid"
+          style={{
             '--columns': columns,
-            '--gap': '1rem'
+            '--gap': '1rem',
           } as React.CSSProperties}
         >
           {columnsArray.map((column, colIndex) => (
             <div key={`col-${colIndex}`} className="masonry-column">
               {loading
-                ? Array(5).fill(0).map((_, i) => (
-                    <Skeleton key={`skeleton-${colIndex}-${i}`} />
-                  ))
+                ? Array(5).fill(0).map((_, i) => <Skeleton key={`skeleton-${colIndex}-${i}`} />)
                 : column.map((item) => renderItem(item, items.findIndex(i => i.id === item.id)))}
             </div>
           ))}
@@ -216,17 +212,15 @@ const OurWorkPublic: React.FC<OurWorkPublicProps> = ({
           flex-direction: column;
           gap: var(--gap);
         }
-        
+
         .hide-scrollbar::-webkit-scrollbar {
           display: none;
         }
-        
         .hide-scrollbar {
           -ms-overflow-style: none;
           scrollbar-width: none;
         }
         
-        /* Ensure images maintain aspect ratio */
         img {
           display: block;
           max-width: 100%;
