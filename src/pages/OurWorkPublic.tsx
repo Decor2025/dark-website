@@ -1,102 +1,131 @@
-import React, { useEffect, useState } from "react";
-import { database as db } from "../config/firebase";
-import { ref, onValue } from "firebase/database";
-import Lightbox from "yet-another-react-lightbox";
-import Zoom from "yet-another-react-lightbox/plugins/zoom";
-import Thumbnails from "yet-another-react-lightbox/plugins/thumbnails";
-import "yet-another-react-lightbox/styles.css";
-import "yet-another-react-lightbox/plugins/thumbnails.css";
+import React, { useState, useEffect } from 'react';
+import { ref, onValue } from 'firebase/database';
+import { database as db } from '../config/firebase';
+import Lightbox from 'yet-another-react-lightbox';
+import Zoom from 'yet-another-react-lightbox/plugins/zoom';
+import Thumbnails from 'yet-another-react-lightbox/plugins/thumbnails';
+import 'yet-another-react-lightbox/styles.css';
+import 'yet-another-react-lightbox/plugins/thumbnails.css';
 
 interface WorkItem {
   id: string;
   url?: string;
   caption?: string;
-  type?: "image" | "video";
+  type?: 'image' | 'video';
   videoUrl?: string;
+  category?: string;
+  title?: string;
 }
 
-const OurWorkPublic: React.FC = () => {
-  const [items, setItems] = useState<WorkItem[]>([]);
-  const [loading, setLoading] = useState(true);
+interface OurWorkPublicProps {
+  horizontalPreview?: boolean;
+  previewCount?: number;
+  items?: WorkItem[]; // Add items prop for direct passing
+}
+
+const OurWorkPublic: React.FC<OurWorkPublicProps> = ({
+  horizontalPreview = false,
+  previewCount,
+  items: propItems
+}) => {
+  const [items, setItems] = useState<WorkItem[]>(propItems || []);
+  const [loading, setLoading] = useState(propItems ? false : true);
   const [index, setIndex] = useState<number | null>(null);
 
   useEffect(() => {
-    const unsubscribe = onValue(ref(db, "ourWork"), (snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        const arr = Object.keys(data).map((key) => ({
-          id: key,
-          url: data[key].url,
-          caption: data[key].caption,
-          type: data[key].type || "image",
-          videoUrl: data[key].videoUrl,
-        }));
-        setItems(arr);
-      }
-      setLoading(false);
-    });
+    // Only fetch data if items aren't passed as props
+    if (!propItems) {
+      const unsubscribe = onValue(ref(db, "ourWork"), (snapshot) => {
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          const arr = Object.keys(data).map((key) => ({
+            id: key,
+            ...data[key],
+            title: data[key].caption || 'Our Work',
+          }));
 
-    return () => unsubscribe();
-  }, []);
+          setItems(previewCount ? arr.slice(0, previewCount) : arr);
+        }
+        setLoading(false);
+      });
+
+      return () => unsubscribe();
+    }
+  }, [horizontalPreview, previewCount, propItems]);
 
   const Skeleton = () => (
     <div className="animate-pulse bg-gray-300 rounded-lg w-full aspect-[4/3]" />
   );
 
-  return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-center mb-8">Our Work</h1>
+  const renderItem = (item: WorkItem, i: number) => {
+    return (
+      <div 
+        key={item.id}
+        className={`
+          bg-white rounded-2xl shadow-md overflow-hidden flex flex-col h-full 
+          transform transition-transform duration-300 hover:scale-[1.02] hover:shadow-lg
+          ${horizontalPreview ? 'flex-shrink-0 w-72' : 'w-full'}
+        `}
+        onClick={() => !horizontalPreview && setIndex(i)}
+      >
+        <div className="relative pb-[75%]"> {/* 4:3 aspect ratio */}
+          {item.type === 'video' && item.videoUrl ? (
+            <iframe
+              src={item.videoUrl}
+              className="absolute inset-0 w-full h-full object-cover"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              title={item.title}
+            />
+          ) : (
+            <img 
+              src={item.url || '/placeholder-work.jpg'} 
+              alt={item.title} 
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          )}
+        </div>
+        <div className="p-4 flex-grow">
+          
+          {item.caption && (
+            <p className="text-gray-600 text-sm line-clamp-2">{item.caption}</p>
+          )}
+        </div>
+        {item.category && (
+          <div className="px-4 pb-4">
+            <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+              {item.category}
+            </span>
+          </div>
+        )}
+      </div>
+    );
+  };
 
-      <div className="columns-2 sm:columns-3 md:columns-4 gap-4 space-y-6">
+  return (
+    <div className={horizontalPreview ? "" : "max-w-7xl mx-auto px-4 py-8"}>
+      {!horizontalPreview && (
+        <h1 className="text-3xl font-bold text-center mb-8">
+          Our Work
+        </h1>
+      )}
+
+      <div
+        className={
+          horizontalPreview
+            ? "flex gap-4 w-full overflow-x-auto pb-4 hide-scrollbar"
+            : "columns-2 sm:columns-3 md:columns-4 gap-4 space-y-6"
+        }
+      >
         {loading
-          ? Array(8)
+          ? Array(previewCount || 8)
               .fill(0)
               .map((_, i) => <Skeleton key={i} />)
-          : items.map((item, i) => (
-              <div
-                key={item.id}
-                className="rounded-lg shadow-md cursor-pointer overflow-hidden transform transition duration-300 hover:scale-105 hover:shadow-lg"
-                onClick={() => item.type === "image" && setIndex(i)}
-              >
-                {item.type === "image" && (
-                  <>
-                    <img
-                      src={item.url}
-                      alt={item.caption || "Our Work"}
-                      className="w-full h-auto object-cover"
-                      loading="lazy"
-                    />
-                    {item.caption && (
-                      <p className="p-2 text-center text-sm text-gray-700">
-                        {item.caption}
-                      </p>
-                    )}
-                  </>
-                )}
-
-                {item.type === "video" && item.videoUrl && (
-                  <div className="relative pb-[56.25%] h-0">
-                    <iframe
-                      src={item.videoUrl}
-                      className="absolute top-0 left-0 w-full h-full rounded-lg"
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      title={item.caption || "Video"}
-                    ></iframe>
-                    {item.caption && (
-                      <p className="p-2 text-center text-sm text-gray-700">
-                        {item.caption}
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
-            ))}
+          : items.map((item, i) => renderItem(item, i))}
       </div>
 
-      {/* Lightbox for images only */}
-      {index !== null && (
+      {!horizontalPreview && index !== null && (
         <Lightbox
           slides={items
             .filter((i) => i.type === "image")
@@ -107,6 +136,16 @@ const OurWorkPublic: React.FC = () => {
           plugins={[Zoom, Thumbnails]}
         />
       )}
+
+      <style>{`
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .hide-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </div>
   );
 };

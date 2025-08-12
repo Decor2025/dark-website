@@ -235,7 +235,7 @@ const Contact: React.FC = () => {
                   <h3 className="font-semibold text-gray-900">Address</h3>
                   {(
                     getSetting("store_address") ||
-                    "123 Business Street\nCity, State 12345"
+                    ""
                   )
                     .split("\n")
                     .map((line, index) => (

@@ -13,6 +13,15 @@ export interface User {
   emailVerified?: boolean; 
 }
 
+export type OurWorkItem = {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  category: string;
+  createdAt: string;
+};
+
 export interface Product {
   id: string;
   name: string;
@@ -76,6 +85,7 @@ export interface InventoryTransaction {
   approvedAt?: string;
   notes?: string;
 }
+
 
 export interface InventoryGroup {
   id: string;
