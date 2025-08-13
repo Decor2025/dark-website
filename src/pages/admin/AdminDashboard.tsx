@@ -2,8 +2,12 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { Navigate } from "react-router-dom";
 import { database } from "../../config/firebase";
+import { signOut } from "firebase/auth";
+import { auth } from "../../config/firebase";
+
 import { ref, onValue, off } from "firebase/database";
 import {
+  Home, LayoutDashboard, User, LogOut,
   Users,
   Package,
   MessageSquare,
@@ -27,6 +31,9 @@ import EmployeeDashboard from "../../components/admin/EmployeeDashboard";
 import TestimonialManagement from "../../components/admin/TestimonialManagement";
 import OurWorkAdmin from "../../components/admin/OurWork";
 
+
+
+
 interface DashboardStats {
   totalUsers: number;
   totalProducts: number;
@@ -38,6 +45,10 @@ interface DashboardStats {
 
 const AdminDashboard: React.FC = () => {
   const { currentUser } = useAuth();
+  const [profileOpen, setProfileOpen] = useState(false);
+  const handleLogout = async () => {
+    await signOut(auth);
+  };
   const [activeTab, setActiveTab] = useState("overview");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [stats, setStats] = useState<DashboardStats>({
@@ -160,14 +171,7 @@ const AdminDashboard: React.FC = () => {
               <h1 className="text-2xl font-bold text-gray-900">
                 Dashboard Overview
               </h1>
-              <div className="flex items-center space-x-2">
-                <Bell className="w-5 h-5 text-gray-500" />
-                {stats.unreadMessages > 0 && (
-                  <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1">
-                    {stats.unreadMessages}
-                  </span>
-                )}
-              </div>
+              
             </div>
 
             {/* Stats Grid */}
@@ -363,6 +367,7 @@ const AdminDashboard: React.FC = () => {
   };
 
   return (
+    
     <div className="min-h-screen bg-gray-50 flex">
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
@@ -427,35 +432,86 @@ const AdminDashboard: React.FC = () => {
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
         <header className="bg-white shadow-sm border-b h-16 px-6 flex items-center justify-between">
-  {/* Left: Logo + Mobile Toggle */}
-  <div className="flex items-center space-x-4">
-    {/* Sidebar Toggle (Mobile only) */}
+  {/* Left: Hamburger + Navigation */}
+  <div className="flex items-center space-x-5">
+    {/* Sidebar Toggle */}
     <button
       onClick={() => setSidebarOpen(true)}
       className="lg:hidden p-2 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300"
     >
-      <Menu className="w-5 h-5 text-gray-700" />
+      <Menu className="w-6 h-6 text-gray-700" />
     </button>
 
-    {/* Logo / Home Link */}
+    {/* Dashboard Home */}
+    
+
+    {/* Website Button */}
     <a
       href="/"
-      className="text-xl font-bold tracking-tight text-gray-800 hover:text-blue-600 transition-colors"
+      className="px-3 py-2 flex items-center gap-2 bg-black text-white rounded-md text-sm font-medium hover:bg-gray-800 transition shadow-sm"
     >
-      AdminPanel
+      <Home className="w-4 h-4" />
+      <span>Website</span>
     </a>
   </div>
 
-  {/* Right: Placeholder for icons or dropdown */}
-  <div className="flex items-center space-x-4">
-    {/* Future: Notifications, User Avatar etc. */}
-    <button className="hidden lg:inline-flex items-center px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:text-blue-600 hover:bg-gray-100 transition">
-      Settings
-    </button>
+  {/* Right: Actions */}
+  <div className="flex items-center space-x-5 relative">
+    {/* Notification Bell */}
+    {/* Notification Bell */}
+<button
+  onClick={() => setActiveTab("messages")}
+  className="relative p-2 rounded-full hover:bg-gray-100"
+>
+  <Bell className="w-5 h-5 text-gray-600" />
+  {stats.unreadMessages > 0 && (
+    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1">
+      {stats.unreadMessages}
+    </span>
+  )}
+</button>
 
-    <div className="w-8 h-8 rounded-full bg-gray-200" />
+
+    {/* Profile */}
+    <div className="relative">
+      <button
+        onClick={() => setProfileOpen(!profileOpen)}
+        className="focus:outline-none"
+      >
+        {currentUser?.profileImage ? (
+          <img
+            src={currentUser.profileImage}
+            alt="User avatar"
+            className="w-9 h-9 rounded-full object-cover border border-gray-300"
+          />
+        ) : (
+          <div className="w-9 h-9 rounded-full bg-gray-300" />
+        )}
+      </button>
+
+      {/* Dropdown */}
+      {profileOpen && (
+        <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg py-1 z-50">
+          <a
+            href="/profile"
+            className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+          >
+            <User className="w-4 h-4 mr-2" />
+            My Profile
+          </a>
+          <button
+            onClick={handleLogout}
+            className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Logout
+          </button>
+        </div>
+      )}
+    </div>
   </div>
 </header>
+
 
 
         {/* Content */}
