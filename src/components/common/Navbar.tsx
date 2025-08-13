@@ -1,6 +1,6 @@
 // src/components/Navbar.tsx
 import React, { useEffect, useState, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
   Menu,
   X,
@@ -16,7 +16,7 @@ import { ref, onValue } from "firebase/database";
 import { database } from "../../config/firebase";
 import { SiteSettings } from "../../types";
 
-import TestimonialForm from '../testimonials/TestimonialForm'; // Adjust path accordingly
+import TestimonialForm from "../testimonials/TestimonialForm"; // Adjust path accordingly
 
 type NavItem = {
   label: string;
@@ -27,10 +27,10 @@ type NavItem = {
 const Navbar: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showTestimonialForm, setShowTestimonialForm] = useState(false);
-
   const [settings, setSettings] = useState<SiteSettings[]>([]);
   const { currentUser, loading: authLoading, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const settingsRef = ref(database, "siteSettings");
@@ -49,7 +49,9 @@ const Navbar: React.FC = () => {
   const storeInitial = storeName.charAt(0).toUpperCase();
 
   const displayName =
-    currentUser?.displayName || currentUser?.email?.split?.("@")?.[0] || "User";
+    currentUser?.displayName ||
+    currentUser?.email?.split?.("@")?.[0] ||
+    "User";
 
   const handleLogout = async () => {
     try {
@@ -60,7 +62,6 @@ const Navbar: React.FC = () => {
     }
   };
 
-  // Nav items for desktop and sidebar
   const navLinks: NavItem[] = [
     { label: "Home", to: "/", icon: <Home size={16} /> },
     { label: "Catalogue", to: "/catalogue", icon: <Users size={16} /> },
@@ -92,35 +93,41 @@ const Navbar: React.FC = () => {
     <>
       <nav className="bg-white border-b shadow-sm">
         <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-14">
-          {/* Left: Logo */}
+          {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
             <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">{storeInitial}</span>
+              <span className="text-white font-bold text-lg">
+                {storeInitial}
+              </span>
             </div>
             <span className="font-semibold text-gray-800">{storeName}</span>
           </Link>
 
-          {/* Desktop nav menu */}
-          <div className="hidden md:flex items-center space-x-10">
+          {/* Desktop nav */}
+          <div className="hidden md:flex items-center space-x-8">
             {navLinks.map(({ label, to }) => (
               <Link
                 key={label}
                 to={to || "/"}
-                className="text-gray-700 hover:text-blue-600 text-sm font-medium transition"
+                className={`relative text-sm font-medium px-2 py-1 rounded-md transition ${
+                  location.pathname === to
+                    ? "text-blue-600 font-semibold after:absolute after:left-0 after:right-0 after:bottom-0 after:h-[2px] after:bg-blue-600"
+                    : "text-gray-700 hover:text-blue-600"
+                }`}
               >
                 {label}
               </Link>
             ))}
 
-            {/* Login/Profile */}
-            {!authLoading && currentUser ? (
+            {/* Profile / Login */}
+            {authLoading ? (
+              <div className="w-16 h-8 bg-gray-200 rounded-md animate-pulse" />
+            ) : currentUser ? (
               <div className="relative">
                 <button
                   ref={profileButtonRef}
                   onClick={() => setProfileMenuOpen((o) => !o)}
                   className="flex items-center gap-2 focus:outline-none"
-                  aria-haspopup="true"
-                  aria-expanded={profileMenuOpen}
                 >
                   {currentUser.profileImage ? (
                     <img
@@ -139,22 +146,23 @@ const Navbar: React.FC = () => {
                 {profileMenuOpen && (
                   <div
                     ref={profileMenuRef}
-                    className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 py-2 z-50"
+                    className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 py-1 z-50"
                   >
                     <Link
                       to="/profile"
-                      className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                      className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                       onClick={() => setProfileMenuOpen(false)}
                     >
-                      My Profile
+                      <UserIcon size={16} /> My Profile
                     </Link>
                     {(currentUser.role === "admin" ||
                       currentUser.role === "employee") && (
                       <Link
                         to="/admin"
-                        className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                        className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                         onClick={() => setProfileMenuOpen(false)}
                       >
+                        <Users size={16} />{" "}
                         {currentUser.role === "admin"
                           ? "Admin Panel"
                           : "Dashboard"}
@@ -162,9 +170,9 @@ const Navbar: React.FC = () => {
                     )}
                     <button
                       onClick={handleLogout}
-                      className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50"
+                      className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                     >
-                      Logout
+                      <LogOut size={16} /> Logout
                     </button>
                   </div>
                 )}
@@ -179,9 +187,11 @@ const Navbar: React.FC = () => {
             )}
           </div>
 
-          {/* Mobile: Login button outside sidebar */}
+          {/* Mobile */}
           <div className="flex items-center gap-2 md:hidden">
-            {!authLoading && currentUser ? (
+            {authLoading ? (
+              <div className="w-16 h-8 bg-gray-200 rounded-md animate-pulse" />
+            ) : currentUser ? (
               <Link
                 to="/profile"
                 className="flex items-center gap-1 px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50 transition"
@@ -207,12 +217,9 @@ const Navbar: React.FC = () => {
                 Login
               </Link>
             )}
-
-            {/* Hamburger */}
             <button
               onClick={() => setSidebarOpen(true)}
               className="p-2 rounded-md hover:bg-gray-100"
-              aria-label="Open menu"
             >
               <Menu size={20} />
             </button>
@@ -220,7 +227,7 @@ const Navbar: React.FC = () => {
         </div>
       </nav>
 
-      {/* Mobile Sidebar */}
+      {/* Sidebar */}
       {sidebarOpen && (
         <div className="fixed inset-0 z-50 flex">
           <div
@@ -229,7 +236,7 @@ const Navbar: React.FC = () => {
           />
           <div className="w-72 bg-white h-full shadow-xl p-4 flex flex-col justify-between animate-slideInRight">
             <div>
-              <div className="flex justify-between items-center border-b border-gray-200 pb-3 mb-4">
+              <div className="flex justify-between items-center border-b pb-3 mb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">
                     {storeInitial}
@@ -242,12 +249,12 @@ const Navbar: React.FC = () => {
                 <button
                   onClick={() => setSidebarOpen(false)}
                   className="p-2 hover:bg-gray-100 rounded-md"
-                  aria-label="Close menu"
                 >
                   <X size={22} />
                 </button>
               </div>
 
+              {/* User Info */}
               <div className="mb-6 border-b pb-4">
                 {!authLoading && currentUser ? (
                   <div className="flex items-center gap-3">
@@ -271,7 +278,9 @@ const Navbar: React.FC = () => {
                   </div>
                 ) : (
                   <div>
-                    <div className="text-sm font-medium text-gray-800">Welcome</div>
+                    <div className="text-sm font-medium text-gray-800">
+                      Welcome
+                    </div>
                     <div className="text-xs text-gray-500 mb-2">
                       Sign in to access your account
                     </div>
@@ -286,13 +295,18 @@ const Navbar: React.FC = () => {
                 )}
               </div>
 
+              {/* Menu Links */}
               <div className="flex flex-col gap-2">
                 {navLinks.map(({ label, to, icon }, idx) => (
                   <Link
                     key={idx}
                     to={to || "/"}
                     onClick={() => setSidebarOpen(false)}
-                    className="py-2 px-2 rounded hover:bg-gray-100 flex items-center gap-2"
+                    className={`py-2 px-2 rounded flex items-center gap-2 ${
+                      location.pathname === to
+                        ? "bg-blue-50 text-blue-600 font-medium"
+                        : "hover:bg-gray-100 text-gray-700"
+                    }`}
                   >
                     {icon && <span className="text-gray-500">{icon}</span>}
                     <span>{label}</span>
@@ -300,7 +314,7 @@ const Navbar: React.FC = () => {
                 ))}
               </div>
 
-              {/* Optional small footer links */}
+              {/* Footer links */}
               <div className="text-xs text-gray-500 mt-6 mb-4">
                 <Link
                   to="/privacy-policy"
@@ -321,15 +335,16 @@ const Navbar: React.FC = () => {
               </div>
             </div>
 
+            {/* Bottom Links */}
             <div className="border-t pt-4 flex flex-col gap-2">
               {!authLoading && currentUser ? (
                 <>
                   <Link
                     to="/profile"
                     onClick={() => setSidebarOpen(false)}
-                    className="py-2 px-2 rounded hover:bg-gray-100 flex items-center gap-2"
+                    className="py-2 px-2 rounded hover:bg-gray-100 flex items-center gap-2 text-sm text-gray-600"
                   >
-                    <UserIcon size={18} />
+                    <UserIcon size={16} />
                     My Profile
                   </Link>
                   {(currentUser.role === "admin" ||
@@ -337,17 +352,19 @@ const Navbar: React.FC = () => {
                     <Link
                       to="/admin"
                       onClick={() => setSidebarOpen(false)}
-                      className="py-2 px-2 rounded hover:bg-gray-100 flex items-center gap-2"
+                      className="py-2 px-2 rounded hover:bg-gray-100 flex items-center gap-2 text-sm text-gray-600"
                     >
-                      <Users size={18} />
-                      {currentUser.role === "admin" ? "Admin Panel" : "Dashboard"}
+                      <Users size={16} />
+                      {currentUser.role === "admin"
+                        ? "Admin Panel"
+                        : "Dashboard"}
                     </Link>
                   )}
                   <button
                     onClick={handleLogout}
-                    className="text-red-600 py-2 px-2 rounded hover:bg-red-50 text-left flex items-center gap-2"
+                    className="text-red-600 py-2 px-2 rounded hover:bg-red-50 text-left flex items-center gap-2 text-sm"
                   >
-                    <LogOut size={18} />
+                    <LogOut size={16} />
                     Logout
                   </button>
                 </>
@@ -367,12 +384,8 @@ const Navbar: React.FC = () => {
 
       <style>{`
         @keyframes slideInRight {
-          from {
-            transform: translateX(100%);
-          }
-          to {
-            transform: translateX(0);
-          }
+          from { transform: translateX(100%); }
+          to { transform: translateX(0); }
         }
         .animate-slideInRight {
           animation: slideInRight 0.3s ease forwards;

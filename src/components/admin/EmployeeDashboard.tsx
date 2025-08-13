@@ -19,7 +19,9 @@ import {
   Search,
   Filter,
   Save,
-  RefreshCw
+  RefreshCw,
+  Menu,
+  X
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -35,6 +37,7 @@ const EmployeeDashboard: React.FC = () => {
   const [showAddItemModal, setShowAddItemModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const [loading, setLoading] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const { currentUser } = useAuth();
 
   const [auditForm, setAuditForm] = useState({
@@ -369,58 +372,58 @@ const EmployeeDashboard: React.FC = () => {
       case 'overview':
         return (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-blue-50 p-6 rounded-lg">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              <div className="bg-blue-50 p-4 sm:p-6 rounded-lg">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-blue-600 text-sm font-medium">Today's Transactions</p>
-                    <p className="text-2xl font-bold text-blue-900">{todayTransactions.length}</p>
+                    <p className="text-xl sm:text-2xl font-bold text-blue-900">{todayTransactions.length}</p>
                   </div>
-                  <BarChart3 className="w-8 h-8 text-blue-600" />
+                  <BarChart3 className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
                 </div>
               </div>
               
-              <div className="bg-yellow-50 p-6 rounded-lg">
+              <div className="bg-yellow-50 p-4 sm:p-6 rounded-lg">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-yellow-600 text-sm font-medium">Low Stock Items</p>
-                    <p className="text-2xl font-bold text-yellow-900">{lowStockItems.length}</p>
+                    <p className="text-xl sm:text-2xl font-bold text-yellow-900">{lowStockItems.length}</p>
                   </div>
-                  <AlertTriangle className="w-8 h-8 text-yellow-600" />
+                  <AlertTriangle className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-600" />
                 </div>
               </div>
 
-              <div className="bg-green-50 p-6 rounded-lg">
+              <div className="bg-green-50 p-4 sm:p-6 rounded-lg">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-green-600 text-sm font-medium">Managed Items</p>
-                    <p className="text-2xl font-bold text-green-900">{inventory.length}</p>
+                    <p className="text-xl sm:text-2xl font-bold text-green-900">{inventory.length}</p>
                   </div>
-                  <Package className="w-8 h-8 text-green-600" />
+                  <Package className="w-6 h-6 sm:w-8 sm:h-8 text-green-600" />
                 </div>
               </div>
             </div>
 
             {/* Recent Transactions */}
-            <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
               <h3 className="text-lg font-semibold mb-4">Recent Transactions</h3>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      <th className="px-4 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Date & Time
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      <th className="px-4 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Item
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      <th className="px-4 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Type
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      <th className="px-4 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Quantity
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                      <th className="px-4 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Reason
                       </th>
                     </tr>
@@ -430,13 +433,16 @@ const EmployeeDashboard: React.FC = () => {
                       const item = inventory.find(i => i.id === transaction.inventoryItemId);
                       return (
                         <tr key={transaction.id}>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {new Date(transaction.performedAt).toLocaleString()}
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                            {new Date(transaction.performedAt).toLocaleDateString()}
+                            <span className="block text-xs text-gray-500">
+                              {new Date(transaction.performedAt).toLocaleTimeString()}
+                            </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                             {item?.name || 'Unknown Item'}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-4 py-3 whitespace-nowrap">
                             <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                               transaction.type === 'purchase' ? 'bg-green-100 text-green-800' :
                               transaction.type === 'sale' ? 'bg-blue-100 text-blue-800' :
@@ -446,7 +452,7 @@ const EmployeeDashboard: React.FC = () => {
                               {transaction.type}
                             </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                             <div className="flex items-center">
                               {['purchase', 'return'].includes(transaction.type) ? (
                                 <TrendingUp className="w-4 h-4 text-green-600 mr-1" />
@@ -456,7 +462,7 @@ const EmployeeDashboard: React.FC = () => {
                               {transaction.quantity}
                             </div>
                           </td>
-                          <td className="px-6 py-4 text-sm text-gray-900">
+                          <td className="px-4 py-3 text-sm text-gray-900">
                             {transaction.reason}
                           </td>
                         </tr>
@@ -472,24 +478,24 @@ const EmployeeDashboard: React.FC = () => {
       case 'inventory':
         return (
           <div className="space-y-6">
-            <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
               <h3 className="text-lg font-semibold">Inventory Management</h3>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={() => setShowAddItemModal(true)}
-                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center"
+                  className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg font-medium transition-colors flex items-center justify-center"
                 >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Item
+                  <Plus className="w-4 h-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Add Item</span>
                 </button>
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
                   <input
                     type="text"
                     placeholder="Search items..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
                   />
                 </div>
               </div>
@@ -497,142 +503,150 @@ const EmployeeDashboard: React.FC = () => {
 
             {/* Low Stock Alert */}
             {lowStockItems.length > 0 && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 sm:p-4">
                 <div className="flex items-center">
-                  <AlertTriangle className="w-5 h-5 text-yellow-600 mr-2" />
-                  <h4 className="text-lg font-medium text-yellow-800">Low Stock Alert</h4>
+                  <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-600 mr-2" />
+                  <h4 className="text-base sm:text-lg font-medium text-yellow-800">Low Stock Alert</h4>
                 </div>
-                <p className="text-yellow-700 mt-1">
+                <p className="text-yellow-700 mt-1 text-sm">
                   {lowStockItems.length} items need attention
                 </p>
               </div>
             )}
 
             {/* Inventory Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredInventory.map((item) => (
-                <div 
-                  key={item.id} 
-                  className={`bg-white rounded-lg shadow-md p-6 ${
-                    item.currentStock <= item.reorderLevel ? 'border-l-4 border-yellow-500' : ''
-                  }`}
-                >
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="flex-1">
-                      <h4 className="text-lg font-semibold text-gray-900">{item.name}</h4>
-                      <p className="text-sm text-gray-500">SKU: {item.sku}</p>
-                      <p className="text-sm text-gray-500">{item.category}</p>
-                      {item.groupTag && (
-                        <span className="inline-block px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full mt-1">
-                          {item.groupTag}
-                        </span>
+            {filteredInventory.length === 0 ? (
+              <div className="bg-white rounded-lg shadow-md p-8 text-center">
+                <Package className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <h4 className="text-lg font-medium text-gray-900 mb-2">No inventory items found</h4>
+                <p className="text-gray-600">Try changing your search or add a new item</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                {filteredInventory.map((item) => (
+                  <div 
+                    key={item.id} 
+                    className={`bg-white rounded-lg shadow-md p-4 sm:p-6 ${
+                      item.currentStock <= item.reorderLevel ? 'border-l-4 border-yellow-500' : ''
+                    }`}
+                  >
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="flex-1">
+                        <h4 className="text-base sm:text-lg font-semibold text-gray-900">{item.name}</h4>
+                        <p className="text-xs sm:text-sm text-gray-500">SKU: {item.sku}</p>
+                        <p className="text-xs sm:text-sm text-gray-500">{item.category}</p>
+                        {item.groupTag && (
+                          <span className="inline-block px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full mt-1">
+                            {item.groupTag}
+                          </span>
+                        )}
+                      </div>
+                      {item.imageUrl && (
+                        <img
+                          src={item.imageUrl}
+                          alt={item.name}
+                          className="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded-lg ml-2 sm:ml-4"
+                        />
+                      )}
+                      {item.currentStock <= item.reorderLevel && (
+                        <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 ml-1 sm:ml-2" />
                       )}
                     </div>
-                    {item.imageUrl && (
-                      <img
-                        src={item.imageUrl}
-                        alt={item.name}
-                        className="w-16 h-16 object-cover rounded-lg ml-4"
-                      />
-                    )}
-                    {item.currentStock <= item.reorderLevel && (
-                      <AlertTriangle className="w-5 h-5 text-yellow-500 ml-2" />
-                    )}
-                  </div>
 
-                  <div className="space-y-2 mb-4">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Current Stock:</span>
-                      <span className="text-sm font-medium">{item.currentStock} {item.unit}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Reorder Level:</span>
-                      <span className="text-sm">{item.reorderLevel} {item.unit}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Price per {item.unitType}:</span>
-                      <span className="text-sm font-medium">₹{item.pricePerUnit || item.sellingPrice}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-600">Location:</span>
-                      <span className="text-sm">{item.location}</span>
-                    </div>
-                    {item.width && item.height && (
+                    <div className="space-y-2 mb-4">
                       <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Dimensions:</span>
-                        <span className="text-sm">{item.width} × {item.height} {item.unitType}</span>
+                        <span className="text-xs sm:text-sm text-gray-600">Current Stock:</span>
+                        <span className="text-xs sm:text-sm font-medium">{item.currentStock} {item.unit}</span>
                       </div>
-                    )}
-                  </div>
+                      <div className="flex justify-between">
+                        <span className="text-xs sm:text-sm text-gray-600">Reorder Level:</span>
+                        <span className="text-xs sm:text-sm">{item.reorderLevel} {item.unit}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-xs sm:text-sm text-gray-600">Price per {item.unitType}:</span>
+                        <span className="text-xs sm:text-sm font-medium">₹{item.pricePerUnit || item.sellingPrice}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-xs sm:text-sm text-gray-600">Location:</span>
+                        <span className="text-xs sm:text-sm">{item.location}</span>
+                      </div>
+                      {item.width && item.height && (
+                        <div className="flex justify-between">
+                          <span className="text-xs sm:text-sm text-gray-600">Dimensions:</span>
+                          <span className="text-xs sm:text-sm">{item.width} × {item.height} {item.unitType}</span>
+                        </div>
+                      )}
+                    </div>
 
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => {
-                        setSelectedItem(item);
-                        setAuditForm({ ...auditForm, type: 'purchase' });
-                        setShowAuditModal(true);
-                      }}
-                      className="flex-1 bg-green-100 hover:bg-green-200 text-green-700 py-2 px-3 rounded-lg font-medium transition-colors flex items-center justify-center"
-                    >
-                      <Plus className="w-4 h-4 mr-1" />
-                      Add
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSelectedItem(item);
-                        setAuditForm({ ...auditForm, type: 'sale' });
-                        setShowAuditModal(true);
-                      }}
-                      className="flex-1 bg-red-100 hover:bg-red-200 text-red-700 py-2 px-3 rounded-lg font-medium transition-colors flex items-center justify-center"
-                    >
-                      <Minus className="w-4 h-4 mr-1" />
-                      Reduce
-                    </button>
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => {
+                          setSelectedItem(item);
+                          setAuditForm({ ...auditForm, type: 'purchase' });
+                          setShowAuditModal(true);
+                        }}
+                        className="flex-1 bg-green-100 hover:bg-green-200 text-green-700 py-2 px-2 sm:px-3 rounded-lg font-medium transition-colors flex items-center justify-center text-sm"
+                      >
+                        <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                        <span>Add</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedItem(item);
+                          setAuditForm({ ...auditForm, type: 'sale' });
+                          setShowAuditModal(true);
+                        }}
+                        className="flex-1 bg-red-100 hover:bg-red-200 text-red-700 py-2 px-2 sm:px-3 rounded-lg font-medium transition-colors flex items-center justify-center text-sm"
+                      >
+                        <Minus className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                        <span>Reduce</span>
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         );
 
       case 'messages':
         return (
           <div className="space-y-6">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
               <h3 className="text-lg font-semibold">Messages</h3>
               <button
                 onClick={() => setShowMessageModal(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg font-medium transition-colors flex items-center justify-center"
               >
-                <Send className="w-4 h-4 mr-2" />
-                New Message
+                <Send className="w-4 h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">New Message</span>
               </button>
             </div>
 
             <div className="bg-white rounded-lg shadow-md">
               {messages.length === 0 ? (
-                <div className="p-8 text-center">
-                  <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <div className="p-6 sm:p-8 text-center">
+                  <MessageSquare className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400 mx-auto mb-4" />
                   <h4 className="text-lg font-medium text-gray-900 mb-2">No messages yet</h4>
                   <p className="text-gray-600">Start a conversation with your team</p>
                 </div>
               ) : (
                 <div className="divide-y divide-gray-200">
                   {messages.map((message) => (
-                    <div key={message.id} className="p-6 hover:bg-gray-50">
+                    <div key={message.id} className="p-4 sm:p-6 hover:bg-gray-50">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <div className="flex items-center space-x-2 mb-2">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 mb-2">
                             <h4 className="text-sm font-medium text-gray-900">
                               {message.subject}
                             </h4>
                             {!message.isRead && message.toUserId === currentUser?.uid && (
-                              <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                              <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full mt-1 sm:mt-0">
                                 New
                               </span>
                             )}
                           </div>
-                          <p className="text-sm text-gray-600 mb-2">{message.content}</p>
+                          <p className="text-sm text-gray-600 mb-2 line-clamp-2">{message.content}</p>
                           <p className="text-xs text-gray-500">
                             {new Date(message.createdAt).toLocaleString()}
                           </p>
@@ -651,16 +665,16 @@ const EmployeeDashboard: React.FC = () => {
 
       case 'profile':
         return (
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h3 className="text-2xl font-bold mb-4">My Profile</h3>
-            <div className="space-y-4">
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
+            <h3 className="text-xl sm:text-2xl font-bold mb-4">My Profile</h3>
+            <div className="space-y-3 sm:space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
                 <input
                   type="text"
                   value={employee?.name || currentUser?.displayName || ''}
                   disabled
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm sm:text-base"
                 />
               </div>
               <div>
@@ -669,7 +683,7 @@ const EmployeeDashboard: React.FC = () => {
                   type="email"
                   value={currentUser?.email || ''}
                   disabled
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm sm:text-base"
                 />
               </div>
               <div>
@@ -678,7 +692,7 @@ const EmployeeDashboard: React.FC = () => {
                   type="text"
                   value={employee?.employeeId || ''}
                   disabled
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm sm:text-base"
                 />
               </div>
               <div>
@@ -687,7 +701,7 @@ const EmployeeDashboard: React.FC = () => {
                   type="text"
                   value={employee?.department || ''}
                   disabled
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm sm:text-base"
                 />
               </div>
               <div>
@@ -696,7 +710,7 @@ const EmployeeDashboard: React.FC = () => {
                   type="text"
                   value={employee?.position || ''}
                   disabled
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm sm:text-base"
                 />
               </div>
             </div>
@@ -710,37 +724,81 @@ const EmployeeDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Mobile Header */}
+      <div className="lg:hidden bg-white shadow-sm p-3 flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <button 
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="text-gray-700 focus:outline-none"
+          >
+            {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+          <h1 className="text-xl font-bold text-gray-900 capitalize">{activeTab}</h1>
+        </div>
+        <div className="flex items-center">
+          {activeTab === 'inventory' && (
+            <button
+              onClick={() => setShowAddItemModal(true)}
+              className="bg-green-600 hover:bg-green-700 text-white p-2 rounded-lg font-medium transition-colors"
+            >
+              <Plus className="w-5 h-5" />
+            </button>
+          )}
+          {activeTab === 'messages' && (
+            <button
+              onClick={() => setShowMessageModal(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg font-medium transition-colors ml-2"
+            >
+              <Send className="w-5 h-5" />
+            </button>
+          )}
+        </div>
+      </div>
+
       <div className="flex flex-col lg:flex-row">
-        {/* Sidebar */}
-        <div className="w-full lg:w-64 bg-white shadow-lg">
-          <div className="p-6 border-b">
+        {/* Sidebar - Mobile */}
+        {sidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden" 
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+        <div 
+          className={`fixed lg:relative inset-y-0 left-0 w-64 bg-white shadow-lg z-50 transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+            sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+        >
+          <div className="p-4 sm:p-6 border-b">
             <h2 className="text-xl font-bold text-gray-900">Employee Dashboard</h2>
-            <p className="text-sm text-gray-600">{employee?.name || currentUser?.email}</p>
-            <p className="text-xs text-gray-500">{employee?.position}</p>
+            <p className="text-sm text-gray-600 truncate">{employee?.name || currentUser?.email}</p>
+            <p className="text-xs text-gray-500 truncate">{employee?.position}</p>
           </div>
           
-          <nav className="p-4">
+          <nav className="p-3 sm:p-4">
             {employeeTabs.map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg mb-2 transition-colors ${
+                onClick={() => {
+                  setActiveTab(tab.id);
+                  setSidebarOpen(false);
+                }}
+                className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg mb-1 transition-colors ${
                   activeTab === tab.id
                     ? 'bg-blue-100 text-blue-600'
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
               >
                 <tab.icon className="w-5 h-5" />
-                <span className="hidden lg:block">{tab.label}</span>
+                <span className="text-sm">{tab.label}</span>
               </button>
             ))}
           </nav>
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 p-4 lg:p-8">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold text-gray-900 capitalize">{activeTab}</h1>
+        <div className="flex-1 p-3 sm:p-4 md:p-6">
+          <div className="hidden lg:block mb-4 sm:mb-6">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 capitalize">{activeTab}</h1>
           </div>
           {renderContent()}
         </div>
@@ -748,8 +806,8 @@ const EmployeeDashboard: React.FC = () => {
 
       {/* Stock Audit Modal */}
       {showAuditModal && selectedItem && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-3 sm:p-4 z-50">
+          <div className="bg-white rounded-lg max-w-md w-full p-4 sm:p-6">
             <h3 className="text-lg font-semibold mb-4">
               Stock Audit - {selectedItem.name}
             </h3>
@@ -762,7 +820,7 @@ const EmployeeDashboard: React.FC = () => {
                 <select
                   value={auditForm.type}
                   onChange={(e) => setAuditForm({ ...auditForm, type: e.target.value as any })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                 >
                   <option value="purchase">Purchase/Received</option>
                   <option value="sale">Sale/Issued</option>
@@ -782,7 +840,7 @@ const EmployeeDashboard: React.FC = () => {
                   min="1"
                   value={auditForm.quantity}
                   onChange={(e) => setAuditForm({ ...auditForm, quantity: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                 />
                 <p className="text-sm text-gray-500 mt-1">
                   Current stock: {selectedItem.currentStock} {selectedItem.unit}
@@ -798,7 +856,7 @@ const EmployeeDashboard: React.FC = () => {
                   required
                   value={auditForm.reason}
                   onChange={(e) => setAuditForm({ ...auditForm, reason: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                   placeholder="e.g., Customer order, Damaged goods, etc."
                 />
               </div>
@@ -811,7 +869,7 @@ const EmployeeDashboard: React.FC = () => {
                   type="text"
                   value={auditForm.reference}
                   onChange={(e) => setAuditForm({ ...auditForm, reference: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                   placeholder="Order number, invoice, etc."
                 />
               </div>
@@ -823,12 +881,12 @@ const EmployeeDashboard: React.FC = () => {
                 <textarea
                   value={auditForm.notes}
                   onChange={(e) => setAuditForm({ ...auditForm, notes: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                   rows={3}
                 />
               </div>
 
-              <div className="flex space-x-4 pt-4">
+              <div className="flex space-x-3 sm:space-x-4 pt-4">
                 <button
                   type="button"
                   onClick={() => {
@@ -842,14 +900,14 @@ const EmployeeDashboard: React.FC = () => {
                       notes: '',
                     });
                   }}
-                  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium transition-colors"
+                  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-3 sm:px-4 rounded-lg font-medium transition-colors text-sm sm:text-base"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium transition-colors disabled:opacity-50"
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 sm:px-4 rounded-lg font-medium transition-colors disabled:opacity-50 text-sm sm:text-base"
                 >
                   {loading ? 'Processing...' : 'Update Stock'}
                 </button>
@@ -861,12 +919,12 @@ const EmployeeDashboard: React.FC = () => {
 
       {/* Add New Item Modal */}
       {showAddItemModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center p-3 sm:p-4 z-50 overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-2xl w-full my-4 sm:my-8 p-4 sm:p-6">
             <h3 className="text-lg font-semibold mb-4">Add New Inventory Item</h3>
             
             <form onSubmit={handleAddNewItem} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">SKU *</label>
                   <input
@@ -874,7 +932,7 @@ const EmployeeDashboard: React.FC = () => {
                     required
                     value={newItemForm.sku}
                     onChange={(e) => setNewItemForm({ ...newItemForm, sku: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                   />
                 </div>
                 <div>
@@ -884,7 +942,7 @@ const EmployeeDashboard: React.FC = () => {
                     required
                     value={newItemForm.name}
                     onChange={(e) => setNewItemForm({ ...newItemForm, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                   />
                 </div>
               </div>
@@ -894,12 +952,12 @@ const EmployeeDashboard: React.FC = () => {
                 <textarea
                   value={newItemForm.description}
                   onChange={(e) => setNewItemForm({ ...newItemForm, description: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                   rows={3}
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
                   <input
@@ -907,7 +965,7 @@ const EmployeeDashboard: React.FC = () => {
                     required
                     value={newItemForm.category}
                     onChange={(e) => setNewItemForm({ ...newItemForm, category: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                   />
                 </div>
                 <div>
@@ -915,7 +973,7 @@ const EmployeeDashboard: React.FC = () => {
                   <select
                     value={newItemForm.unitType}
                     onChange={(e) => setNewItemForm({ ...newItemForm, unitType: e.target.value as any })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                   >
                     <option value="piece">Pieces</option>
                     <option value="sqft">Square Feet</option>
@@ -930,12 +988,12 @@ const EmployeeDashboard: React.FC = () => {
                     type="text"
                     value={newItemForm.location}
                     onChange={(e) => setNewItemForm({ ...newItemForm, location: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Cost Price (₹)</label>
                   <input
@@ -943,7 +1001,7 @@ const EmployeeDashboard: React.FC = () => {
                     step="0.01"
                     value={newItemForm.costPrice}
                     onChange={(e) => setNewItemForm({ ...newItemForm, costPrice: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                   />
                 </div>
                 <div>
@@ -958,12 +1016,12 @@ const EmployeeDashboard: React.FC = () => {
                       pricePerUnit: e.target.value,
                       sellingPrice: e.target.value 
                     })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Current Stock *</label>
                   <input
@@ -971,7 +1029,7 @@ const EmployeeDashboard: React.FC = () => {
                     required
                     value={newItemForm.currentStock}
                     onChange={(e) => setNewItemForm({ ...newItemForm, currentStock: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                   />
                 </div>
                 <div>
@@ -980,7 +1038,7 @@ const EmployeeDashboard: React.FC = () => {
                     type="number"
                     value={newItemForm.minimumStock}
                     onChange={(e) => setNewItemForm({ ...newItemForm, minimumStock: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                   />
                 </div>
                 <div>
@@ -989,19 +1047,19 @@ const EmployeeDashboard: React.FC = () => {
                     type="number"
                     value={newItemForm.reorderLevel}
                     onChange={(e) => setNewItemForm({ ...newItemForm, reorderLevel: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Supplier</label>
                   <input
                     type="text"
                     value={newItemForm.supplier}
                     onChange={(e) => setNewItemForm({ ...newItemForm, supplier: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                   />
                 </div>
                 <div>
@@ -1010,7 +1068,7 @@ const EmployeeDashboard: React.FC = () => {
                     type="text"
                     value={newItemForm.groupTag}
                     onChange={(e) => setNewItemForm({ ...newItemForm, groupTag: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                     placeholder="e.g., Premium, Budget, Luxury"
                   />
                 </div>
@@ -1022,13 +1080,13 @@ const EmployeeDashboard: React.FC = () => {
                   type="url"
                   value={newItemForm.imageUrl}
                   onChange={(e) => setNewItemForm({ ...newItemForm, imageUrl: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                   placeholder="https://example.com/image.jpg"
                 />
               </div>
 
               {(newItemForm.unitType === 'sqft' || newItemForm.unitType === 'meter') && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Width ({newItemForm.unitType === 'sqft' ? 'ft' : 'm'})
@@ -1038,7 +1096,7 @@ const EmployeeDashboard: React.FC = () => {
                       step="0.1"
                       value={newItemForm.width}
                       onChange={(e) => setNewItemForm({ ...newItemForm, width: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                     />
                   </div>
                   <div>
@@ -1050,24 +1108,24 @@ const EmployeeDashboard: React.FC = () => {
                       step="0.1"
                       value={newItemForm.height}
                       onChange={(e) => setNewItemForm({ ...newItemForm, height: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                     />
                   </div>
                 </div>
               )}
 
-              <div className="flex space-x-4 pt-4">
+              <div className="flex space-x-3 sm:space-x-4 pt-4">
                 <button
                   type="button"
                   onClick={() => setShowAddItemModal(false)}
-                  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium transition-colors"
+                  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-3 sm:px-4 rounded-lg font-medium transition-colors text-sm sm:text-base"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center justify-center"
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 sm:px-4 rounded-lg font-medium transition-colors disabled:opacity-50 text-sm sm:text-base flex items-center justify-center"
                 >
                   {loading ? (
                     <>
@@ -1089,8 +1147,8 @@ const EmployeeDashboard: React.FC = () => {
 
       {/* Message Modal */}
       {showMessageModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-3 sm:p-4 z-50">
+          <div className="bg-white rounded-lg max-w-md w-full p-4 sm:p-6">
             <h3 className="text-lg font-semibold mb-4">Send Message to Admin</h3>
             
             <form onSubmit={handleSendMessage} className="space-y-4">
@@ -1103,7 +1161,7 @@ const EmployeeDashboard: React.FC = () => {
                   required
                   value={messageForm.subject}
                   onChange={(e) => setMessageForm({ ...messageForm, subject: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                 />
               </div>
 
@@ -1116,22 +1174,22 @@ const EmployeeDashboard: React.FC = () => {
                   rows={4}
                   value={messageForm.content}
                   onChange={(e) => setMessageForm({ ...messageForm, content: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                 />
               </div>
 
-              <div className="flex space-x-4 pt-4">
+              <div className="flex space-x-3 sm:space-x-4 pt-4">
                 <button
                   type="button"
                   onClick={() => setShowMessageModal(false)}
-                  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium transition-colors"
+                  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-3 sm:px-4 rounded-lg font-medium transition-colors text-sm sm:text-base"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium transition-colors disabled:opacity-50"
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 sm:px-4 rounded-lg font-medium transition-colors disabled:opacity-50 text-sm sm:text-base"
                 >
                   {loading ? 'Sending...' : 'Send Message'}
                 </button>
