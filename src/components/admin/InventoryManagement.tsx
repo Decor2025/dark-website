@@ -14,6 +14,7 @@ import {
 } from "../../types";
 import {
   Package,
+  Calendar,
   RefreshCw,
   Download,
   Plus,
@@ -210,7 +211,7 @@ const InventoryManagement: React.FC = () => {
       console.error("Failed to sync to Google Sheets:", error);
     }
   };
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -396,28 +397,29 @@ const InventoryManagement: React.FC = () => {
     setSortConfig({ key, direction });
   };
 
-  
   const filteredInventory = inventory.filter((item) => {
     const matchesSearch =
-    (item.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (item.sku || "").toLowerCase().includes(searchQuery.toLowerCase());
+      (item.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (item.sku || "").toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory =
-    categoryFilter === "all" || item.category === categoryFilter;
+      categoryFilter === "all" || item.category === categoryFilter;
     const matchesGroup = groupFilter === "all" || item.groupTag === groupFilter;
     return matchesSearch && matchesCategory && matchesGroup;
   });
-  
   const sortedInventory = [...filteredInventory].sort((a, b) => {
     if (!sortConfig.key) return 0;
-    
-    if (a[sortConfig.key] < b[sortConfig.key]) {
+
+    const key = sortConfig.key as keyof InventoryItem;
+
+    if (a[key] < b[key]) {
       return sortConfig.direction === "asc" ? -1 : 1;
     }
-    if (a[sortConfig.key] > b[sortConfig.key]) {
+    if (a[key] > b[key]) {
       return sortConfig.direction === "asc" ? 1 : -1;
     }
     return 0;
   });
+
   const categories = Array.from(
     new Set(inventory.map((item) => item.category))
   );
@@ -429,113 +431,150 @@ const InventoryManagement: React.FC = () => {
   );
 
   const tabs = [
-    { id: "items", label: "Inventory Items", icon: Package },
-    { id: "transactions", label: "Transaction History", icon: FileText },
-    { id: "groups", label: "Inventory Groups", icon: Users },
+    { id: "items", label: "Items", icon: Package },
+    { id: "transactions", label: "History", icon: FileText },
+    { id: "groups", label: "Groups", icon: Users },
   ];
 
   // Inventory stats for dashboard
   const inventoryStats = {
     totalItems: inventory.length,
     lowStockItems: lowStockItems.length,
-    totalValue: inventory.reduce((sum, item) => sum + (item.costPrice * item.currentStock), 0),
+    totalValue: inventory.reduce(
+      (sum, item) => sum + item.costPrice * item.currentStock,
+      0
+    ),
     categoriesCount: categories.length,
   };
 
   return (
-    <div className="space-y-6 p-4 md:p-6">
+    <div className="space-y-6">
       <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">
             Inventory Management
           </h2>
-          <p className="text-gray-600 mt-1">Manage your inventory items, transactions and groups</p>
+          <p className="text-gray-600 mt-1">
+            Manage your inventory items, transactions and groups
+          </p>
         </div>
 
         <div className="flex flex-wrap gap-2">
+          {/* Sync Button */}
           <button
             onClick={syncFromGoogleSheets}
             disabled={syncing}
             className="bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center shadow-sm hover:shadow-md"
           >
-            <RefreshCw
-              className={`w-4 h-4 mr-2 ${syncing ? "animate-spin" : ""}`}
-            />
-            {syncing ? "Syncing..." : "Sync from Sheets"}
+            <RefreshCw className={`w-4 h-4 ${syncing ? "animate-spin" : ""}`} />
+            <span className="hidden lg:inline ml-2">
+              {syncing ? "Syncing..." : "Sync from Sheets"}
+            </span>
           </button>
+
+          {/* Google Sheets Link */}
           <a
             href="https://docs.google.com/spreadsheets"
             target="_blank"
             rel="noopener noreferrer"
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center shadow-sm hover:shadow-md"
           >
-            <ExternalLink className="w-4 h-4 mr-2" />
-            Google Sheets
+            <ExternalLink className="w-4 h-4" />
+            <span className="hidden lg:inline ml-2">Google Sheets</span>
           </a>
+
+          {/* Export CSV */}
           <button
             onClick={exportToCSV}
             className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center shadow-sm hover:shadow-md"
           >
-            <Download className="w-4 h-4 mr-2" />
-            Export CSV
+            <Download className="w-4 h-4" />
+            <span className="hidden lg:inline ml-2">Export CSV</span>
           </button>
+
+          {/* Add Item */}
           <button
             onClick={() => setShowForm(true)}
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center shadow-sm hover:shadow-md"
           >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Item
+            <Plus className="w-4 h-4" />
+            <span className="hidden lg:inline ml-2">Add Item</span>
           </button>
         </div>
       </div>
 
       {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-          <div className="flex items-center">
-            <div className="p-2 rounded-full bg-blue-100 text-blue-600">
-              <Package className="w-5 h-5" />
-            </div>
-            <div className="ml-4">
-              <h3 className="text-sm font-medium text-gray-600">Total Items</h3>
-              <p className="text-2xl font-bold text-gray-900">{inventoryStats.totalItems}</p>
-            </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {/* Total Items */}
+        <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center min-w-0">
+          <div className="p-3 rounded-full bg-blue-100 text-blue-600 flex-shrink-0">
+            <Package className="w-6 h-6" />
+          </div>
+          <div className="ml-3 sm:ml-4 min-w-0">
+            <h3 className="text-xs sm:text-sm font-medium text-gray-600 truncate">
+              Total Items
+            </h3>
+            <p className="text-lg sm:text-2xl font-bold text-gray-900 truncate">
+              {inventoryStats.totalItems}
+            </p>
           </div>
         </div>
-        
-        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-          <div className="flex items-center">
-            <div className="p-2 rounded-full bg-red-100 text-red-600">
-              <AlertTriangle className="w-5 h-5" />
-            </div>
-            <div className="ml-4">
-              <h3 className="text-sm font-medium text-gray-600">Low Stock</h3>
-              <p className="text-2xl font-bold text-gray-900">{inventoryStats.lowStockItems}</p>
-            </div>
+
+        {/* Low Stock */}
+        <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center min-w-0">
+          <div className="p-3 rounded-full bg-red-100 text-red-600 flex-shrink-0">
+            <AlertTriangle className="w-6 h-6" />
+          </div>
+          <div className="ml-3 sm:ml-4 min-w-0">
+            <h3 className="text-xs sm:text-sm font-medium text-gray-600 truncate">
+              Low Stock
+            </h3>
+            <p className="text-lg sm:text-2xl font-bold text-gray-900 truncate">
+              {inventoryStats.lowStockItems}
+            </p>
           </div>
         </div>
-        
-        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-          <div className="flex items-center">
-            <div className="p-2 rounded-full bg-green-100 text-green-600">
-              <BarChart3 className="w-5 h-5" />
-            </div>
-            <div className="ml-4">
-              <h3 className="text-sm font-medium text-gray-600">Total Value</h3>
-              <p className="text-2xl font-bold text-gray-900">₹{inventoryStats.totalValue.toFixed(2)}</p>
-            </div>
+
+        {/* Total Value */}
+        <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center min-w-0">
+          <div className="p-3 rounded-full bg-green-100 text-green-600 flex-shrink-0">
+            <BarChart3 className="w-6 h-6" />
+          </div>
+          <div className="ml-3 sm:ml-4 min-w-0">
+            <h3 className="text-xs sm:text-sm font-medium text-gray-600">
+              Total Value
+            </h3>
+            <p
+              className="text-lg sm:text-2xl font-bold text-gray-900"
+              title={`₹${inventoryStats.totalValue.toLocaleString("en-IN", {
+                maximumFractionDigits: 2,
+              })}`}
+            >
+              {(() => {
+                const value = inventoryStats.totalValue;
+                if (value >= 1_000_000_000)
+                  return `₹${(value / 1_000_000_000).toFixed(2)}B`;
+                if (value >= 1_000_000)
+                  return `₹${(value / 1_000_000).toFixed(2)}M`;
+                if (value >= 1_000) return `₹${(value / 1_000).toFixed(2)}k`;
+                return `₹${value.toFixed(2)}`;
+              })()}
+            </p>
           </div>
         </div>
-        
-        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-          <div className="flex items-center">
-            <div className="p-2 rounded-full bg-purple-100 text-purple-600">
-              <Filter className="w-5 h-5" />
-            </div>
-            <div className="ml-4">
-              <h3 className="text-sm font-medium text-gray-600">Categories</h3>
-              <p className="text-2xl font-bold text-gray-900">{inventoryStats.categoriesCount}</p>
-            </div>
+
+        {/* Categories */}
+        <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center min-w-0">
+          <div className="p-3 rounded-full bg-purple-100 text-purple-600 flex-shrink-0">
+            <Filter className="w-6 h-6" />
+          </div>
+          <div className="ml-3 sm:ml-4 min-w-0">
+            <h3 className="text-xs sm:text-sm font-medium text-gray-600 truncate">
+              Categories
+            </h3>
+            <p className="text-lg sm:text-2xl font-bold text-gray-900 truncate">
+              {inventoryStats.categoriesCount}
+            </p>
           </div>
         </div>
       </div>
@@ -552,7 +591,7 @@ const InventoryManagement: React.FC = () => {
           <p className="text-yellow-700 mt-1">
             {lowStockItems.length} items are at or below reorder level
           </p>
-          <button 
+          <button
             className="mt-2 text-yellow-800 underline text-sm"
             onClick={() => setCategoryFilter("all")}
           >
@@ -563,12 +602,12 @@ const InventoryManagement: React.FC = () => {
 
       {/* Tabs */}
       <div className="border-b border-gray-200">
-        <nav className="flex flex-col sm:flex-row sm:space-x-8">
+        <nav className="flex flex-nowrap space-x-4 overflow-x-auto">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`py-3 px-1 border-b-2 font-medium text-sm transition-colors flex items-center ${
+              className={`py-3 px-2 border-b-2 font-medium text-sm flex items-center flex-shrink-0 transition-colors ${
                 activeTab === tab.id
                   ? "border-blue-500 text-blue-600"
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
@@ -585,8 +624,9 @@ const InventoryManagement: React.FC = () => {
       {activeTab === "items" && (
         <>
           {/* Controls Bar */}
-          <div className="flex flex-col md:flex-row gap-4 mb-6 items-start md:items-center">
-            <div className="relative flex-1 w-full">
+          <div className="flex flex-wrap gap-4 mb-6 items-center">
+            {/* Search */}
+            <div className="relative flex-1 min-w-[200px]">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
@@ -596,12 +636,14 @@ const InventoryManagement: React.FC = () => {
                 className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
-            
-            <div className="flex flex-wrap gap-2 w-full md:w-auto">
+
+            {/* Filters and View Mode */}
+            <div className="flex flex-wrap gap-2 flex-1 min-w-[150px] md:flex-none md:flex-row items-center">
+              {/* Category */}
               <select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
-                className="flex-1 md:flex-none px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 min-w-[120px] px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">All Categories</option>
                 {categories.map((category) => (
@@ -610,11 +652,12 @@ const InventoryManagement: React.FC = () => {
                   </option>
                 ))}
               </select>
-              
+
+              {/* Group */}
               <select
                 value={groupFilter}
                 onChange={(e) => setGroupFilter(e.target.value)}
-                className="flex-1 md:flex-none px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 min-w-[120px] px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">All Groups</option>
                 {groupTags.map((tag) => (
@@ -623,17 +666,22 @@ const InventoryManagement: React.FC = () => {
                   </option>
                 ))}
               </select>
-              
+
+              {/* View Mode */}
               <div className="flex bg-gray-100 rounded-lg p-1">
-                <button 
-                  onClick={() => setViewMode('grid')} 
-                  className={`p-2 rounded-md ${viewMode === 'grid' ? 'bg-white shadow-sm' : 'text-gray-500'}`}
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`p-2 rounded-md ${
+                    viewMode === "grid" ? "bg-white shadow-sm" : "text-gray-500"
+                  }`}
                 >
                   <Grid className="w-4 h-4" />
                 </button>
-                <button 
-                  onClick={() => setViewMode('list')} 
-                  className={`p-2 rounded-md ${viewMode === 'list' ? 'bg-white shadow-sm' : 'text-gray-500'}`}
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`p-2 rounded-md ${
+                    viewMode === "list" ? "bg-white shadow-sm" : "text-gray-500"
+                  }`}
                 >
                   <List className="w-4 h-4" />
                 </button>
@@ -645,10 +693,12 @@ const InventoryManagement: React.FC = () => {
           {viewMode === "grid" && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
               {sortedInventory.map((item) => (
-                <div 
-                  key={item.id} 
+                <div
+                  key={item.id}
                   className={`bg-white rounded-xl shadow-sm border overflow-hidden transition-all hover:shadow-md ${
-                    item.currentStock <= item.reorderLevel ? "border-yellow-200" : "border-gray-100"
+                    item.currentStock <= item.reorderLevel
+                      ? "border-yellow-200"
+                      : "border-gray-100"
                   }`}
                 >
                   {item.imageUrl && (
@@ -660,45 +710,59 @@ const InventoryManagement: React.FC = () => {
                       />
                     </div>
                   )}
-                  
+
                   <div className="p-4">
                     <div className="flex justify-between items-start">
                       <div>
-                        <h3 className="font-semibold text-gray-900 truncate">{item.name}</h3>
-                        <p className="text-sm text-gray-500 mt-1">SKU: {item.sku}</p>
+                        <h3 className="font-semibold text-gray-900 truncate">
+                          {item.name}
+                        </h3>
+                        <p className="text-sm text-gray-500 mt-1">
+                          SKU: {item.sku}
+                        </p>
                       </div>
-                      <button 
+                      <button
                         className="text-gray-400 hover:text-gray-600 p-1"
-                        onClick={() => setExpandedItem(expandedItem === item.id ? null : item.id)}
+                        onClick={() =>
+                          setExpandedItem(
+                            expandedItem === item.id ? null : item.id
+                          )
+                        }
                       >
                         <MoreVertical className="w-4 h-4" />
                       </button>
                     </div>
-                    
+
                     {item.groupTag && (
                       <span className="inline-block px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full mt-2">
                         {item.groupTag}
                       </span>
                     )}
-                    
+
                     <div className="flex justify-between items-center mt-4">
                       <div>
                         <p className="text-sm font-medium text-gray-900">
                           ₹{item.pricePerUnit || item.sellingPrice}
-                          <span className="text-xs text-gray-500">/{item.unitType || item.unit}</span>
+                          <span className="text-xs text-gray-500">
+                            /{item.unitType || item.unit}
+                          </span>
                         </p>
-                        <p className="text-xs text-gray-500">Cost: ₹{item.costPrice}</p>
+                        <p className="text-xs text-gray-500">
+                          Cost: ₹{item.costPrice}
+                        </p>
                       </div>
-                      
-                      <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        item.currentStock <= item.reorderLevel 
-                          ? "bg-red-100 text-red-800" 
-                          : "bg-green-100 text-green-800"
-                      }`}>
+
+                      <div
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          item.currentStock <= item.reorderLevel
+                            ? "bg-red-100 text-red-800"
+                            : "bg-green-100 text-green-800"
+                        }`}
+                      >
                         {item.currentStock} {item.unit}
                       </div>
                     </div>
-                    
+
                     {expandedItem === item.id && (
                       <div className="mt-4 pt-4 border-t border-gray-100">
                         <div className="grid grid-cols-2 gap-2 text-sm">
@@ -708,7 +772,9 @@ const InventoryManagement: React.FC = () => {
                           </div>
                           <div>
                             <p className="text-gray-500">Location</p>
-                            <p className="font-medium">{item.location || "N/A"}</p>
+                            <p className="font-medium">
+                              {item.location || "N/A"}
+                            </p>
                           </div>
                           <div>
                             <p className="text-gray-500">Min Stock</p>
@@ -719,7 +785,7 @@ const InventoryManagement: React.FC = () => {
                             <p className="font-medium">{item.reorderLevel}</p>
                           </div>
                         </div>
-                        
+
                         <div className="flex space-x-2 mt-4">
                           <button
                             onClick={() => handleEdit(item)}
@@ -751,43 +817,46 @@ const InventoryManagement: React.FC = () => {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th 
+                      <th
                         className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                         onClick={() => handleSort("name")}
                       >
                         <div className="flex items-center">
                           Item Details
-                          {sortConfig.key === "name" && (
-                            sortConfig.direction === "asc" ? 
-                            <ChevronUp className="w-4 h-4 ml-1" /> : 
-                            <ChevronDown className="w-4 h-4 ml-1" />
-                          )}
+                          {sortConfig.key === "name" &&
+                            (sortConfig.direction === "asc" ? (
+                              <ChevronUp className="w-4 h-4 ml-1" />
+                            ) : (
+                              <ChevronDown className="w-4 h-4 ml-1" />
+                            ))}
                         </div>
                       </th>
-                      <th 
+                      <th
                         className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                         onClick={() => handleSort("currentStock")}
                       >
                         <div className="flex items-center">
                           Stock
-                          {sortConfig.key === "currentStock" && (
-                            sortConfig.direction === "asc" ? 
-                            <ChevronUp className="w-4 h-4 ml-1" /> : 
-                            <ChevronDown className="w-4 h-4 ml-1" />
-                          )}
+                          {sortConfig.key === "currentStock" &&
+                            (sortConfig.direction === "asc" ? (
+                              <ChevronUp className="w-4 h-4 ml-1" />
+                            ) : (
+                              <ChevronDown className="w-4 h-4 ml-1" />
+                            ))}
                         </div>
                       </th>
-                      <th 
+                      <th
                         className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                         onClick={() => handleSort("sellingPrice")}
                       >
                         <div className="flex items-center">
                           Pricing
-                          {sortConfig.key === "sellingPrice" && (
-                            sortConfig.direction === "asc" ? 
-                            <ChevronUp className="w-4 h-4 ml-1" /> : 
-                            <ChevronDown className="w-4 h-4 ml-1" />
-                          )}
+                          {sortConfig.key === "sellingPrice" &&
+                            (sortConfig.direction === "asc" ? (
+                              <ChevronUp className="w-4 h-4 ml-1" />
+                            ) : (
+                              <ChevronDown className="w-4 h-4 ml-1" />
+                            ))}
                         </div>
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -890,84 +959,107 @@ const InventoryManagement: React.FC = () => {
       )}
 
       {activeTab === "transactions" && (
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date & Time
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Item
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Type
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Quantity
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Performed By
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Reason
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {transactions.map((transaction) => {
-                  const item = inventory.find(
-                    (i) => i.id === transaction.inventoryItemId
-                  );
-                  return (
-                    <tr key={transaction.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {new Date(transaction.performedAt).toLocaleString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {item?.name || "Unknown Item"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            transaction.type === "purchase"
-                              ? "bg-green-100 text-green-800"
-                              : transaction.type === "sale"
-                              ? "bg-blue-100 text-blue-800"
-                              : transaction.type === "damage"
-                              ? "bg-red-100 text-red-800"
-                              : "bg-gray-100 text-gray-800"
-                          }`}
-                        >
-                          {transaction.type}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <div className="flex items-center">
-                          {transaction.type === "purchase" ||
-                          transaction.type === "return" ? (
-                            <TrendingUp className="w-4 h-4 text-green-600 mr-1" />
-                          ) : (
-                            <TrendingDown className="w-4 h-4 text-red-600 mr-1" />
-                          )}
-                          {transaction.quantity}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {transaction.performedBy}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900">
-                        {transaction.reason}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+  <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+    {/* Desktop Table */}
+    <div className="hidden md:block overflow-x-auto">
+      <table className="min-w-full divide-y divide-gray-200 table-auto">
+        <thead className="bg-gray-50 sticky top-0 z-10">
+          <tr>
+            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</th>
+            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item</th>
+            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Performed By</th>
+            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reason</th>
+          </tr>
+        </thead>
+        <tbody className="bg-white divide-y divide-gray-200">
+          {transactions.map((transaction) => {
+            const item = inventory.find(i => i.id === transaction.inventoryItemId);
+            return (
+              <tr key={transaction.id} className="hover:bg-gray-50 transition-colors cursor-pointer">
+                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{new Date(transaction.performedAt).toLocaleString()}</td>
+                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{item?.name || "Unknown Item"}</td>
+                <td className="px-4 py-2 whitespace-nowrap">
+                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                    transaction.type === "purchase"
+                      ? "bg-green-100 text-green-800"
+                      : transaction.type === "sale"
+                      ? "bg-blue-100 text-blue-800"
+                      : transaction.type === "damage"
+                      ? "bg-red-100 text-red-800"
+                      : "bg-gray-100 text-gray-800"
+                  }`}>
+                    {transaction.type}
+                  </span>
+                </td>
+                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 flex items-center">
+                  {(transaction.type === "purchase" || transaction.type === "return") ? (
+                    <TrendingUp className="w-4 h-4 text-green-600 mr-1" />
+                  ) : (
+                    <TrendingDown className="w-4 h-4 text-red-600 mr-1" />
+                  )}
+                  {transaction.quantity}
+                </td>
+                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{transaction.performedBy}</td>
+                <td className="px-4 py-2 text-sm text-gray-900 truncate max-w-xs" title={transaction.reason}>{transaction.reason}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+
+    {/* Mobile UX-Focused Cards */}
+    <div className="md:hidden space-y-4 p-4">
+      {transactions.map((transaction) => {
+        const item = inventory.find(i => i.id === transaction.inventoryItemId);
+        return (
+          <div key={transaction.id} className="bg-gray-50 rounded-lg p-4 shadow-sm border hover:shadow-md transition cursor-pointer flex flex-col gap-2">
+            {/* Top row: Item name + Type badge */}
+            <div className="flex justify-between items-center">
+              <span className="font-semibold text-gray-900 text-base truncate">{item?.name || "Unknown Item"}</span>
+              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                    transaction.type === "purchase"
+                      ? "bg-green-100 text-green-800"
+                      : transaction.type === "sale"
+                      ? "bg-blue-100 text-blue-800"
+                      : transaction.type === "damage"
+                      ? "bg-red-100 text-red-800"
+                      : "bg-gray-100 text-gray-800"
+                  }`}>
+                {transaction.type}
+              </span>
+            </div>
+
+            {/* Middle row: Date + Quantity */}
+            <div className="flex justify-between items-center text-sm text-gray-500">
+              <span className="flex items-center">
+                <Calendar className="w-4 h-4 mr-1" />
+                {new Date(transaction.performedAt).toLocaleDateString()}
+              </span>
+              <span className="flex items-center">
+                {(transaction.type === "purchase" || transaction.type === "return") ? (
+                  <TrendingUp className="w-4 h-4 text-green-600 mr-1" />
+                ) : (
+                  <TrendingDown className="w-4 h-4 text-red-600 mr-1" />
+                )}
+                {transaction.quantity}
+              </span>
+            </div>
+
+            {/* Bottom row: Performed By + Reason */}
+            <div className="flex justify-between items-center text-sm text-gray-500">
+              <span>{transaction.performedBy}</span>
+              <span className="truncate max-w-[120px]" title={transaction.reason}>{transaction.reason}</span>
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })}
+    </div>
+  </div>
+)}
+
       {activeTab === "groups" && <StockGroupManagement />}
 
       {/* Add/Edit Item Modal */}
