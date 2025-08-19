@@ -15,11 +15,11 @@ import {
   MessageSquare,
   Settings,
   BarChart3,
-  Menu,
   X,
   Bell,
   TrendingUp,
   AlertTriangle,
+  AlignLeft,
 
 } from "lucide-react";
 
@@ -437,7 +437,7 @@ const AdminDashboard: React.FC = () => {
               onClick={() => setSidebarOpen(true)}
               className="lg:hidden p-2 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300"
             >
-              <Menu className="w-6 h-6 text-gray-700" />
+              <AlignLeft className="w-6 h-6 text-gray-700" />
             </button>
 
             
