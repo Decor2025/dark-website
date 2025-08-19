@@ -11,8 +11,8 @@
 }
 @media (max-width: 380px) {
   body {
-    zoom: 0.95;      /* Chrome/Edge */
-    -moz-transform: scale(0.95); /* Firefox */
+    zoom: 0.95;
+    -moz-transform: scale(0.95);
     -moz-transform-origin: top left;
   }
 }

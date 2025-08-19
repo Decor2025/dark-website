@@ -20,6 +20,7 @@ import {
   Bell,
   TrendingUp,
   AlertTriangle,
+
 } from "lucide-react";
 
 // Import admin components
@@ -428,7 +429,7 @@ const AdminDashboard: React.FC = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <header className="bg-white shadow-sm border-b h-16 px-6 flex items-center justify-between">
+        <header className="bg-white shadow-sm border-b h-16 px-3 flex items-center justify-between">
           {/* Left: Hamburger + Navigation */}
           <div className="flex items-center space-x-5">
             {/* Sidebar Toggle */}
@@ -439,7 +440,7 @@ const AdminDashboard: React.FC = () => {
               <Menu className="w-6 h-6 text-gray-700" />
             </button>
 
-            {/* Dashboard Home */}
+            
 
             {/* Website Button */}
             <a

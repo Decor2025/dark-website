@@ -965,35 +965,18 @@ const InventoryManagement: React.FC = () => {
       <table className="min-w-full divide-y divide-gray-200 table-auto">
         <thead className="bg-gray-50 sticky top-0 z-10">
           <tr>
-            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</th>
             <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item</th>
+            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Qty</th>
             <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Performed By</th>
-            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reason</th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
           {transactions.map((transaction) => {
             const item = inventory.find(i => i.id === transaction.inventoryItemId);
             return (
-              <tr key={transaction.id} className="hover:bg-gray-50 transition-colors cursor-pointer">
-                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{new Date(transaction.performedAt).toLocaleString()}</td>
-                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{item?.name || "Unknown Item"}</td>
-                <td className="px-4 py-2 whitespace-nowrap">
-                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                    transaction.type === "purchase"
-                      ? "bg-green-100 text-green-800"
-                      : transaction.type === "sale"
-                      ? "bg-blue-100 text-blue-800"
-                      : transaction.type === "damage"
-                      ? "bg-red-100 text-red-800"
-                      : "bg-gray-100 text-gray-800"
-                  }`}>
-                    {transaction.type}
-                  </span>
-                </td>
-                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 flex items-center">
+              <tr key={transaction.id} className="hover:bg-gray-50 transition cursor-pointer">
+                <td className="px-4 py-2 text-sm text-gray-900 font-medium">{item?.name || "Unknown Item"}</td>
+                <td className="px-4 py-2 text-sm text-gray-900 flex items-center">
                   {(transaction.type === "purchase" || transaction.type === "return") ? (
                     <TrendingUp className="w-4 h-4 text-green-600 mr-1" />
                   ) : (
@@ -1001,8 +984,17 @@ const InventoryManagement: React.FC = () => {
                   )}
                   {transaction.quantity}
                 </td>
-                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{transaction.performedBy}</td>
-                <td className="px-4 py-2 text-sm text-gray-900 truncate max-w-xs" title={transaction.reason}>{transaction.reason}</td>
+                <td className="px-4 py-2">
+                  <span className={`inline-flex w-3 h-3 rounded-full ${
+                    transaction.type === "purchase"
+                      ? "bg-green-400"
+                      : transaction.type === "sale"
+                      ? "bg-blue-400"
+                      : transaction.type === "damage"
+                      ? "bg-red-400"
+                      : "bg-gray-400"
+                  }`} title={transaction.type} />
+                </td>
               </tr>
             );
           })}
@@ -1010,13 +1002,12 @@ const InventoryManagement: React.FC = () => {
       </table>
     </div>
 
-    {/* Mobile UX-Focused Cards */}
+    {/* Mobile Cards */}
     <div className="md:hidden space-y-4 p-4">
       {transactions.map((transaction) => {
         const item = inventory.find(i => i.id === transaction.inventoryItemId);
         return (
-          <div key={transaction.id} className="bg-gray-50 rounded-lg p-4 shadow-sm border hover:shadow-md transition cursor-pointer flex flex-col gap-2">
-            {/* Top row: Item name + Type badge */}
+          <div key={transaction.id} className="bg-gray-50 rounded-lg p-4 shadow-sm border hover:shadow-md transition cursor-pointer">
             <div className="flex justify-between items-center">
               <span className="font-semibold text-gray-900 text-base truncate">{item?.name || "Unknown Item"}</span>
               <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
@@ -1032,12 +1023,7 @@ const InventoryManagement: React.FC = () => {
               </span>
             </div>
 
-            {/* Middle row: Date + Quantity */}
-            <div className="flex justify-between items-center text-sm text-gray-500">
-              <span className="flex items-center">
-                <Calendar className="w-4 h-4 mr-1" />
-                {new Date(transaction.performedAt).toLocaleDateString()}
-              </span>
+            <div className="flex justify-between items-center mt-2 text-sm text-gray-500">
               <span className="flex items-center">
                 {(transaction.type === "purchase" || transaction.type === "return") ? (
                   <TrendingUp className="w-4 h-4 text-green-600 mr-1" />
@@ -1046,12 +1032,11 @@ const InventoryManagement: React.FC = () => {
                 )}
                 {transaction.quantity}
               </span>
+              <span className="text-gray-400 text-xs">{new Date(transaction.performedAt).toLocaleDateString()}</span>
             </div>
 
-            {/* Bottom row: Performed By + Reason */}
-            <div className="flex justify-between items-center text-sm text-gray-500">
-              <span>{transaction.performedBy}</span>
-              <span className="truncate max-w-[120px]" title={transaction.reason}>{transaction.reason}</span>
+            <div className="mt-2 text-sm text-gray-500 truncate" title={`Performed by: ${transaction.performedBy} | Reason: ${transaction.reason}`}>
+              {transaction.performedBy} • {transaction.reason}
             </div>
           </div>
         );
