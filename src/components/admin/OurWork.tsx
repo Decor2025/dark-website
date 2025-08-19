@@ -211,7 +211,7 @@ const OurWorkAdmin: React.FC = () => {
             </label>
             <div
               onClick={() => fileInputRef.current?.click()}
-              className={`cursor-pointer border-4 border-dashed rounded-lg p-8 text-center transition ${
+              className={`cursor-pointer border-2 border-dashed rounded-lg p-8 text-center transition ${
                 dragActive ? "border-blue-500 bg-blue-50" : "border-gray-300 bg-gray-50 hover:border-blue-400"
               }`}
             >

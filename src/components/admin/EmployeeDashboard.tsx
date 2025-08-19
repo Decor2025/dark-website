@@ -17,7 +17,6 @@ import {
   TrendingUp,
   TrendingDown,
   Search,
-  Filter,
   Save,
   RefreshCw,
   Menu,
@@ -372,107 +371,167 @@ const EmployeeDashboard: React.FC = () => {
       case 'overview':
         return (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              <div className="bg-blue-50 p-4 sm:p-6 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-blue-600 text-sm font-medium">Today's Transactions</p>
-                    <p className="text-xl sm:text-2xl font-bold text-blue-900">{todayTransactions.length}</p>
-                  </div>
-                  <BarChart3 className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
-                </div>
-              </div>
-              
-              <div className="bg-yellow-50 p-4 sm:p-6 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-yellow-600 text-sm font-medium">Low Stock Items</p>
-                    <p className="text-xl sm:text-2xl font-bold text-yellow-900">{lowStockItems.length}</p>
-                  </div>
-                  <AlertTriangle className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-600" />
-                </div>
-              </div>
+  {/* Stats Grid */}
+  <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+    <div className="bg-blue-50 p-4 sm:p-6 rounded-lg">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-blue-600 text-sm font-medium">Today's Transactions</p>
+          <p className="text-xl sm:text-2xl font-bold text-blue-900">
+            {todayTransactions.length}
+          </p>
+        </div>
+        <BarChart3 className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
+      </div>
+    </div>
 
-              <div className="bg-green-50 p-4 sm:p-6 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-green-600 text-sm font-medium">Managed Items</p>
-                    <p className="text-xl sm:text-2xl font-bold text-green-900">{inventory.length}</p>
-                  </div>
-                  <Package className="w-6 h-6 sm:w-8 sm:h-8 text-green-600" />
-                </div>
-              </div>
-            </div>
+    <div className="bg-yellow-50 p-4 sm:p-6 rounded-lg">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-yellow-600 text-sm font-medium">Low Stock Items</p>
+          <p className="text-xl sm:text-2xl font-bold text-yellow-900">
+            {lowStockItems.length}
+          </p>
+        </div>
+        <AlertTriangle className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-600" />
+      </div>
+    </div>
 
-            {/* Recent Transactions */}
-            <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
-              <h3 className="text-lg font-semibold mb-4">Recent Transactions</h3>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-4 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Date & Time
-                      </th>
-                      <th className="px-4 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Item
-                      </th>
-                      <th className="px-4 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Type
-                      </th>
-                      <th className="px-4 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Quantity
-                      </th>
-                      <th className="px-4 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Reason
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {transactions.slice(0, 10).map((transaction) => {
-                      const item = inventory.find(i => i.id === transaction.inventoryItemId);
-                      return (
-                        <tr key={transaction.id}>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                            {new Date(transaction.performedAt).toLocaleDateString()}
-                            <span className="block text-xs text-gray-500">
-                              {new Date(transaction.performedAt).toLocaleTimeString()}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                            {item?.name || 'Unknown Item'}
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap">
-                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                              transaction.type === 'purchase' ? 'bg-green-100 text-green-800' :
-                              transaction.type === 'sale' ? 'bg-blue-100 text-blue-800' :
-                              transaction.type === 'damage' ? 'bg-red-100 text-red-800' :
-                              'bg-gray-100 text-gray-800'
-                            }`}>
-                              {transaction.type}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                            <div className="flex items-center">
-                              {['purchase', 'return'].includes(transaction.type) ? (
-                                <TrendingUp className="w-4 h-4 text-green-600 mr-1" />
-                              ) : (
-                                <TrendingDown className="w-4 h-4 text-red-600 mr-1" />
-                              )}
-                              {transaction.quantity}
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 text-sm text-gray-900">
-                            {transaction.reason}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+    <div className="bg-green-50 p-4 sm:p-6 rounded-lg col-span-2 lg:col-span-1">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-green-600 text-sm font-medium">Managed Items</p>
+          <p className="text-xl sm:text-2xl font-bold text-green-900">
+            {inventory.length}
+          </p>
+        </div>
+        <Package className="w-6 h-6 sm:w-8 sm:h-8 text-green-600" />
+      </div>
+    </div>
+  </div>
+
+  {/* Recent Transactions */}
+  <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+    <h3 className="text-lg font-semibold mb-4">Recent Transactions</h3>
+
+    {/* Table for md+ */}
+    <div className="hidden md:block overflow-x-auto">
+      <table className="min-w-full divide-y divide-gray-200">
+        <thead className="bg-gray-50">
+          <tr>
+            <th className="px-4 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Date & Time
+            </th>
+            <th className="px-4 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Item
+            </th>
+            <th className="px-4 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Type
+            </th>
+            <th className="px-4 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Quantity
+            </th>
+            <th className="px-4 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Reason
+            </th>
+          </tr>
+        </thead>
+        <tbody className="bg-white divide-y divide-gray-200">
+          {transactions.slice(0, 10).map((transaction) => {
+            const item = inventory.find(i => i.id === transaction.inventoryItemId);
+            return (
+              <tr key={transaction.id}>
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                  {new Date(transaction.performedAt).toLocaleDateString()}
+                  <span className="block text-xs text-gray-500">
+                    {new Date(transaction.performedAt).toLocaleTimeString()}
+                  </span>
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                  {item?.name || 'Unknown Item'}
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap">
+                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                    transaction.type === 'purchase'
+                      ? 'bg-green-100 text-green-800'
+                      : transaction.type === 'sale'
+                      ? 'bg-blue-100 text-blue-800'
+                      : transaction.type === 'damage'
+                      ? 'bg-red-100 text-red-800'
+                      : 'bg-gray-100 text-gray-800'
+                  }`}>
+                    {transaction.type}
+                  </span>
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                  <div className="flex items-center">
+                    {['purchase', 'return'].includes(transaction.type) ? (
+                      <TrendingUp className="w-4 h-4 text-green-600 mr-1" />
+                    ) : (
+                      <TrendingDown className="w-4 h-4 text-red-600 mr-1" />
+                    )}
+                    {transaction.quantity}
+                  </div>
+                </td>
+                <td className="px-4 py-3 text-sm text-gray-900">
+                  {transaction.reason}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+
+    {/* Card view for mobile */}
+    <div className="space-y-4 md:hidden">
+      {transactions.slice(0, 10).map((transaction) => {
+        const item = inventory.find(i => i.id === transaction.inventoryItemId);
+        return (
+          <div
+            key={transaction.id}
+            className="border rounded-lg p-4 shadow-sm bg-gray-50"
+          >
+            <div className="flex justify-between items-center mb-2">
+              <p className="text-sm font-semibold text-gray-900">
+                {item?.name || 'Unknown Item'}
+              </p>
+              <span
+                className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                  transaction.type === 'purchase'
+                    ? 'bg-green-100 text-green-800'
+                    : transaction.type === 'sale'
+                    ? 'bg-blue-100 text-blue-800'
+                    : transaction.type === 'damage'
+                    ? 'bg-red-100 text-red-800'
+                    : 'bg-gray-100 text-gray-800'
+                }`}
+              >
+                {transaction.type}
+              </span>
             </div>
+            <p className="text-xs text-gray-500 mb-2">
+              {new Date(transaction.performedAt).toLocaleDateString()} •{' '}
+              {new Date(transaction.performedAt).toLocaleTimeString()}
+            </p>
+            <div className="flex items-center text-sm text-gray-700 mb-2">
+              {['purchase', 'return'].includes(transaction.type) ? (
+                <TrendingUp className="w-4 h-4 text-green-600 mr-1" />
+              ) : (
+                <TrendingDown className="w-4 h-4 text-red-600 mr-1" />
+              )}
+              {transaction.quantity}
+            </div>
+            <p className="text-sm text-gray-600">
+              <span className="font-medium">Reason:</span> {transaction.reason}
+            </p>
           </div>
+        );
+      })}
+    </div>
+  </div>
+</div>
+
         );
 
       case 'inventory':
@@ -481,13 +540,7 @@ const EmployeeDashboard: React.FC = () => {
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
               <h3 className="text-lg font-semibold">Inventory Management</h3>
               <div className="flex flex-col sm:flex-row gap-3">
-                <button
-                  onClick={() => setShowAddItemModal(true)}
-                  className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg font-medium transition-colors flex items-center justify-center"
-                >
-                  <Plus className="w-4 h-4 mr-1 sm:mr-2" />
-                  <span className="hidden sm:inline">Add Item</span>
-                </button>
+               
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
                   <input
@@ -614,13 +667,7 @@ const EmployeeDashboard: React.FC = () => {
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
               <h3 className="text-lg font-semibold">Messages</h3>
-              <button
-                onClick={() => setShowMessageModal(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg font-medium transition-colors flex items-center justify-center"
-              >
-                <Send className="w-4 h-4 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">New Message</span>
-              </button>
+              
             </div>
 
             <div className="bg-white rounded-lg shadow-md">
