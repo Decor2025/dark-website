@@ -307,7 +307,7 @@ const Login = () => {
         </Link>
       </div>
 
-      <div className="w-full max-w-md bg-white shadow-xl rounded-2xl p-4 md:p-8 lg:p-8 space-y-6">
+      <div className="w-full max-w-md bg-white shadow-xl rounded-2xl p-6 md:p-8 lg:p-8 space-y-6">
         <button
           type="button"
           onClick={handleGoogleSignIn}
