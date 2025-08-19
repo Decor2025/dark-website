@@ -27,6 +27,13 @@ import {
   FileText,
   Users,
   ExternalLink,
+  X,
+  ChevronDown,
+  ChevronUp,
+  BarChart3,
+  Grid,
+  List,
+  MoreVertical,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -42,6 +49,9 @@ const InventoryManagement: React.FC = () => {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [groupFilter, setGroupFilter] = useState("all");
   const [syncing, setSyncing] = useState(false);
+  const [sortConfig, setSortConfig] = useState({ key: "", direction: "asc" });
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [expandedItem, setExpandedItem] = useState<string | null>(null);
   const { currentUser } = useAuth();
 
   const [formData, setFormData] = useState({
@@ -200,6 +210,7 @@ const InventoryManagement: React.FC = () => {
       console.error("Failed to sync to Google Sheets:", error);
     }
   };
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -377,16 +388,36 @@ const InventoryManagement: React.FC = () => {
     window.URL.revokeObjectURL(url);
   };
 
+  const handleSort = (key: string) => {
+    let direction = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+  };
+
+  
   const filteredInventory = inventory.filter((item) => {
     const matchesSearch =
-      (item.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (item.sku || "").toLowerCase().includes(searchQuery.toLowerCase());
+    (item.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (item.sku || "").toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory =
-      categoryFilter === "all" || item.category === categoryFilter;
+    categoryFilter === "all" || item.category === categoryFilter;
     const matchesGroup = groupFilter === "all" || item.groupTag === groupFilter;
     return matchesSearch && matchesCategory && matchesGroup;
   });
-
+  
+  const sortedInventory = [...filteredInventory].sort((a, b) => {
+    if (!sortConfig.key) return 0;
+    
+    if (a[sortConfig.key] < b[sortConfig.key]) {
+      return sortConfig.direction === "asc" ? -1 : 1;
+    }
+    if (a[sortConfig.key] > b[sortConfig.key]) {
+      return sortConfig.direction === "asc" ? 1 : -1;
+    }
+    return 0;
+  });
   const categories = Array.from(
     new Set(inventory.map((item) => item.category))
   );
@@ -403,47 +434,109 @@ const InventoryManagement: React.FC = () => {
     { id: "groups", label: "Inventory Groups", icon: Users },
   ];
 
+  // Inventory stats for dashboard
+  const inventoryStats = {
+    totalItems: inventory.length,
+    lowStockItems: lowStockItems.length,
+    totalValue: inventory.reduce((sum, item) => sum + (item.costPrice * item.currentStock), 0),
+    categoriesCount: categories.length,
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4 md:p-6">
       <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
-        <h2 className="text-2xl font-bold text-gray-900">
-          Inventory Management
-        </h2>
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">
+            Inventory Management
+          </h2>
+          <p className="text-gray-600 mt-1">Manage your inventory items, transactions and groups</p>
+        </div>
 
         <div className="flex flex-wrap gap-2">
           <button
             onClick={syncFromGoogleSheets}
             disabled={syncing}
-            className="bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center"
+            className="bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center shadow-sm hover:shadow-md"
           >
             <RefreshCw
               className={`w-4 h-4 mr-2 ${syncing ? "animate-spin" : ""}`}
             />
-            {syncing ? "Syncing..." : "Sync from Google Sheets"}
+            {syncing ? "Syncing..." : "Sync from Sheets"}
           </button>
           <a
             href="https://docs.google.com/spreadsheets"
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center shadow-sm hover:shadow-md"
           >
             <ExternalLink className="w-4 h-4 mr-2" />
-            Open Google Sheets
+            Google Sheets
           </a>
           <button
             onClick={exportToCSV}
-            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center"
+            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center shadow-sm hover:shadow-md"
           >
             <Download className="w-4 h-4 mr-2" />
             Export CSV
           </button>
           <button
             onClick={() => setShowForm(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center shadow-sm hover:shadow-md"
           >
             <Plus className="w-4 h-4 mr-2" />
             Add Item
           </button>
+        </div>
+      </div>
+
+      {/* Stats Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+          <div className="flex items-center">
+            <div className="p-2 rounded-full bg-blue-100 text-blue-600">
+              <Package className="w-5 h-5" />
+            </div>
+            <div className="ml-4">
+              <h3 className="text-sm font-medium text-gray-600">Total Items</h3>
+              <p className="text-2xl font-bold text-gray-900">{inventoryStats.totalItems}</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+          <div className="flex items-center">
+            <div className="p-2 rounded-full bg-red-100 text-red-600">
+              <AlertTriangle className="w-5 h-5" />
+            </div>
+            <div className="ml-4">
+              <h3 className="text-sm font-medium text-gray-600">Low Stock</h3>
+              <p className="text-2xl font-bold text-gray-900">{inventoryStats.lowStockItems}</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+          <div className="flex items-center">
+            <div className="p-2 rounded-full bg-green-100 text-green-600">
+              <BarChart3 className="w-5 h-5" />
+            </div>
+            <div className="ml-4">
+              <h3 className="text-sm font-medium text-gray-600">Total Value</h3>
+              <p className="text-2xl font-bold text-gray-900">₹{inventoryStats.totalValue.toFixed(2)}</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+          <div className="flex items-center">
+            <div className="p-2 rounded-full bg-purple-100 text-purple-600">
+              <Filter className="w-5 h-5" />
+            </div>
+            <div className="ml-4">
+              <h3 className="text-sm font-medium text-gray-600">Categories</h3>
+              <p className="text-2xl font-bold text-gray-900">{inventoryStats.categoriesCount}</p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -459,17 +552,23 @@ const InventoryManagement: React.FC = () => {
           <p className="text-yellow-700 mt-1">
             {lowStockItems.length} items are at or below reorder level
           </p>
+          <button 
+            className="mt-2 text-yellow-800 underline text-sm"
+            onClick={() => setCategoryFilter("all")}
+          >
+            View all low stock items
+          </button>
         </div>
       )}
 
       {/* Tabs */}
       <div className="border-b border-gray-200">
-        <nav className="flex space-x-8">
+        <nav className="flex flex-col sm:flex-row sm:space-x-8">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors flex items-center ${
+              className={`py-3 px-1 border-b-2 font-medium text-sm transition-colors flex items-center ${
                 activeTab === tab.id
                   ? "border-blue-500 text-blue-600"
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
@@ -485,158 +584,313 @@ const InventoryManagement: React.FC = () => {
       {/* Tab Content */}
       {activeTab === "items" && (
         <>
-          {/* Search and Filter */}
-          <div className="flex flex-col lg:flex-row gap-4 mb-6">
-            <div className="relative flex-1">
+          {/* Controls Bar */}
+          <div className="flex flex-col md:flex-row gap-4 mb-6 items-start md:items-center">
+            <div className="relative flex-1 w-full">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
                 placeholder="Search by name or SKU..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
-            <select
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="all">All Categories</option>
-              {categories.map((category) => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
-            </select>
-            <select
-              value={groupFilter}
-              onChange={(e) => setGroupFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="all">All Groups</option>
-              {groupTags.map((tag) => (
-                <option key={tag} value={tag}>
-                  {tag}
-                </option>
-              ))}
-            </select>
+            
+            <div className="flex flex-wrap gap-2 w-full md:w-auto">
+              <select
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                className="flex-1 md:flex-none px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="all">All Categories</option>
+                {categories.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+              
+              <select
+                value={groupFilter}
+                onChange={(e) => setGroupFilter(e.target.value)}
+                className="flex-1 md:flex-none px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="all">All Groups</option>
+                {groupTags.map((tag) => (
+                  <option key={tag} value={tag}>
+                    {tag}
+                  </option>
+                ))}
+              </select>
+              
+              <div className="flex bg-gray-100 rounded-lg p-1">
+                <button 
+                  onClick={() => setViewMode('grid')} 
+                  className={`p-2 rounded-md ${viewMode === 'grid' ? 'bg-white shadow-sm' : 'text-gray-500'}`}
+                >
+                  <Grid className="w-4 h-4" />
+                </button>
+                <button 
+                  onClick={() => setViewMode('list')} 
+                  className={`p-2 rounded-md ${viewMode === 'list' ? 'bg-white shadow-sm' : 'text-gray-500'}`}
+                >
+                  <List className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
           </div>
 
-          {/* Inventory Table */}
-          <div className="bg-white rounded-lg shadow-md overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Item Details
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Stock
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Pricing
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Location
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredInventory.map((item) => (
-                    <tr
-                      key={item.id}
-                      className={
-                        item.currentStock <= item.reorderLevel
-                          ? "bg-yellow-50"
-                          : ""
-                      }
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">
-                            {item.name}
-                          </div>
-                          {item.imageUrl && (
-                            <img
-                              src={item.imageUrl}
-                              alt={item.name}
-                              className="w-12 h-12 object-cover rounded mt-2"
-                            />
-                          )}
-                          <div className="text-sm text-gray-500">
-                            SKU: {item.sku}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {item.category}
-                          </div>
-                          {item.groupTag && (
-                            <span className="inline-block px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full mt-1">
-                              {item.groupTag}
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          {item.currentStock} {item.unit}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          Min: {item.minimumStock} | Reorder:{" "}
-                          {item.reorderLevel}
-                        </div>
-                        {item.width && item.height && (
-                          <div className="text-sm text-gray-500">
-                            Dimensions: {item.width} × {item.height}{" "}
-                            {item.unitType}
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
+          {/* Inventory Grid View */}
+          {viewMode === "grid" && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+              {sortedInventory.map((item) => (
+                <div 
+                  key={item.id} 
+                  className={`bg-white rounded-xl shadow-sm border overflow-hidden transition-all hover:shadow-md ${
+                    item.currentStock <= item.reorderLevel ? "border-yellow-200" : "border-gray-100"
+                  }`}
+                >
+                  {item.imageUrl && (
+                    <div className="h-40 overflow-hidden">
+                      <img
+                        src={item.imageUrl}
+                        alt={item.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                  
+                  <div className="p-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="font-semibold text-gray-900 truncate">{item.name}</h3>
+                        <p className="text-sm text-gray-500 mt-1">SKU: {item.sku}</p>
+                      </div>
+                      <button 
+                        className="text-gray-400 hover:text-gray-600 p-1"
+                        onClick={() => setExpandedItem(expandedItem === item.id ? null : item.id)}
+                      >
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
+                    </div>
+                    
+                    {item.groupTag && (
+                      <span className="inline-block px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full mt-2">
+                        {item.groupTag}
+                      </span>
+                    )}
+                    
+                    <div className="flex justify-between items-center mt-4">
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">
                           ₹{item.pricePerUnit || item.sellingPrice}
+                          <span className="text-xs text-gray-500">/{item.unitType || item.unit}</span>
+                        </p>
+                        <p className="text-xs text-gray-500">Cost: ₹{item.costPrice}</p>
+                      </div>
+                      
+                      <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        item.currentStock <= item.reorderLevel 
+                          ? "bg-red-100 text-red-800" 
+                          : "bg-green-100 text-green-800"
+                      }`}>
+                        {item.currentStock} {item.unit}
+                      </div>
+                    </div>
+                    
+                    {expandedItem === item.id && (
+                      <div className="mt-4 pt-4 border-t border-gray-100">
+                        <div className="grid grid-cols-2 gap-2 text-sm">
+                          <div>
+                            <p className="text-gray-500">Category</p>
+                            <p className="font-medium">{item.category}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-500">Location</p>
+                            <p className="font-medium">{item.location || "N/A"}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-500">Min Stock</p>
+                            <p className="font-medium">{item.minimumStock}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-500">Reorder Level</p>
+                            <p className="font-medium">{item.reorderLevel}</p>
+                          </div>
                         </div>
-                        <div className="text-sm text-gray-500">
-                          per {item.unitType || item.unit}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          Cost: ₹{item.costPrice}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {item.location}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex space-x-2">
+                        
+                        <div className="flex space-x-2 mt-4">
                           <button
                             onClick={() => handleEdit(item)}
-                            className="text-blue-600 hover:text-blue-900 p-1"
+                            className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-700 py-1.5 px-3 rounded-lg font-medium transition-colors text-sm flex items-center justify-center"
                           >
-                            <Edit className="w-4 h-4" />
+                            <Edit className="w-4 h-4 mr-1" />
+                            Edit
                           </button>
                           <button
                             onClick={() => handleDelete(item.id)}
-                            className="text-red-600 hover:text-red-900 p-1"
+                            className="flex-1 bg-red-50 hover:bg-red-100 text-red-700 py-1.5 px-3 rounded-lg font-medium transition-colors text-sm flex items-center justify-center"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-4 h-4 mr-1" />
+                            Delete
                           </button>
                         </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
-          </div>
+          )}
+
+          {/* Inventory List View */}
+          {viewMode === "list" && (
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th 
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                        onClick={() => handleSort("name")}
+                      >
+                        <div className="flex items-center">
+                          Item Details
+                          {sortConfig.key === "name" && (
+                            sortConfig.direction === "asc" ? 
+                            <ChevronUp className="w-4 h-4 ml-1" /> : 
+                            <ChevronDown className="w-4 h-4 ml-1" />
+                          )}
+                        </div>
+                      </th>
+                      <th 
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                        onClick={() => handleSort("currentStock")}
+                      >
+                        <div className="flex items-center">
+                          Stock
+                          {sortConfig.key === "currentStock" && (
+                            sortConfig.direction === "asc" ? 
+                            <ChevronUp className="w-4 h-4 ml-1" /> : 
+                            <ChevronDown className="w-4 h-4 ml-1" />
+                          )}
+                        </div>
+                      </th>
+                      <th 
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                        onClick={() => handleSort("sellingPrice")}
+                      >
+                        <div className="flex items-center">
+                          Pricing
+                          {sortConfig.key === "sellingPrice" && (
+                            sortConfig.direction === "asc" ? 
+                            <ChevronUp className="w-4 h-4 ml-1" /> : 
+                            <ChevronDown className="w-4 h-4 ml-1" />
+                          )}
+                        </div>
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Location
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {sortedInventory.map((item) => (
+                      <tr
+                        key={item.id}
+                        className={
+                          item.currentStock <= item.reorderLevel
+                            ? "bg-yellow-50"
+                            : ""
+                        }
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            {item.imageUrl && (
+                              <img
+                                src={item.imageUrl}
+                                alt={item.name}
+                                className="w-10 h-10 object-cover rounded mr-3"
+                              />
+                            )}
+                            <div>
+                              <div className="text-sm font-medium text-gray-900">
+                                {item.name}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                SKU: {item.sku}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                {item.category}
+                              </div>
+                              {item.groupTag && (
+                                <span className="inline-block px-2 py-0.5 text-xs bg-blue-100 text-blue-800 rounded-full mt-1">
+                                  {item.groupTag}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">
+                            {item.currentStock} {item.unit}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            Min: {item.minimumStock} | Reorder:{" "}
+                            {item.reorderLevel}
+                          </div>
+                          {item.width && item.height && (
+                            <div className="text-sm text-gray-500">
+                              {item.width} × {item.height} {item.unitType}
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">
+                            ₹{item.pricePerUnit || item.sellingPrice}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            per {item.unitType || item.unit}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            Cost: ₹{item.costPrice}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {item.location}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => handleEdit(item)}
+                              className="text-blue-600 hover:text-blue-900 p-1"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(item.id)}
+                              className="text-red-600 hover:text-red-900 p-1"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </>
       )}
 
       {activeTab === "transactions" && (
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
@@ -719,12 +973,20 @@ const InventoryManagement: React.FC = () => {
       {/* Add/Edit Item Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
-            <h3 className="text-lg font-semibold mb-4">
-              {editingItem ? "Edit Inventory Item" : "Add New Inventory Item"}
-            </h3>
+          <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 className="text-lg font-semibold">
+                {editingItem ? "Edit Inventory Item" : "Add New Inventory Item"}
+              </h3>
+              <button
+                onClick={resetForm}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -737,7 +999,7 @@ const InventoryManagement: React.FC = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, sku: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
@@ -751,7 +1013,7 @@ const InventoryManagement: React.FC = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, name: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
@@ -765,7 +1027,7 @@ const InventoryManagement: React.FC = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, description: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   rows={3}
                 />
               </div>
@@ -782,7 +1044,7 @@ const InventoryManagement: React.FC = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, category: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
@@ -797,7 +1059,7 @@ const InventoryManagement: React.FC = () => {
                         unitType: e.target.value as any,
                       })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="piece">Pieces</option>
                     <option value="sqft">Square Feet</option>
@@ -816,7 +1078,7 @@ const InventoryManagement: React.FC = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, location: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
@@ -833,7 +1095,7 @@ const InventoryManagement: React.FC = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, costPrice: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
@@ -852,7 +1114,7 @@ const InventoryManagement: React.FC = () => {
                         sellingPrice: e.target.value,
                       })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
@@ -869,7 +1131,7 @@ const InventoryManagement: React.FC = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, currentStock: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
@@ -882,7 +1144,7 @@ const InventoryManagement: React.FC = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, minimumStock: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
@@ -895,7 +1157,7 @@ const InventoryManagement: React.FC = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, maximumStock: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
@@ -908,7 +1170,7 @@ const InventoryManagement: React.FC = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, reorderLevel: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
@@ -924,7 +1186,7 @@ const InventoryManagement: React.FC = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, supplier: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
@@ -937,7 +1199,7 @@ const InventoryManagement: React.FC = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, barcode: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
@@ -953,7 +1215,7 @@ const InventoryManagement: React.FC = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, imageUrl: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="https://example.com/image.jpg"
                   />
                 </div>
@@ -967,7 +1229,7 @@ const InventoryManagement: React.FC = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, groupTag: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="e.g., Premium, Budget, Luxury"
                   />
                 </div>
@@ -987,7 +1249,7 @@ const InventoryManagement: React.FC = () => {
                       onChange={(e) =>
                         setFormData({ ...formData, width: e.target.value })
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="Width"
                     />
                   </div>
@@ -1002,25 +1264,25 @@ const InventoryManagement: React.FC = () => {
                       onChange={(e) =>
                         setFormData({ ...formData, height: e.target.value })
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="Height"
                     />
                   </div>
                 </div>
               )}
 
-              <div className="flex space-x-4 pt-4">
+              <div className="flex space-x-4 pt-4 border-t border-gray-200 mt-6">
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium transition-colors"
+                  className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-2.5 px-4 rounded-lg font-medium transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium transition-colors disabled:opacity-50"
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-4 rounded-lg font-medium transition-colors disabled:opacity-50 shadow-sm hover:shadow-md"
                 >
                   {loading ? "Saving..." : editingItem ? "Update" : "Add"}
                 </button>

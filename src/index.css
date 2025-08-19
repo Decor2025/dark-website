@@ -5,14 +5,14 @@
 @layer base {
   @media (max-width: 380px) {
     html {
-      font-size: 85%;
+      font-size: 90%;
     }
   }
 }
 @media (max-width: 380px) {
   body {
-    zoom: 0.9;      /* Chrome/Edge */
-    -moz-transform: scale(0.9); /* Firefox */
+    zoom: 0.95;      /* Chrome/Edge */
+    -moz-transform: scale(0.95); /* Firefox */
     -moz-transform-origin: top left;
   }
 }
