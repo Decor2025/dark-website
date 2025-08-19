@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
-  Menu,
+  AlignRight,
   X,
   User as UserIcon,
   LogOut,
@@ -188,42 +188,78 @@ const Navbar: React.FC = () => {
           </div>
 
           {/* Mobile */}
-          <div className="flex items-center gap-2 md:hidden">
-            {authLoading ? (
-              <div className="w-16 h-8 bg-gray-200 rounded-md animate-pulse" />
-            ) : currentUser ? (
-              <Link
-                to="/profile"
-                className="flex items-center gap-1 px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50 transition"
-              >
-                {currentUser.profileImage ? (
-                  <img
-                    src={currentUser.profileImage}
-                    alt="Avatar"
-                    className="w-6 h-6 rounded-full object-cover border border-gray-200"
-                  />
-                ) : (
-                  <UserIcon size={16} className="text-gray-700" />
-                )}
-                <span className="text-gray-700 text-sm truncate max-w-[80px]">
-                  {displayName}
-                </span>
-              </Link>
-            ) : (
-              <Link
-                to="/login"
-                className="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50 transition"
-              >
-                Login
-              </Link>
-            )}
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="p-2 rounded-md hover:bg-gray-100"
+<div className="flex items-center gap-2 md:hidden">
+  {authLoading ? (
+    <div className="w-16 h-8 bg-gray-200 rounded-md animate-pulse" />
+  ) : currentUser ? (
+    <div className="relative">
+      <button
+        ref={profileButtonRef}
+        onClick={() => setProfileMenuOpen((o) => !o)}
+        className="flex items-center gap-1 px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50 transition"
+      >
+        {currentUser.profileImage ? (
+          <img
+            src={currentUser.profileImage}
+            alt="Avatar"
+            className="w-6 h-6 rounded-full object-cover border border-gray-200"
+          />
+        ) : (
+          <UserIcon size={16} className="text-gray-700" />
+        )}
+        <span className="text-gray-700 text-sm truncate max-w-[80px]">
+          {displayName}
+        </span>
+      </button>
+
+      {/* Floating User Menu */}
+      {profileMenuOpen && (
+        <div
+          ref={profileMenuRef}
+          className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-50 animate-fadeSlide"
+        >
+          <Link
+            to="/profile"
+            onClick={() => setProfileMenuOpen(false)}
+            className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+          >
+            <UserIcon size={16} /> My Profile
+          </Link>
+          {(currentUser.role === "admin" || currentUser.role === "employee") && (
+            <Link
+              to="/admin"
+              onClick={() => setProfileMenuOpen(false)}
+              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50"
             >
-              <Menu size={20} />
-            </button>
-          </div>
+              <Users size={16} />{" "}
+              {currentUser.role === "admin" ? "Admin Panel" : "Dashboard"}
+            </Link>
+          )}
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+          >
+            <LogOut size={16} /> Logout
+          </button>
+        </div>
+      )}
+    </div>
+  ) : (
+    <Link
+      to="/login"
+      className="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50 transition"
+    >
+      Login
+    </Link>
+  )}
+  <button
+    onClick={() => setSidebarOpen(true)}
+    className="p-2 rounded-md hover:bg-gray-100"
+  >
+    <AlignRight size={20} />
+  </button>
+</div>
+
         </div>
       </nav>
 
@@ -384,11 +420,27 @@ const Navbar: React.FC = () => {
 
       <style>{`
         @keyframes slideInRight {
-          from { transform: translateX(100%); }
-          to { transform: translateX(0); }
+  from {
+    transform: translateX(40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+.animate-slideInRight {
+  animation: slideInRight 0.25s ease-out forwards;
+}
+
+
+
+        @keyframes fadeSlide {
+          from { opacity: 0; transform: translateY(-8px); }
+          to { opacity: 1; transform: translateY(0); }
         }
-        .animate-slideInRight {
-          animation: slideInRight 0.3s ease forwards;
+        .animate-fadeSlide {
+          animation: fadeSlide 0.2s ease forwards;
         }
       `}</style>
     </>
