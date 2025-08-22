@@ -18,15 +18,13 @@ export interface GoogleSheetsRow {
   pricePerUnit: number;
   currentStock: number;
   minimumStock: number;
-  maximumStock: number;
+  gstRate: number;
   reorderLevel: number;
   location: string;
   supplier: string;
   barcode?: string;
   imageUrl?: string;
   groupTag?: string;
-  width?: number;
-  height?: number;
 }
 
 // Standard import format for Google Sheets
@@ -41,15 +39,14 @@ export const SHEETS_COLUMN_MAPPING = {
   H: "sellingPrice",
   I: "currentStock",
   J: "minimumStock",
-  K: "maximumStock",
+  K: "gstRate",
   L: "reorderLevel",
   M: "location",
   N: "supplier",
   O: "barcode",
   P: "imageUrl",
   Q: "groupTag",
-  R: "width",
-  S: "height",
+
 };
 
 
@@ -103,15 +100,14 @@ export const fetchInventoryFromGoogleSheets = async (): Promise<
         sellingPrice: parseFloat(row[7]) || 0,
         currentStock: parseInt(row[8]) || 0,
         minimumStock: parseInt(row[9]) || 0,
-        maximumStock: parseInt(row[10]) || 1000,
+        gstRate: parseInt(row[10]) || 1000,
         reorderLevel: parseInt(row[11]) || 10,
         location: row[12] || "",
         supplier: row[13] || "",
         barcode: row[14] || "",
         imageUrl: row[15] || "",
         groupTag: row[16] || "",
-        width: parseFloat(row[17]) || undefined,
-        height: parseFloat(row[18]) || undefined,
+
         unit: row[4] || "pcs",
       };
 
@@ -148,15 +144,14 @@ export const updateGoogleSheetsInventory = async (
         item.sellingPrice,
         item.currentStock,
         item.minimumStock,
-        item.maximumStock,
+        item.gstRate,
         item.reorderLevel,
         item.location,
         item.supplier,
         item.barcode || "",
         item.imageUrl || "",
         item.groupTag || "",
-        item.width || "",
-        item.height || "",
+
       ],
     ];
 
@@ -207,15 +202,14 @@ export const addToGoogleSheets = async (
         item.sellingPrice,
         item.currentStock,
         item.minimumStock,
-        item.maximumStock,
+        item.gstRate,
         item.reorderLevel,
         item.location,
         item.supplier,
         item.barcode || "",
         item.imageUrl || "",
         item.groupTag || "",
-        item.width || "",
-        item.height || "",
+
       ],
     ];
 

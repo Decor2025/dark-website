@@ -19,7 +19,7 @@ import Estimate from "./pages/Estimate";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import FaviconUpdater from "./components/FaviconUpdater";
 import AuthBridge from "../src/context/Auth";
-import OurWorkPublic from "../src/pages/OurWorkPublic"
+import OurWorkPublic from "./pages/OurWork"
 
 // Yahan apna ResetPassword component import karna mat bhool
 import ResetPassword from "./pages/ResetPassword";

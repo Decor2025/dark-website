@@ -9,6 +9,7 @@ import { ref, onValue, off } from "firebase/database";
 import {
   Home,
   User,
+  Quote ,
   LogOut,
   Users,
   Package,
@@ -147,6 +148,7 @@ const AdminDashboard: React.FC = () => {
 
   const menuItems = [
     { id: "overview", label: "Overview", icon: BarChart3 },
+    { id: "quote", label: "Quotation", icon: Quote  },
     { id: "users", label: "Users", icon: Users },
     { id: "products", label: "Products", icon: Package },
     { id: "inventory", label: "Inventory", icon: Package },
@@ -346,6 +348,7 @@ const AdminDashboard: React.FC = () => {
         );
       case "users":
         return <UserManagement />;
+
       case "products":
         return <ProductManagement />;
       case "inventory":

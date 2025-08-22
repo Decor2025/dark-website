@@ -139,9 +139,7 @@ const OurWorkPublic: React.FC<OurWorkPublicProps> = ({
           </div>
         )}
         <div className="p-4">
-          {item.title && (
-            <h3 className="font-semibold text-gray-800 mb-1">{item.title}</h3>
-          )}
+          
           {item.caption && (
             <p className="text-gray-600 text-sm line-clamp-2">{item.caption}</p>
           )}

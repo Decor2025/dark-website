@@ -137,7 +137,7 @@ const TestimonialForm: React.FC<TestimonialFormProps> = ({ isOpen, onClose }) =>
                 'Submitting...'
               ) : (
                 <>
-                  Submit Review
+                  Submit
                   <Send className="w-4 h-4 ml-2" />
                 </>
               )}

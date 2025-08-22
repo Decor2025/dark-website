@@ -55,15 +55,13 @@ export interface InventoryItem {
   unitType: 'sqft' | 'meter' | 'piece' | 'kg' | 'liter';
   currentStock: number;
   minimumStock: number;
-  maximumStock: number;
+  gst: number;
   reorderLevel: number;
   location: string;
   supplier: string;
   barcode?: string;
   imageUrl?: string;
   groupTag?: string;
-  width?: number;
-  height?: number;
   lastUpdated: string;
   updatedBy: string;
   createdAt: string;
@@ -191,6 +189,7 @@ export interface QuotationItem {
   width?: number;
   height?: number;
   area?: number;
+  gstRate?: number;  
   unitPrice: number;
   pricePerUnit: number;
   unitType: string;

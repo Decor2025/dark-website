@@ -7,9 +7,34 @@ import Hero from "../components/Hero";
 import ProductCard from "../components/product/ProductCard";
 import ProductModal from "../components/product/ProductModal";
 import TestimonialForm from "../components/testimonials/TestimonialForm";
-import OurWorkPublic from "./OurWorkPublic";
-import { ArrowRight, Star, Users } from "lucide-react";
+import OurWorkPublic from "./OurWork";
+import { 
+  ArrowRight, 
+  Star, 
+  Users, 
+  Check, 
+  Shield, 
+  Truck, 
+  Palette, 
+  Zap, 
+  Ruler, 
+  EyeOff, 
+  Clock,
+  Sun,
+  Droplets,
+  Sparkles
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+
+// Sample images for visual enhancement (replace with your actual images)
+const CATEGORY_IMAGES = {
+  sheer: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+  blinds: "https://images.unsplash.com/photo-1595428774223-ef52624120d2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+  mosquito: "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+  motorized: "https://images.unsplash.com/photo-1593079831268-3381b0db26a2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+  pvc: "https://images.unsplash.com/photo-1560448204-603b3fc33ddc?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+  zebra: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+};
 
 // Enhanced skeleton components
 const SkeletonCard: React.FC<{ className?: string }> = ({ className = "" }) => (
@@ -110,26 +135,190 @@ const Home: React.FC = () => {
   }, []);
 
   const previewProducts = products.slice(0, 4);
+  
+  // Product categories data with images
+  const productCategories = [
+    {
+      title: "Curtain Sheer Fabrics",
+      description: "Elegant and lightweight fabrics that filter light while maintaining privacy",
+      icon: <EyeOff className="w-8 h-8" />,
+      image: CATEGORY_IMAGES.sheer,
+      features: ["Light Filtering", "Elegant Draping", "Various Colors"]
+    },
+    {
+      title: "Ready-made Blinds",
+      description: "Precision-cut blinds available in various sizes for quick installation",
+      icon: <Ruler className="w-8 h-8" />,
+      image: CATEGORY_IMAGES.blinds,
+      features: ["Perfect Fit", "Quick Installation", "Multiple Sizes"]
+    },
+    {
+      title: "Pleated Mosquito Mesh",
+      description: "Discreet protection against insects without compromising on ventilation",
+      icon: <Shield className="w-8 h-8" />,
+      image: CATEGORY_IMAGES.mosquito,
+      features: ["Insect Protection", "Full Ventilation", "Discreet Design"]
+    },
+    {
+      title: "Motorised Solutions",
+      description: "Automated curtains and blinds for modern, convenient living",
+      icon: <Zap className="w-8 h-8" />,
+      image: CATEGORY_IMAGES.motorized,
+      features: ["Smart Control", "Energy Efficient", "Quiet Operation"]
+    },
+    {
+      title: "PVC & Monsoon Blinds",
+      description: "Weather-resistant solutions for all seasons and conditions",
+      icon: <Droplets className="w-8 h-8" />,
+      image: CATEGORY_IMAGES.pvc,
+      features: ["Weather Resistant", "All Seasons", "Durable Material"]
+    },
+    {
+      title: "Wooden & Zebra Blinds",
+      description: "Stylish options with various patterns and color combinations",
+      icon: <Palette className="w-8 h-8" />,
+      image: CATEGORY_IMAGES.zebra,
+      features: ["Natural Materials", "Modern Styles", "Custom Designs"]
+    }
+  ];
+
+  // Benefits data
+  const benefits = [
+    {
+      title: "Custom Sizing",
+      description: "Perfect fit for any window dimension",
+      icon: <Ruler className="w-6 h-6" />
+    },
+    {
+      title: "Quick Installation",
+      description: "Professional fitting in less time",
+      icon: <Clock className="w-6 h-6" />
+    },
+    {
+      title: "Premium Materials",
+      description: "Quality fabrics built to last",
+      icon: <Sparkles className="w-6 h-6" />
+    },
+    {
+      title: "Free Consultation",
+      description: "Expert advice for your space",
+      icon: <Sparkles className="w-6 h-6" />
+    }
+  ];
 
   return (
     <div className="bg-white text-gray-900 overflow-hidden">
       {/* HERO */}
       <Hero />
 
+      {/* Product categories section */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
+        <motion.div 
+          className="text-center mb-16"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.7 }}
+        >
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">Our Premium Window Solutions</h2>
+          <p className="text-gray-600 mt-4 max-w-3xl mx-auto text-lg">
+            Transform your space with our curated collection of high-quality window treatments designed for style and functionality
+          </p>
+        </motion.div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {productCategories.map((category, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300"
+            >
+              <div className="relative h-48 overflow-hidden">
+                <img 
+                  src={category.image} 
+                  alt={category.title}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                  <div className="flex gap-2">
+                    {category.features.map((feature, i) => (
+                      <span key={i} className="text-xs text-white bg-indigo-600/90 px-2 py-1 rounded-full">
+                        {feature}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="p-6">
+                <div className="bg-indigo-100 p-3 rounded-full text-indigo-600 mb-4 inline-flex">
+                  {category.icon}
+                </div>
+                <h3 className="font-semibold text-xl mb-2 text-gray-900">{category.title}</h3>
+                <p className="text-gray-600">{category.description}</p>
+                <button className="mt-4 text-indigo-600 font-medium flex items-center gap-1 group-hover:gap-2 transition-all">
+                  Explore options <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* Benefits section */}
+      <section className="bg-gradient-to-br from-indigo-50 to-gray-100 py-16 md:py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div 
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.7 }}
+          >
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">Why Choose Our Products</h2>
+            <p className="text-gray-600 mt-4 max-w-2xl mx-auto text-lg">
+              Experience the difference with our premium products and exceptional service
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {benefits.map((benefit, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="bg-white rounded-2xl p-6 text-center shadow-md hover:shadow-lg transition-all duration-300"
+              >
+                <div className="bg-indigo-100 w-14 h-14 rounded-full flex items-center justify-center text-indigo-600 mx-auto mb-5">
+                  {benefit.icon}
+                </div>
+                <h3 className="font-semibold text-lg mb-3 text-gray-900">{benefit.title}</h3>
+                <p className="text-gray-600">{benefit.description}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Featured products section */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
-        <div className="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
+        <div className="flex flex-col sm:flex-row items-center justify-between mb-12 gap-4">
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-2xl sm:text-3xl font-bold text-center sm:text-left"
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.7 }}
+            className="text-3xl sm:text-4xl font-bold text-gray-900 text-center sm:text-left"
           >
             Featured Products
           </motion.h2>
           <motion.a 
             href="/catalogue"
-            className="inline-flex items-center text-indigo-600 font-semibold gap-2 group"
+            className="inline-flex items-center text-indigo-600 font-semibold gap-2 group text-lg"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -139,7 +328,7 @@ const Home: React.FC = () => {
         </div>
 
         {/* Grid for desktop */}
-        <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {loadingProducts
             ? Array(4).fill(0).map((_, idx) => (
                 <SkeletonCard key={idx} className="h-80" />
@@ -148,7 +337,8 @@ const Home: React.FC = () => {
                 <motion.div
                   key={p.id}
                   initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-50px" }}
                   transition={{ duration: 0.5, delay: idx * 0.1 }}
                 >
                   <ProductCard product={p} onViewDetails={() => setSelectedProduct(p)} />
@@ -157,7 +347,7 @@ const Home: React.FC = () => {
         </div>
 
         {/* Mobile scroll */}
-        <div className="md:hidden flex overflow-x-auto pb-4 -mx-4 px-4 hide-scrollbar gap-4">
+        <div className="md:hidden flex overflow-x-auto pb-4 -mx-4 px-4 hide-scrollbar gap-6">
           {loadingProducts
             ? Array(3).fill(0).map((_, idx) => (
                 <div key={idx} className="min-w-[85vw]">
@@ -168,7 +358,8 @@ const Home: React.FC = () => {
                 <div key={p.id} className="min-w-[85vw]">
                   <motion.div
                     initial={{ opacity: 0, x: 50 }}
-                    animate={{ opacity: 1, x: 0 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true, margin: "-50px" }}
                     transition={{ duration: 0.4 }}
                   >
                     <ProductCard product={p} onViewDetails={() => setSelectedProduct(p)} />
@@ -179,73 +370,73 @@ const Home: React.FC = () => {
       </section>
 
       {/* Our Work */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16 bg-gray-50 rounded-3xl my-8 mx-4 sm:mx-6 lg:mx-auto">
-        <div className="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 bg-gradient-to-br from-gray-50 to-indigo-50 rounded-3xl my-8 mx-4 sm:mx-6 lg:mx-auto">
+        <div className="flex flex-col sm:flex-row items-center justify-between mb-12 gap-4">
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-2xl sm:text-3xl font-bold text-center sm:text-left"
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.7 }}
+            className="text-3xl sm:text-4xl font-bold text-gray-900 text-center sm:text-left"
           >
-            Our Work
+            Our Recent Projects
           </motion.h2>
           <motion.a 
             href="/our-work"
-            className="inline-flex items-center text-indigo-600 font-semibold gap-2 group"
+            className="inline-flex items-center text-indigo-600 font-semibold gap-2 group text-lg"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            View All Work 
+            View All Projects
             <ArrowRight className="transition-transform group-hover:translate-x-1" />
           </motion.a>
         </div>
-<motion.div
-  initial={{ opacity: 0 }}
-  animate={{ opacity: 1 }}
-  transition={{ duration: 0.8 }}
->
-  {loadingWork ? (
-    <div
-      className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 overflow-y-auto"
-      style={{ maxHeight: 280 }}
-    >
-      {Array(5).fill(0).map((_, idx) => (
-        <SkeletonCard key={idx} className="min-h-[260px]" />
-      ))}
-    </div>
-  ) : (
-    <div
-      className="overflow-x-auto hide-scrollbar"
-      style={{ maxHeight: 280 }}
-    >
-      <div className="inline-flex gap-4 min-h-[260px]">
-        <OurWorkPublic horizontalPreview previewCount={5} />
-      </div>
-    </div>
-  )}
-</motion.div>
-
-
-
-
-
+        
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.8 }}
+        >
+          {loadingWork ? (
+            <div
+              className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6 overflow-y-auto"
+              style={{ maxHeight: 300 }}
+            >
+              {Array(5).fill(0).map((_, idx) => (
+                <SkeletonCard key={idx} className="min-h-[280px]" />
+              ))}
+            </div>
+          ) : (
+            <div
+              className="overflow-x-auto hide-scrollbar"
+              style={{ maxHeight: 300 }}
+            >
+              <div className="inline-flex gap-6 min-h-[280px]">
+                <OurWorkPublic horizontalPreview previewCount={5} />
+              </div>
+            </div>
+          )}
+        </motion.div>
       </section>
 
       {/* Testimonials */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
-        <div className="text-center mb-10">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
+        <div className="text-center mb-16">
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-2xl sm:text-3xl font-bold"
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.7 }}
+            className="text-3xl sm:text-4xl font-bold text-gray-900"
           >
             What Our Clients Say
           </motion.h2>
           <motion.p 
-            className="text-gray-600 mt-3 max-w-2xl mx-auto"
+            className="text-gray-600 mt-4 max-w-2xl mx-auto text-lg"
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
             Hear from clients who transformed their homes with our curated interiors.
@@ -253,44 +444,45 @@ const Home: React.FC = () => {
         </div>
 
         {loadingTestimonials ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {Array(3).fill(0).map((_, idx) => (
               <TestimonialSkeleton key={idx} />
             ))}
           </div>
         ) : testimonials.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {testimonials.map((t, idx) => (
               <motion.div
                 key={t.id}
                 initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.5, delay: idx * 0.15 }}
-                className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300"
+                className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100"
               >
-                <div className="flex items-center mb-3">
+                <div className="flex items-center mb-4">
                   {[...Array(Math.max(0, t.rating || 5))].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                    <Star key={i} className="w-5 h-5 text-yellow-400 fill-yellow-400" />
                   ))}
                 </div>
-                <h4 className="font-semibold mb-2 text-lg">{t.title}</h4>
+                <h4 className="font-semibold text-lg mb-3 text-gray-900">{t.title}</h4>
                 <p className="text-gray-600 italic">"{t.content}"</p>
-                <div className="flex items-center mt-6">
+                <div className="flex items-center mt-8 pt-4 border-t border-gray-100">
                   {t.userImage ? (
                     <motion.img 
                       src={t.userImage} 
                       alt={t.userName} 
-                      className="w-10 h-10 rounded-full mr-3 object-cover"
+                      className="w-12 h-12 rounded-full mr-4 object-cover"
                       whileHover={{ scale: 1.1 }}
                     />
                   ) : (
-                    <div className="w-10 h-10 rounded-full bg-gray-200 mr-3 flex items-center justify-center">
-                      <Users className="w-5 h-5 text-gray-600" />
+                    <div className="w-12 h-12 rounded-full bg-indigo-100 mr-4 flex items-center justify-center text-indigo-600">
+                      <Users className="w-6 h-6" />
                     </div>
                   )}
                   <div>
-                    <div className="font-medium">{t.userName}</div>
-                    <div className="text-xs text-gray-500">Verified Customer</div>
+                    <div className="font-medium text-gray-900">{t.userName}</div>
+                    <div className="text-sm text-gray-500">Verified Customer</div>
                   </div>
                 </div>
               </motion.div>
@@ -298,16 +490,17 @@ const Home: React.FC = () => {
           </div>
         ) : (
           <motion.div 
-            className="text-center py-8"
+            className="text-center py-12 bg-gray-50 rounded-2xl"
             initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.5 }}
           >
-            <p className="text-gray-600 mb-4">No testimonials yet — be the first to share your experience.</p>
+            <p className="text-gray-600 mb-6 text-lg">No testimonials yet — be the first to share your experience.</p>
             <div className="mt-4">
               <motion.button 
                 onClick={() => setShowTestimonialForm(true)}
-                className="px-5 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
+                className="px-6 py-3 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition-colors font-medium"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -330,21 +523,25 @@ const Home: React.FC = () => {
 
       {/* CTA */}
       <motion.section 
-        className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-14"
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24"
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
+        viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.7 }}
       >
-        <div className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="text-center md:text-left">
-            <h3 className="text-xl md:text-2xl font-semibold">Need expert guidance?</h3>
-            <p className="text-sm mt-1 max-w-md">Book a consultation and get a tailored design and estimate for your home.</p>
+        <div className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-2xl p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 overflow-hidden relative">
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-0 left-0 w-72 h-72 bg-purple-300 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
+            <div className="absolute bottom-0 right-0 w-96 h-96 bg-indigo-300 rounded-full translate-x-1/3 translate-y-1/3"></div>
           </div>
-          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          <div className="text-center md:text-left relative z-10">
+            <h3 className="text-2xl md:text-3xl font-semibold mb-3">Need expert guidance?</h3>
+            <p className="text-indigo-100 max-w-md">Book a consultation and get a tailored design and estimate for your home.</p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto relative z-10">
             <motion.a 
               href="/contact" 
-              className="bg-white text-indigo-700 px-5 py-3 rounded-lg font-semibold text-center transition-colors hover:bg-gray-100"
+              className="bg-white text-indigo-700 px-6 py-4 rounded-xl font-semibold text-center transition-colors hover:bg-gray-50 shadow-lg"
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -352,7 +549,7 @@ const Home: React.FC = () => {
             </motion.a>
             <motion.a 
               href="/estimate" 
-              className="border border-white px-5 py-3 rounded-lg text-center hover:bg-indigo-700 transition-colors"
+              className="border border-white px-6 py-4 rounded-xl text-center hover:bg-indigo-700/20 transition-colors font-medium"
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.98 }}
             >
@@ -374,5 +571,4 @@ const Home: React.FC = () => {
     </div>
   );
 };
-
 export default Home;

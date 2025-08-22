@@ -15,8 +15,7 @@ import { useAuth } from "../../context/AuthContext";
 import { ref, onValue } from "firebase/database";
 import { database } from "../../config/firebase";
 import { SiteSettings } from "../../types";
-
-import TestimonialForm from "../testimonials/TestimonialForm"; // Adjust path accordingly
+import TestimonialForm from "../testimonials/TestimonialForm";
 
 type NavItem = {
   label: string;
@@ -91,31 +90,34 @@ const Navbar: React.FC = () => {
 
   return (
     <>
-      <nav className="bg-white border-b shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-14">
+      <nav className="bg-white border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center">
+          <Link to="/" className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center transition-transform hover:scale-105">
               <span className="text-white font-bold text-lg">
                 {storeInitial}
               </span>
             </div>
-            <span className="font-semibold text-gray-800">{storeName}</span>
+            <span className="font-semibold text-gray-800 text-lg">{storeName}</span>
           </Link>
 
           {/* Desktop nav */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-6">
             {navLinks.map(({ label, to }) => (
               <Link
                 key={label}
                 to={to || "/"}
-                className={`relative text-sm font-medium px-2 py-1 rounded-md transition ${
+                className={`relative text-sm font-medium px-3 py-2 rounded-md transition-all duration-200 ${
                   location.pathname === to
-                    ? "text-blue-600 font-semibold after:absolute after:left-0 after:right-0 after:bottom-0 after:h-[2px] after:bg-blue-600"
-                    : "text-gray-700 hover:text-blue-600"
+                    ? "text-blue-600 bg-blue-50 font-semibold"
+                    : "text-gray-600 hover:text-blue-600 hover:bg-gray-50"
                 }`}
               >
                 {label}
+                {location.pathname === to && (
+                  <span className="absolute inset-x-1 -bottom-2 h-0.5 bg-blue-600 rounded-full transition-all duration-300"></span>
+                )}
               </Link>
             ))}
 
@@ -127,17 +129,17 @@ const Navbar: React.FC = () => {
                 <button
                   ref={profileButtonRef}
                   onClick={() => setProfileMenuOpen((o) => !o)}
-                  className="flex items-center gap-2 focus:outline-none"
+                  className="flex items-center gap-2 focus:outline-none transition-transform hover:scale-105 duration-200"
                 >
                   {currentUser.profileImage ? (
                     <img
                       src={currentUser.profileImage}
                       alt="Avatar"
-                      className="w-8 h-8 rounded-full object-cover border border-gray-200"
+                      className="w-9 h-9 rounded-full object-cover border-2 border-gray-200 transition-all duration-300 hover:border-blue-500"
                     />
                   ) : (
-                    <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200">
-                      <UserIcon size={16} />
+                    <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center border-2 border-gray-200 transition-all duration-300 hover:border-blue-500">
+                      <UserIcon size={18} />
                     </div>
                   )}
                   <span className="text-sm text-gray-700">{displayName}</span>
@@ -146,11 +148,11 @@ const Navbar: React.FC = () => {
                 {profileMenuOpen && (
                   <div
                     ref={profileMenuRef}
-                    className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 py-1 z-50"
+                    className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-50 animate-fadeIn"
                   >
                     <Link
                       to="/profile"
-                      className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
                       onClick={() => setProfileMenuOpen(false)}
                     >
                       <UserIcon size={16} /> My Profile
@@ -159,7 +161,7 @@ const Navbar: React.FC = () => {
                       currentUser.role === "employee") && (
                       <Link
                         to="/admin"
-                        className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
                         onClick={() => setProfileMenuOpen(false)}
                       >
                         <Users size={16} />{" "}
@@ -170,7 +172,7 @@ const Navbar: React.FC = () => {
                     )}
                     <button
                       onClick={handleLogout}
-                      className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                      className="flex items-center gap-2 w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors duration-200"
                     >
                       <LogOut size={16} /> Logout
                     </button>
@@ -180,7 +182,7 @@ const Navbar: React.FC = () => {
             ) : (
               <Link
                 to="/login"
-                className="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50 transition"
+                className="px-4 py-2 border border-gray-200 rounded-md text-sm hover:bg-gray-50 transition-all duration-200 hover:border-gray-300"
               >
                 Login
               </Link>
@@ -188,78 +190,77 @@ const Navbar: React.FC = () => {
           </div>
 
           {/* Mobile */}
-<div className="flex items-center gap-2 md:hidden">
-  {authLoading ? (
-    <div className="w-16 h-8 bg-gray-200 rounded-md animate-pulse" />
-  ) : currentUser ? (
-    <div className="relative">
-      <button
-        ref={profileButtonRef}
-        onClick={() => setProfileMenuOpen((o) => !o)}
-        className="flex items-center gap-1 px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50 transition"
-      >
-        {currentUser.profileImage ? (
-          <img
-            src={currentUser.profileImage}
-            alt="Avatar"
-            className="w-6 h-6 rounded-full object-cover border border-gray-200"
-          />
-        ) : (
-          <UserIcon size={16} className="text-gray-700" />
-        )}
-        <span className="text-gray-700 text-sm truncate max-w-[80px]">
-          {displayName}
-        </span>
-      </button>
+          <div className="flex items-center gap-2 md:hidden">
+            {authLoading ? (
+              <div className="w-16 h-8 bg-gray-200 rounded-md animate-pulse" />
+            ) : currentUser ? (
+              <div className="relative">
+                <button
+                  ref={profileButtonRef}
+                  onClick={() => setProfileMenuOpen((o) => !o)}
+                  className="flex items-center gap-1 px-3 py-1.5 border border-gray-200 rounded-md text-sm hover:bg-gray-50 transition-all duration-200"
+                >
+                  {currentUser.profileImage ? (
+                    <img
+                      src={currentUser.profileImage}
+                      alt="Avatar"
+                      className="w-7 h-7 rounded-full object-cover border border-gray-200"
+                    />
+                  ) : (
+                    <UserIcon size={16} className="text-gray-700" />
+                  )}
+                  <span className="text-gray-700 text-sm truncate max-w-[80px]">
+                    {displayName}
+                  </span>
+                </button>
 
-      {/* Floating User Menu */}
-      {profileMenuOpen && (
-        <div
-          ref={profileMenuRef}
-          className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-50 animate-fadeSlide"
-        >
-          <Link
-            to="/profile"
-            onClick={() => setProfileMenuOpen(false)}
-            className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-          >
-            <UserIcon size={16} /> My Profile
-          </Link>
-          {(currentUser.role === "admin" || currentUser.role === "employee") && (
-            <Link
-              to="/admin"
-              onClick={() => setProfileMenuOpen(false)}
-              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                {/* Floating User Menu */}
+                {profileMenuOpen && (
+                  <div
+                    ref={profileMenuRef}
+                    className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-100 z-50 animate-fadeIn"
+                  >
+                    <Link
+                      to="/profile"
+                      onClick={() => setProfileMenuOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
+                    >
+                      <UserIcon size={16} /> My Profile
+                    </Link>
+                    {(currentUser.role === "admin" || currentUser.role === "employee") && (
+                      <Link
+                        to="/admin"
+                        onClick={() => setProfileMenuOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
+                      >
+                        <Users size={16} />{" "}
+                        {currentUser.role === "admin" ? "Admin Panel" : "Dashboard"}
+                      </Link>
+                    )}
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center gap-2 w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors duration-200"
+                    >
+                      <LogOut size={16} /> Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link
+                to="/login"
+                className="px-3 py-1.5 border border-gray-200 rounded-md text-sm hover:bg-gray-50 transition-all duration-200"
+              >
+                Login
+              </Link>
+            )}
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="p-2 rounded-md hover:bg-gray-100 transition-colors duration-200"
             >
-              <Users size={16} />{" "}
-              {currentUser.role === "admin" ? "Admin Panel" : "Dashboard"}
-            </Link>
-          )}
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50"
-          >
-            <LogOut size={16} /> Logout
-          </button>
-        </div>
-      )}
-    </div>
-  ) : (
-    <Link
-      to="/login"
-      className="px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50 transition"
-    >
-      Login
-    </Link>
-  )}
-  <button
-    onClick={() => setSidebarOpen(true)}
-    className="p-2 rounded-md hover:bg-gray-100"
-  >
-    <AlignRight size={20} />
-  </button>
-</div>
-
+              <AlignRight size={20} />
+            </button>
+          </div>
         </div>
       </nav>
 
@@ -267,14 +268,14 @@ const Navbar: React.FC = () => {
       {sidebarOpen && (
         <div className="fixed inset-0 z-50 flex">
           <div
-            className="flex-1 bg-black bg-opacity-30"
+            className="flex-1 bg-black bg-opacity-30 backdrop-blur-sm animate-fadeIn"
             onClick={() => setSidebarOpen(false)}
           />
-          <div className="w-72 bg-white h-full shadow-xl p-4 flex flex-col justify-between animate-slideInRight">
+          <div className="w-72 bg-white h-full shadow-xl p-5 flex flex-col justify-between animate-slideInRight">
             <div>
-              <div className="flex justify-between items-center border-b pb-3 mb-4">
+              <div className="flex justify-between items-center border-b border-gray-100 pb-4 mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">
+                  <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">
                     {storeInitial}
                   </div>
                   <div>
@@ -284,24 +285,24 @@ const Navbar: React.FC = () => {
                 </div>
                 <button
                   onClick={() => setSidebarOpen(false)}
-                  className="p-2 hover:bg-gray-100 rounded-md"
+                  className="p-2 hover:bg-gray-100 rounded-md transition-colors duration-200"
                 >
                   <X size={22} />
                 </button>
               </div>
 
               {/* User Info */}
-              <div className="mb-6 border-b pb-4">
+              <div className="mb-6 border-b border-gray-100 pb-4">
                 {!authLoading && currentUser ? (
                   <div className="flex items-center gap-3">
                     {currentUser.profileImage ? (
                       <img
                         src={currentUser.profileImage}
                         alt="Avatar"
-                        className="w-12 h-12 rounded-full object-cover"
+                        className="w-12 h-12 rounded-full object-cover border-2 border-blue-100"
                       />
                     ) : (
-                      <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                      <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center border-2 border-blue-100">
                         <UserIcon size={18} />
                       </div>
                     )}
@@ -323,7 +324,7 @@ const Navbar: React.FC = () => {
                     <Link
                       to="/login"
                       onClick={() => setSidebarOpen(false)}
-                      className="inline-block px-3 py-1 border border-gray-300 rounded-md text-sm hover:bg-gray-50"
+                      className="inline-block px-4 py-2 border border-gray-200 rounded-md text-sm hover:bg-gray-50 transition-all duration-200"
                     >
                       Login
                     </Link>
@@ -332,16 +333,16 @@ const Navbar: React.FC = () => {
               </div>
 
               {/* Menu Links */}
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-1">
                 {navLinks.map(({ label, to, icon }, idx) => (
                   <Link
                     key={idx}
                     to={to || "/"}
                     onClick={() => setSidebarOpen(false)}
-                    className={`py-2 px-2 rounded flex items-center gap-2 ${
+                    className={`py-3 px-3 rounded-lg flex items-center gap-3 transition-all duration-200 ${
                       location.pathname === to
                         ? "bg-blue-50 text-blue-600 font-medium"
-                        : "hover:bg-gray-100 text-gray-700"
+                        : "hover:bg-gray-50 text-gray-700"
                     }`}
                   >
                     {icon && <span className="text-gray-500">{icon}</span>}
@@ -355,7 +356,7 @@ const Navbar: React.FC = () => {
                 <Link
                   to="/privacy-policy"
                   onClick={() => setSidebarOpen(false)}
-                  className="block mb-1 hover:underline"
+                  className="block mb-2 hover:text-blue-600 transition-colors duration-200"
                 >
                   Privacy Policy
                 </Link>
@@ -364,7 +365,7 @@ const Navbar: React.FC = () => {
                     setSidebarOpen(false);
                     setShowTestimonialForm(true);
                   }}
-                  className="block hover:underline text-left w-full"
+                  className="block hover:text-blue-600 transition-colors duration-200 text-left w-full"
                 >
                   Rate Us
                 </button>
@@ -372,13 +373,13 @@ const Navbar: React.FC = () => {
             </div>
 
             {/* Bottom Links */}
-            <div className="border-t pt-4 flex flex-col gap-2">
+            <div className="border-t border-gray-100 pt-4 flex flex-col gap-1">
               {!authLoading && currentUser ? (
                 <>
                   <Link
                     to="/profile"
                     onClick={() => setSidebarOpen(false)}
-                    className="py-2 px-2 rounded hover:bg-gray-100 flex items-center gap-2 text-sm text-gray-600"
+                    className="py-2.5 px-3 rounded-lg hover:bg-gray-50 flex items-center gap-3 text-sm text-gray-600 transition-colors duration-200"
                   >
                     <UserIcon size={16} />
                     My Profile
@@ -388,7 +389,7 @@ const Navbar: React.FC = () => {
                     <Link
                       to="/admin"
                       onClick={() => setSidebarOpen(false)}
-                      className="py-2 px-2 rounded hover:bg-gray-100 flex items-center gap-2 text-sm text-gray-600"
+                      className="py-2.5 px-3 rounded-lg hover:bg-gray-50 flex items-center gap-3 text-sm text-gray-600 transition-colors duration-200"
                     >
                       <Users size={16} />
                       {currentUser.role === "admin"
@@ -398,7 +399,7 @@ const Navbar: React.FC = () => {
                   )}
                   <button
                     onClick={handleLogout}
-                    className="text-red-600 py-2 px-2 rounded hover:bg-red-50 text-left flex items-center gap-2 text-sm"
+                    className="text-red-600 py-2.5 px-3 rounded-lg hover:bg-red-50 text-left flex items-center gap-3 text-sm transition-colors duration-200"
                   >
                     <LogOut size={16} />
                     Logout
@@ -420,27 +421,31 @@ const Navbar: React.FC = () => {
 
       <style>{`
         @keyframes slideInRight {
-  from {
-    transform: translateX(40px);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-.animate-slideInRight {
-  animation: slideInRight 0.25s ease-out forwards;
-}
-
-
-
-        @keyframes fadeSlide {
-          from { opacity: 0; transform: translateY(-8px); }
-          to { opacity: 1; transform: translateY(0); }
+          from {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
         }
-        .animate-fadeSlide {
-          animation: fadeSlide 0.2s ease forwards;
+        
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+        
+        .animate-slideInRight {
+          animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        
+        .animate-fadeIn {
+          animation: fadeIn 0.2s ease-out forwards;
         }
       `}</style>
     </>
