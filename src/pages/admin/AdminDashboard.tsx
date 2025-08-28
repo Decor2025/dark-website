@@ -4,7 +4,7 @@ import { Navigate } from "react-router-dom";
 import { database } from "../../config/firebase";
 import { signOut } from "firebase/auth";
 import { auth } from "../../config/firebase";
-
+import QuoteBuilder from "../../components/admin/QuoteBuilder"
 import { ref, onValue, off } from "firebase/database";
 import {
   Home,
@@ -348,7 +348,8 @@ const AdminDashboard: React.FC = () => {
         );
       case "users":
         return <UserManagement />;
-
+      case "quote":
+        return <QuoteBuilder />;
       case "products":
         return <ProductManagement />;
       case "inventory":

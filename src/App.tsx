@@ -20,18 +20,33 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import FaviconUpdater from "./components/FaviconUpdater";
 import AuthBridge from "../src/context/Auth";
 import OurWorkPublic from "./pages/OurWork"
-
-// Yahan apna ResetPassword component import karna mat bhool
+import { useEffect } from "react";
+import { gapi } from "gapi-script";
 import ResetPassword from "./pages/ResetPassword";
 
 function LayoutWrapper() {
   const location = useLocation();
+
+  // List of routes where header/footer should be shown
+  const mainRoutes = [
+    "/",
+    "/catalogue",
+    "/cart",
+    "/about",
+    "/contact",
+    "/estimate",
+    "/privacy",
+    "/our-work",
+    "/profile",
+  ];
+
+  // Hide header/footer if not in mainRoutes OR special routes
   const hideHeaderFooter =
-    location.pathname.startsWith("/auth/reset-password") ||
+    !mainRoutes.includes(location.pathname) ||
     location.pathname === "/login" ||
+    location.pathname.startsWith("/auth/reset-password") ||
     location.pathname === "/admin" ||
     location.pathname === "/auth/verified";
-
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -47,11 +62,10 @@ function LayoutWrapper() {
           <Route path="/estimate" element={<Estimate />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/our-work" element={<OurWorkPublic />} />
-          {/* Reset Password Route */}
           <Route path="/auth" element={<AuthBridge />} />
           <Route path="/auth/reset-password" element={<ResetPassword />} />
           <Route path="/auth/verified" element={<Verified />} />
-          {/* Protected Routes */}
+
           <Route
             path="/profile"
             element={
@@ -68,6 +82,8 @@ function LayoutWrapper() {
               </ProtectedRoute>
             }
           />
+
+          {/* Catch-all NotFound */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
@@ -76,10 +92,7 @@ function LayoutWrapper() {
         position="top-right"
         toastOptions={{
           duration: 3000,
-          style: {
-            background: "#363636",
-            color: "#fff",
-          },
+          style: { background: "#363636", color: "#fff" },
         }}
       />
     </div>
@@ -87,6 +100,18 @@ function LayoutWrapper() {
 }
 
 function App() {
+  useEffect(() => {
+    function start() {
+      gapi.client.init({
+        apiKey: 'import.AIzaSyAcUPet5yafJOl1BacuBT9moyg_jd_291c.env.VITE_GOOGLE_API_KEY as string',
+        clientId: '7355025915-iavbbbsne3bg9d3ctusa0g98rs86uscr.apps.googleusercontent.com',
+        discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"],
+        scope: "https://www.googleapis.com/auth/spreadsheets",
+      });
+    }
+    gapi.load("client:auth2", start);
+  }, []);
+
   return (
     <AuthProvider>
       <FaviconUpdater />
@@ -98,6 +123,5 @@ function App() {
     </AuthProvider>
   );
 }
-
 
 export default App;

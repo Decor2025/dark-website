@@ -219,8 +219,7 @@ const Estimate: React.FC = () => {
         // For other items, store dimensions and calculate quantity if needed
         next.width = wFt;
         next.height = hFt;
-        // If it's a piece-based item but we have dimensions, we might want to adjust quantity
-        // This is a simple approach - you might want more complex logic here
+        
         if ((it.unitType || '').toLowerCase() === 'piece' && sqft > 0) {
           next.quantity = Math.max(1, Math.ceil(sqft / 10)); // Example logic
         }
