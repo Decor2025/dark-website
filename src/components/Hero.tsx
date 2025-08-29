@@ -11,7 +11,6 @@ import {
   CheckCircle,
   ChevronDown,
   Phone,
-  Calendar,
   Quote,
   Sparkles,
 } from "lucide-react";
@@ -58,14 +57,14 @@ const Hero: React.FC = () => {
     },
   ];
 
-  // Sample images for blinds and mosquito nets
+  // Blinds and mosquito mesh specific images
   const productImages = [
     {
       url: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
       title: "Roller Blinds"
     },
     {
-      url: "https://images.unsplash.com/photo-1547258637-2c5c5d70d254?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80",
+      url: "https://media.istockphoto.com/id/1167452861/photo/open-mosquito-net-wire-screen-on-house-window-protection-against-insect.jpg?s=612x612&w=0&k=20&c=paJ7XM1JBbRouSSKZY56hgY7r7R2m__X8ykRMCyepn8=",
       title: "Mosquito Nets"
     },
     {
@@ -91,7 +90,7 @@ const Hero: React.FC = () => {
     return () => clearInterval(interval);
   }, [features.length]);
 
-  // Animation variants
+  // Fixed animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -109,7 +108,7 @@ const Hero: React.FC = () => {
       y: 0,
       opacity: 1,
       transition: {
-        type: "spring",
+        type: "spring" as const,
         damping: 12,
         stiffness: 100
       }
@@ -122,7 +121,7 @@ const Hero: React.FC = () => {
       scale: 1,
       opacity: 1,
       transition: {
-        type: "spring",
+        type: "spring" as const,
         damping: 15,
         stiffness: 100
       }
@@ -135,7 +134,7 @@ const Hero: React.FC = () => {
       scale: 1,
       opacity: 1,
       transition: {
-        type: "spring",
+        type: "spring" as const,
         damping: 15,
         stiffness: 100,
         delay: 0.8
@@ -214,13 +213,13 @@ const Hero: React.FC = () => {
               <>
                 <motion.div variants={itemVariants} className="space-y-4">
                   <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-tight text-slate-800 tracking-tight">
-                    <span className="block">{firstHalf}</span>
-                    <span className="block bg-gradient-to-r from-blue-600 to-teal-500 bg-clip-text text-transparent">
+                    <span className="block font-bold">{firstHalf}</span>
+                    <span className="block bg-gradient-to-r from-blue-600 to-teal-500 bg-clip-text text-transparent font-bold">
                       {secondHalf}
                     </span>
                   </h1>
                   
-                  <p className="text-lg md:text-xl text-slate-600 max-w-md mx-auto lg:mx-0 font-light leading-relaxed">
+                  <p className="text-xl text-slate-600 max-w-md mx-auto lg:mx-0 font-normal leading-relaxed">
                     {tagline}
                   </p>
                 </motion.div>
@@ -260,27 +259,18 @@ const Hero: React.FC = () => {
                   </motion.a>
                 </motion.div>
 
-                {/* Call to action buttons */}
+                {/* Call to action button */}
                 <motion.div 
                   variants={itemVariants}
-                  className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start mt-4"
+                  className="flex justify-center lg:justify-start mt-4"
                 >
                   <motion.a
-                    href="tel:+1234567890"
+                    href="tel:+91 9738101408"
                     whileHover={{ scale: 1.02 }}
                     className="inline-flex items-center justify-center px-5 py-3 font-medium rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-sm"
                   >
                     <Phone className="mr-2 h-4 w-4" />
                     Call Now
-                  </motion.a>
-
-                  <motion.a
-                    href="/booking"
-                    whileHover={{ scale: 1.02 }}
-                    className="inline-flex items-center justify-center px-5 py-3 font-medium rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-sm"
-                  >
-                    <Calendar className="mr-2 h-4 w-4" />
-                    Book Consultation
                   </motion.a>
                 </motion.div>
 

@@ -25,10 +25,10 @@ import { motion, AnimatePresence } from "framer-motion";
 
 // Sample images for visual enhancement (replace with your actual images)
 const CATEGORY_IMAGES = {
-  sheer: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+  sheer: "https://media.istockphoto.com/id/1442115350/photo/modern-design-of-gray-fabric-sofa-with-cushion-and-round-black-coffee-table-in-luxury-white.jpg?s=612x612&w=0&k=20&c=zlTdhIZWcT-yjRSbQU2ZP5H40n76o47TcMRUsEYFc_s=",
   blinds: "https://images.unsplash.com/photo-1595428774223-ef52624120d2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-  mosquito: "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-  motorized: "https://images.unsplash.com/photo-1593079831268-3381b0db26a2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+  mosquito: "https://media.istockphoto.com/id/1492463709/photo/hand-hold-pleated-mosquito-net-wire-screen-handle-on-house-window.jpg?s=612x612&w=0&k=20&c=RitElFFOlM8T7mLdViTCT-H0Z2Y7B71tbGLkZDYy8jY=",
+  motorized: "https://media.istockphoto.com/id/1438964450/photo/roller-blinds-on-the-windows-in-the-interior.jpg?s=612x612&w=0&k=20&c=Gs9RNXBV1Svrem8VEgoOtw2ZZQUj0eo1kjC5otE3wY8=",
   pvc: "https://images.unsplash.com/photo-1560448204-603b3fc33ddc?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
   zebra: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
 };
