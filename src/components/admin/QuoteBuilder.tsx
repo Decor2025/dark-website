@@ -909,7 +909,7 @@ export default function QuoteBuilder() {
   }
 
   return (
-    <div className="p-4 md:p-8 max-w-6xl mx-auto">
+    <div className="max-w-6xl mx-auto">
       {/* Company Header */}
       <div className="bg-white rounded-2xl shadow p-6 mb-6">
         <div className="text-center mb-4">

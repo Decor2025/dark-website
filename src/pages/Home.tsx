@@ -12,15 +12,12 @@ import {
   ArrowRight, 
   Star, 
   Users, 
-  Check, 
   Shield, 
-  Truck, 
   Palette, 
   Zap, 
   Ruler, 
   EyeOff, 
   Clock,
-  Sun,
   Droplets,
   Sparkles
 } from "lucide-react";
