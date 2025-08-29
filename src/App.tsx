@@ -23,6 +23,7 @@ import OurWorkPublic from "./pages/OurWork"
 import { useEffect } from "react";
 import { gapi } from "gapi-script";
 import ResetPassword from "./pages/ResetPassword";
+import ProductionDashboard from "./components/admin/ProductionDashboard";
 
 function LayoutWrapper() {
   const location = useLocation();
@@ -46,6 +47,7 @@ function LayoutWrapper() {
     location.pathname === "/login" ||
     location.pathname.startsWith("/auth/reset-password") ||
     location.pathname === "/admin" ||
+    location.pathname === "/production" ||
     location.pathname === "/auth/verified";
 
   return (
@@ -79,6 +81,14 @@ function LayoutWrapper() {
             element={
               <ProtectedRoute>
                 <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/production"
+            element={
+              <ProtectedRoute requiredRole="production">
+                <ProductionDashboard />
               </ProtectedRoute>
             }
           />

@@ -572,6 +572,7 @@ const UserManagement: React.FC = () => {
                     <option value="admin">Admin</option>
                     <option value="editor">Editor</option>
                     <option value="viewer">Viewer</option>
+                    <option value="production">Production</option>
                   </select>
                 </div>
 

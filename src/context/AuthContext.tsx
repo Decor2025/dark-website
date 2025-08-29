@@ -35,7 +35,9 @@ export const useAuth = () => {
   return context;
 };
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
+  children 
+}) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -49,7 +51,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const signup = async (email: string, password: string, role: 'customer' | 'employee' | 'editor' | 'viewer' = 'customer') => {
+  const signup = async (
+    email: string, 
+    password: string, 
+    role: 'customer' | 'employee' | 'editor' | 'viewer' | 'production' = 'customer'
+  ) => {
     try {
       const result = await createUserWithEmailAndPassword(auth, email, password);
       const userData: User = {

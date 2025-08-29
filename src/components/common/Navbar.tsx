@@ -158,16 +158,16 @@ const Navbar: React.FC = () => {
                       <UserIcon size={16} /> My Profile
                     </Link>
                     {(currentUser.role === "admin" ||
-                      currentUser.role === "employee") && (
+                      currentUser.role === "employee" ||
+                      currentUser.role === "production") && (
                       <Link
-                        to="/admin"
+                        to={currentUser.role === "production" ? "/production" : "/admin"}
                         className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
                         onClick={() => setProfileMenuOpen(false)}
                       >
                         <Users size={16} />{" "}
-                        {currentUser.role === "admin"
-                          ? "Admin Panel"
-                          : "Dashboard"}
+                        {currentUser.role === "admin" ? "Admin Panel" : 
+                         currentUser.role === "production" ? "Production" : "Dashboard"}
                       </Link>
                     )}
                     <button
@@ -229,12 +229,13 @@ const Navbar: React.FC = () => {
                     </Link>
                     {(currentUser.role === "admin" || currentUser.role === "employee") && (
                       <Link
-                        to="/admin"
+                        to={currentUser.role === "production" ? "/production" : "/admin"}
                         onClick={() => setProfileMenuOpen(false)}
                         className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
                       >
                         <Users size={16} />{" "}
-                        {currentUser.role === "admin" ? "Admin Panel" : "Dashboard"}
+                        {currentUser.role === "admin" ? "Admin Panel" : 
+                         currentUser.role === "production" ? "Production" : "Dashboard"}
                       </Link>
                     )}
                     <button

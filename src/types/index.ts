@@ -8,7 +8,7 @@ export interface User {
   company?: string;
   website?: string;
   bio?: string;
-  role: 'admin' | 'employee' | 'customer' | 'editor' | 'viewer';
+  role: 'admin' | 'employee' | 'customer' | 'editor' | 'viewer' | 'production';
   createdAt: string;
   emailVerified?: boolean; 
 }
@@ -266,4 +266,53 @@ export interface SiteSettings {
   description?: string;
   updatedAt: string;
   updatedBy: string;
+}
+
+export interface Order {
+  id: string;
+  orderNumber: string;
+  orderType: 'normal' | 'wooden';
+  status: 'pending' | 'in-progress' | 'ready' | 'completed';
+  customerName: string;
+  customerEmail?: string;
+  customerPhone?: string;
+  
+  // Common fields
+  width: number;
+  height: number;
+  quantity: number;
+  
+  // Normal Blinds specific
+  fabricCode?: string;
+  imageUrl?: string;
+  
+  // Wooden Blinds specific
+  baseSize?: '35mm' | '50mm';
+  woodenColorCode?: string;
+  numberOfSlats?: number;
+  tiltCordLength?: number;
+  cordLength?: number;
+  ladderTapeSize?: number;
+  msRoad?: number;
+  channelUching?: number;
+  channelUchingCm?: number;
+  operatingSide?: 'left' | 'right';
+  
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy?: string;
+}
+
+export interface ProductSKU {
+  id: string;
+  sku: string;
+  name: string;
+  category: 'normal' | 'wooden';
+  imageUrl: string;
+  description?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 }

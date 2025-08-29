@@ -4,12 +4,12 @@ import { Navigate } from "react-router-dom";
 import { database } from "../../config/firebase";
 import { signOut } from "firebase/auth";
 import { auth } from "../../config/firebase";
-import QuoteBuilder from "../../components/admin/QuoteBuilder"
+import QuoteBuilder from "../../components/admin/QuoteBuilder";
 import { ref, onValue, off } from "firebase/database";
 import {
   Home,
   User,
-  Quote ,
+  Quote,
   LogOut,
   Users,
   Package,
@@ -21,7 +21,7 @@ import {
   TrendingUp,
   AlertTriangle,
   AlignLeft,
-
+  Clock,
 } from "lucide-react";
 
 // Import admin components
@@ -34,6 +34,9 @@ import EmployeeManagement from "../../components/admin/EmployeeManagement";
 import EmployeeDashboard from "../../components/admin/EmployeeDashboard";
 import TestimonialManagement from "../../components/admin/TestimonialManagement";
 import OurWorkAdmin from "../../components/admin/OurWork";
+import OrderManagement from "../../components/admin/OrderManagement";
+import ProductionDashboard from "../../components/admin/ProductionDashboard";
+import ProductSKUManagement from "../../components/admin/ProductSKUManagement";
 
 interface DashboardStats {
   totalUsers: number;
@@ -42,6 +45,8 @@ interface DashboardStats {
   unreadMessages: number;
   lowStockItems: number;
   totalOrders: number;
+  pendingOrders: number;
+  completedOrders: number;
 }
 
 const AdminDashboard: React.FC = () => {
@@ -59,11 +64,18 @@ const AdminDashboard: React.FC = () => {
     unreadMessages: 0,
     lowStockItems: 0,
     totalOrders: 0,
+    pendingOrders: 0,
+    completedOrders: 0,
   });
 
   // Redirect employees to their dedicated dashboard
   if (currentUser?.role === "employee") {
     return <EmployeeDashboard />;
+  }
+  
+  // Redirect production users to production dashboard
+  if (currentUser?.role === "production") {
+    return <ProductionDashboard />;
   }
 
   // Only allow admin access to this dashboard
@@ -104,7 +116,7 @@ const AdminDashboard: React.FC = () => {
         if (inventory) {
           Object.values(inventory).forEach((item: any) => {
             totalItems++;
-            if (item.currentStock <= item.minStock) {
+            if (item.currentStock <= (item.minimumStock || item.minStock || 0)) {
               lowStockCount++;
             }
           });
@@ -114,6 +126,33 @@ const AdminDashboard: React.FC = () => {
           ...prev,
           totalInventory: totalItems,
           lowStockItems: lowStockCount,
+        }));
+      });
+
+      // Orders count
+      const ordersRef = ref(database, "orders");
+      onValue(ordersRef, (snapshot) => {
+        const orders = snapshot.val();
+        let totalOrders = 0;
+        let pendingOrders = 0;
+        let completedOrders = 0;
+
+        if (orders) {
+          Object.values(orders).forEach((order: any) => {
+            totalOrders++;
+            if (order.status === 'pending') {
+              pendingOrders++;
+            } else if (order.status === 'completed') {
+              completedOrders++;
+            }
+          });
+        }
+
+        setStats((prev) => ({
+          ...prev,
+          totalOrders,
+          pendingOrders,
+          completedOrders,
         }));
       });
 
@@ -142,16 +181,19 @@ const AdminDashboard: React.FC = () => {
       off(ref(database, "users"));
       off(ref(database, "products"));
       off(ref(database, "inventory"));
+      off(ref(database, "orders"));
       off(ref(database, "contactMessages"));
     };
   }, []);
 
   const menuItems = [
     { id: "overview", label: "Overview", icon: BarChart3 },
-    { id: "quote", label: "Quotation", icon: Quote  },
+    { id: "orders", label: "Orders", icon: Package },
+    { id: "quote", label: "Quotation", icon: Quote },
     { id: "users", label: "Users", icon: Users },
     { id: "products", label: "Products", icon: Package },
     { id: "inventory", label: "Inventory", icon: Package },
+    { id: "product-skus", label: "Product SKUs", icon: Package },
     { id: "employees", label: "Employees", icon: Users },
     { id: "our-work", label: "Our Work", icon: Users },
     { id: "testimonials", label: "Testimonials", icon: MessageSquare },
@@ -176,7 +218,7 @@ const AdminDashboard: React.FC = () => {
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               <div
                 className="bg-white p-6 rounded-lg shadow-sm border cursor-pointer hover:bg-gray-50 transition-colors"
                 onClick={() => setActiveTab("users")}
@@ -200,6 +242,58 @@ const AdminDashboard: React.FC = () => {
                 <div className="mt-2 flex items-center text-sm text-green-600">
                   <TrendingUp className="w-4 h-4 mr-1" />
                   Active users
+                </div>
+              </div>
+
+              <div
+                className="bg-white p-6 rounded-lg shadow-sm border cursor-pointer hover:bg-gray-50 transition-colors"
+                onClick={() => setActiveTab("orders")}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") setActiveTab("orders");
+                }}
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">
+                      Total Orders
+                    </p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {stats.totalOrders}
+                    </p>
+                  </div>
+                  <Package className="w-8 h-8 text-purple-500" />
+                </div>
+                <div className="mt-2 flex items-center text-sm text-purple-600">
+                  <Package className="w-4 h-4 mr-1" />
+                  All orders
+                </div>
+              </div>
+
+              <div
+                className="bg-white p-6 rounded-lg shadow-sm border cursor-pointer hover:bg-gray-50 transition-colors"
+                onClick={() => setActiveTab("orders")}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") setActiveTab("orders");
+                }}
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">
+                      Pending Orders
+                    </p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {stats.pendingOrders}
+                    </p>
+                  </div>
+                  <Clock className="w-8 h-8 text-yellow-500" />
+                </div>
+                <div className="mt-2 flex items-center text-sm text-yellow-600">
+                  <AlertTriangle className="w-4 h-4 mr-1" />
+                  Need attention
                 </div>
               </div>
 
@@ -283,20 +377,41 @@ const AdminDashboard: React.FC = () => {
             </div>
 
             {/* Alerts */}
-            {stats.lowStockItems > 0 && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <div className="flex items-center">
-                  <AlertTriangle className="w-5 h-5 text-yellow-600 mr-2" />
-                  <div>
-                    <h3 className="text-sm font-medium text-yellow-800">
-                      Low Stock Alert
-                    </h3>
-                    <p className="text-sm text-yellow-700 mt-1">
-                      {stats.lowStockItems} items are running low on stock.
-                      Check inventory for details.
-                    </p>
+            {(stats.lowStockItems > 0 || stats.pendingOrders > 0) && (
+              <div className="space-y-4">
+                {stats.pendingOrders > 0 && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <div className="flex items-center">
+                      <Clock className="w-5 h-5 text-yellow-600 mr-2" />
+                      <div>
+                        <h3 className="text-sm font-medium text-yellow-800">
+                          Pending Orders Alert
+                        </h3>
+                        <p className="text-sm text-yellow-700 mt-1">
+                          {stats.pendingOrders} orders are waiting for production.
+                          Check orders for details.
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                )}
+                
+                {stats.lowStockItems > 0 && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div className="flex items-center">
+                      <AlertTriangle className="w-5 h-5 text-red-600 mr-2" />
+                      <div>
+                        <h3 className="text-sm font-medium text-red-800">
+                          Low Stock Alert
+                        </h3>
+                        <p className="text-sm text-red-700 mt-1">
+                          {stats.lowStockItems} items are running low on stock.
+                          Check inventory for details.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -305,16 +420,16 @@ const AdminDashboard: React.FC = () => {
               <h2 className="text-lg font-semibold text-gray-900 mb-4">
                 Quick Actions
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <button
-                  onClick={() => setActiveTab("products")}
+                  onClick={() => setActiveTab("orders")}
                   className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  <Package className="w-6 h-6 text-blue-500 mr-3" />
+                  <Package className="w-6 h-6 text-purple-500 mr-3" />
                   <div className="text-left">
-                    <p className="font-medium text-gray-900">Manage Products</p>
+                    <p className="font-medium text-gray-900">Manage Orders</p>
                     <p className="text-sm text-gray-500">
-                      Add or edit products
+                      Create and track orders
                     </p>
                   </div>
                 </button>
@@ -346,6 +461,8 @@ const AdminDashboard: React.FC = () => {
             </div>
           </div>
         );
+      case "orders":
+        return <OrderManagement />;
       case "users":
         return <UserManagement />;
       case "quote":
@@ -356,6 +473,8 @@ const AdminDashboard: React.FC = () => {
         return <InventoryManagement />;
       case "employees":
         return <EmployeeManagement />;
+      case "product-skus":
+        return <ProductSKUManagement />;
       case "our-work":
         return <OurWorkAdmin />;
       case "messages":
