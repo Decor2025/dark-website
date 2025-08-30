@@ -25,6 +25,7 @@ import { gapi } from "gapi-script";
 import TermsPage from "./pages/Terms";
 import ResetPassword from "./pages/ResetPassword";
 import ProductionDashboard from "./components/admin/ProductionDashboard";
+import QuotePayment from "./pages/QuotePayment";
 
 function LayoutWrapper() {
   const location = useLocation();
@@ -40,7 +41,7 @@ function LayoutWrapper() {
     "/estimate",
     "/privacy",
     "/our-work",
-    "/profile",
+    "/profile"
   ];
 
   // Hide header/footer if not in mainRoutes OR special routes
@@ -59,6 +60,7 @@ function LayoutWrapper() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/terms" element={<TermsPage />} />
+          <Route path="/payment" element={<QuotePayment />} />
           <Route path="/login" element={<Login />} />
           <Route path="/catalogue" element={<Catalogue />} />
           <Route path="/cart" element={<Cart />} />
