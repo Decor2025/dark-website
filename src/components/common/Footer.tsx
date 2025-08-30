@@ -183,7 +183,7 @@ const Footer: React.FC = () => {
                 </li>
                 <li>
                   <a
-                    href="#"
+                    href="/terms"
                     className="text-gray-400 hover:text-white transition-colors text-sm"
                   >
                     Terms of Service

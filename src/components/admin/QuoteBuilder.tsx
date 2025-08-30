@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { initializeApp } from "firebase/app";
 import { getDatabase, onValue, ref as dbRef } from "firebase/database";
 import { motion, AnimatePresence } from "framer-motion";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { QRCodeCanvas as QRCode } from 'qrcode.react';
+import { database as rtdb} from "../../config/firebase"
 
 // Company details (hardcoded as requested)
 const COMPANY_DETAILS = {
@@ -196,11 +196,7 @@ class SheetsClient {
       await window.gapi.auth2.init({ client_id: GOOGLE_CLIENT_ID, scope: "https://www.googleapis.com/auth/spreadsheets" });
     } catch (error) {
       // If already initialized with different options, get the instance
-      if (error.error === "idpiframe_initialization_failed") {
-        console.log("Auth2 already initialized, getting instance");
-      } else {
-        throw error;
-      }
+      
     }
 
     const auth = window.gapi.auth2.getAuthInstance();
@@ -439,18 +435,8 @@ class SheetsClient {
   }
 }
 
-const firebaseConfig = {
-  apiKey: "AIzaSyCKi2Irrp1sRKuHFOZDZv27BHsM3Gc3SmE",
-  authDomain: "decor-drapes-instyle.firebaseapp.com",
-  databaseURL: "https://decor-drapes-instyle-default-rtdb.firebaseio.com",
-  projectId: "decor-drapes-instyle",
-  storageBucket: "decor-drapes-instyle.firebasestorage.app",
-  messagingSenderId: "936396093551",
-  appId: "1:936396093551:web:e72e2c2a0aee81fd9e759a"
-};
 
-const fbApp = initializeApp(firebaseConfig);
-const rtdb = getDatabase(fbApp);
+
 
 function useSiteSettings(): { settings: SiteSettings; get: (k: string)=>string|undefined } {
   const [settings, setSettings] = useState<SiteSettings>(null);

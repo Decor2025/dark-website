@@ -22,6 +22,7 @@ import AuthBridge from "../src/context/Auth";
 import OurWorkPublic from "./pages/OurWork"
 import { useEffect } from "react";
 import { gapi } from "gapi-script";
+import TermsPage from "./pages/Terms";
 import ResetPassword from "./pages/ResetPassword";
 import ProductionDashboard from "./components/admin/ProductionDashboard";
 
@@ -32,6 +33,7 @@ function LayoutWrapper() {
   const mainRoutes = [
     "/",
     "/catalogue",
+    "/terms",
     "/cart",
     "/about",
     "/contact",
@@ -56,6 +58,7 @@ function LayoutWrapper() {
       <main>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/terms" element={<TermsPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/catalogue" element={<Catalogue />} />
           <Route path="/cart" element={<Cart />} />
