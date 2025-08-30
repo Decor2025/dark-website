@@ -88,6 +88,27 @@ const Navbar: React.FC = () => {
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, [profileMenuOpen]);
 
+  // Fixed role checking functions
+  const getDashboardPath = () => {
+    if (currentUser?.role === "production") return "/production";
+    if (currentUser?.role === "admin" || currentUser?.role === "employee") return "/admin";
+    return "/";
+  };
+
+  const getDashboardLabel = () => {
+    if (currentUser?.role === "production") return "Production";
+    if (currentUser?.role === "admin") return "Admin Panel";
+    if (currentUser?.role === "employee") return "Dashboard";
+    return "";
+  };
+
+  const shouldShowDashboard = () => {
+    return currentUser && 
+           (currentUser.role === "admin" || 
+            currentUser.role === "employee" || 
+            currentUser.role === "production");
+  };
+
   return (
     <>
       <nav className="bg-white border-b border-gray-100">
@@ -157,17 +178,13 @@ const Navbar: React.FC = () => {
                     >
                       <UserIcon size={16} /> My Profile
                     </Link>
-                    {(currentUser.role === "admin" ||
-                      currentUser.role === "employee" ||
-                      currentUser.role === "production") && (
+                    {shouldShowDashboard() && (
                       <Link
-                        to={currentUser.role === "production" ? "/production" : "/admin"}
+                        to={getDashboardPath()}
                         className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
                         onClick={() => setProfileMenuOpen(false)}
                       >
-                        <Users size={16} />{" "}
-                        {currentUser.role === "admin" ? "Admin Panel" : 
-                         currentUser.role === "production" ? "Production" : "Dashboard"}
+                        <Users size={16} /> {getDashboardLabel()}
                       </Link>
                     )}
                     <button
@@ -227,15 +244,13 @@ const Navbar: React.FC = () => {
                     >
                       <UserIcon size={16} /> My Profile
                     </Link>
-                    {(currentUser.role === "admin" || currentUser.role === "employee") && (
+                    {shouldShowDashboard() && (
                       <Link
-                        to={currentUser.role === "production" ? "/production" : "/admin"}
+                        to={getDashboardPath()}
                         onClick={() => setProfileMenuOpen(false)}
                         className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
                       >
-                        <Users size={16} />{" "}
-                        {currentUser.role === "admin" ? "Admin Panel" : 
-                         currentUser.role === "production" ? "Production" : "Dashboard"}
+                        <Users size={16} /> {getDashboardLabel()}
                       </Link>
                     )}
                     <button
@@ -385,17 +400,14 @@ const Navbar: React.FC = () => {
                     <UserIcon size={16} />
                     My Profile
                   </Link>
-                  {(currentUser.role === "admin" ||
-                    currentUser.role === "employee") && (
+                  {shouldShowDashboard() && (
                     <Link
-                      to="/admin"
+                      to={getDashboardPath()}
                       onClick={() => setSidebarOpen(false)}
                       className="py-2.5 px-3 rounded-lg hover:bg-gray-50 flex items-center gap-3 text-sm text-gray-600 transition-colors duration-200"
                     >
                       <Users size={16} />
-                      {currentUser.role === "admin"
-                        ? "Admin Panel"
-                        : "Dashboard"}
+                      {getDashboardLabel()}
                     </Link>
                   )}
                   <button

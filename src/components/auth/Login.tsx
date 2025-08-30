@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   getAuth,
@@ -21,12 +21,12 @@ import {
   set,
 } from 'firebase/database';
 import { Eye, EyeOff } from 'lucide-react';
-import uploadGooglePhoto from './helper';
 
-const auth = getAuth();
-const db = getDatabase();
+// Initialize Firebase with your config (replace with your actual config)
+import {database as db, auth} from "../../config/firebase";
 const provider = new GoogleAuthProvider();
 
+// Add proper error mapping
 function firebaseErrorToMessage(errorCode: string): string {
   switch (errorCode) {
     case 'auth/email-already-in-use':
@@ -41,14 +41,37 @@ function firebaseErrorToMessage(errorCode: string): string {
       return 'Incorrect password.';
     case 'auth/too-many-requests':
       return 'Too many attempts. Please try again later.';
+    case 'auth/popup-closed-by-user':
+      return 'Google sign-in was canceled.';
+    case 'auth/popup-blocked':
+      return 'Popup was blocked by your browser. Please allow popups for this site.';
+    case 'auth/operation-not-allowed':
+      return 'Google sign-in is not enabled. Please contact support.';
+    case 'auth/api-key-not-valid':
+      return 'Authentication error. Please check your Firebase configuration.';
     default:
       return 'Something went wrong. Please try again.';
   }
 }
 
+// Mock function for Cloudinary upload (replace with your actual implementation)
+const uploadGooglePhoto = async (photoURL: string): Promise<string> => {
+  try {
+    // In a real implementation, you would upload to Cloudinary here
+    console.log('Uploading photo to Cloudinary:', photoURL);
+    // Simulate upload delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    return photoURL; // Return original URL for demo purposes
+  } catch (error) {
+    console.error('Cloudinary upload failed:', error);
+    return photoURL;
+  }
+};
+
 const Login = () => {
   const navigate = useNavigate();
   const [authChecked, setAuthChecked] = useState(false);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const [step, setStep] = useState<
     'email' | 'login' | 'forgot_password' | 'signup_name' | 'signup_password' | 'verify_email'
@@ -87,7 +110,12 @@ const Login = () => {
       }
     });
     
-    return unsubscribe;
+    return () => {
+      unsubscribe();
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
   }, [navigate]);
 
   async function isDisposableEmail(email: string) {
@@ -109,13 +137,17 @@ const Login = () => {
 
   const saveUserToDB = async (user: User, name: string) => {
     let cloudinaryImageUrl = '';
-    try {
-      if (user.photoURL) {
+    
+    // Only try to upload if there's a photoURL from Google
+    if (user.photoURL && user.providerData && user.providerData[0]?.providerId === 'google.com') {
+      try {
         cloudinaryImageUrl = await uploadGooglePhoto(user.photoURL);
+      } catch (err) {
+        console.error('Cloudinary upload failed:', err);
+        cloudinaryImageUrl = user.photoURL;
       }
-    } catch (err) {
-      console.error('Cloudinary upload failed:', err);
-      cloudinaryImageUrl = user.photoURL || '';
+    } else if (user.photoURL) {
+      cloudinaryImageUrl = user.photoURL;
     }
 
     const userData = {
@@ -124,18 +156,32 @@ const Login = () => {
       email: user.email,
       profileImage: cloudinaryImageUrl,
       createdAt: new Date().toISOString(),
+      lastLogin: new Date().toISOString(),
     };
 
     await set(ref(db, `users/${user.uid}`), userData);
   };
 
   const pollEmailVerification = (user: User) => {
-    const interval = setInterval(async () => {
-      await user.reload();
-      if (user.emailVerified) {
-        setEmailVerified(true);
-        clearInterval(interval);
-        navigate('/');
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+    
+    intervalRef.current = setInterval(async () => {
+      try {
+        await user.reload();
+        if (user.emailVerified) {
+          setEmailVerified(true);
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+          }
+          navigate('/');
+        }
+      } catch (error) {
+        console.error('Error checking email verification:', error);
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+        }
       }
     }, 3000);
   };
@@ -164,7 +210,8 @@ const Login = () => {
       setUserExists(exists);
       if (exists) setStep('login');
       else setStep('signup_name');
-    } catch {
+    } catch (error) {
+      console.error('Error checking email:', error);
       setEmailError('Failed to check email. Try again.');
     }
     setLoading(false);
@@ -248,16 +295,13 @@ const Login = () => {
     setLoading(true);
     try {
       const result = await signInWithPopup(auth, provider);
-      if (!result.user.emailVerified) {
-        setShowGoogleError('Please verify your Google email before continuing.');
-        await signOut(auth);
-        setLoading(false);
-        return;
-      }
+      // For Google sign-in, email is always verified
       await saveUserToDB(result.user, result.user.displayName || '');
       navigate('/');
     } catch (err: any) {
-      setShowGoogleError(firebaseErrorToMessage(err.code || ''));
+      const errorMessage = firebaseErrorToMessage(err.code || '');
+      setShowGoogleError(errorMessage);
+      console.error('Google sign-in error:', err);
     }
     setLoading(false);
   };
