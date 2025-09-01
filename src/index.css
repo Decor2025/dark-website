@@ -83,3 +83,29 @@
 
 /* optional center-pattern (already illustrated with svg pattern) */
 .center-pattern { opacity: 0.08; pointer-events: none; }
+
+
+/* TrustIndex Widget Styles */
+.ti-widget {
+  width: 100% !important;
+  min-height: 300px;
+}
+
+.ti-widget iframe {
+  width: 100% !important;
+  min-height: 300px;
+  border: none !important;
+}
+
+/* Hide any duplicate widgets */
+body > .ti-widget[style*="position: fixed"],
+body > .ti-widget[style*="position:absolute"] {
+  display: none !important;
+}
+
+/* Ensure widget container is visible */
+.ti-widget[data-ti-widget-id] {
+  visibility: visible !important;
+  opacity: 1 !important;
+  display: block !important;
+}

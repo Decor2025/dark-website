@@ -29,6 +29,27 @@ const Payment: React.FC = () => {
     quoteNumber: "N/A",
     upiId: "decordrapes.instyle-3@okhdfcbank",
   });
+  const createUPILink = (upiId: string, name: string, amount: string, note = "Payment"): string => {
+    const params = new URLSearchParams({
+      pa: upiId,
+      pn: name,
+      am: amount,
+      cu: "INR",
+      tn: note,
+    });
+    return `upi://pay?${params.toString()}`;
+  };
+
+  const createGPayLink = (upiId: string, name: string, amount: string, note = "Payment"): string => {
+    const params = new URLSearchParams({
+      pa: upiId,
+      pn: name,
+      am: amount,
+      cu: "INR",
+      tn: note,
+    });
+    return `https://pay.google.com/upi/pay?${params.toString()}`;
+  };
   const [qrCodesGenerated, setQrCodesGenerated] = useState<boolean>(false);
 
   const qrCodeRef = useRef<HTMLCanvasElement>(null);
@@ -88,9 +109,7 @@ const Payment: React.FC = () => {
 
     setShowPaymentCard(true);
 
-    if (isMobile) {
-      setTimeout(attemptUPIRedirect, 300);
-    }
+    
   };
 
   const generateQrCodes = async (amount: string): Promise<void> => {
@@ -163,16 +182,36 @@ const Payment: React.FC = () => {
   };
 
   const handlePayment = (): void => {
-    if (isMobile) {
-      window.location.href = upiLink;
+  const upiLinkFull = createUPILink(
+    paymentDetails.upiId,
+    paymentDetails.storeName,
+    paymentDetails.amount
+  );
+  const gpayLink = createGPayLink(
+    paymentDetails.upiId,
+    paymentDetails.storeName,
+    paymentDetails.amount
+  );
 
-      setTimeout(() => {
-        if (!document.hidden) setShowRedirectFallback(true);
-      }, 1000);
-    } else {
-      setShowModal(true);
-    }
-  };
+  if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+    // iOS: always show modal (QR + copy)
+    setShowModal(true);
+  } else if (/Android/i.test(navigator.userAgent)) {
+    // Android: attempt UPI redirect first
+    window.location.href = upiLinkFull;
+
+    setTimeout(() => {
+      if (!document.hidden) {
+        // fallback to GPay web if UPI app not available
+        window.location.href = gpayLink;
+      }
+    }, 1200);
+  } else {
+    // Desktop: always show modal, no redirect
+    setShowModal(true);
+  }
+};
+
 
   const copyUpiId = (): void => {
     navigator.clipboard

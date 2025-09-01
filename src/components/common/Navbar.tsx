@@ -114,13 +114,13 @@ const Navbar: React.FC = () => {
       <nav className="bg-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center transition-transform hover:scale-105">
-              <span className="text-white font-bold text-lg">
-                {storeInitial}
-              </span>
-            </div>
-            <span className="font-semibold text-gray-800 text-lg">{storeName}</span>
+          <Link to="/" className="flex items-center gap-1 transition-transform hover:scale-102">
+            <img
+              src="https://res.cloudinary.com/ds6um53cx/image/upload/v1756727077/a0jd950p5c8m7wgdylyq.webp" // Replace this with your internet image URL
+              alt="Logo"
+              className="w-full h-10 object-cover rounded-lg "
+            />
+            <span className="font-semibold text-gray-800 text-lg">Drapes</span>
           </Link>
 
           {/* Desktop nav */}
