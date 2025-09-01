@@ -1,12 +1,17 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+} from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
-import Verified from './pages/Verified';
+import Verified from "./pages/Verified";
 import Navbar from "./components/common/Navbar";
 import Footer from "./components/common/Footer";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
-import NotFound from './pages/NotFound';
+import NotFound from "./pages/NotFound";
 import Home from "./pages/Home";
 import Login from "./components/auth/Login";
 import Catalogue from "./pages/Catalogue";
@@ -19,13 +24,14 @@ import Estimate from "./pages/Estimate";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import FaviconUpdater from "./components/FaviconUpdater";
 import AuthBridge from "../src/context/Auth";
-import OurWorkPublic from "./pages/OurWork"
+import OurWorkPublic from "./pages/OurWork";
 import { useEffect } from "react";
 import { gapi } from "gapi-script";
 import TermsPage from "./pages/Terms";
 import ResetPassword from "./pages/ResetPassword";
 import ProductionDashboard from "./components/admin/ProductionDashboard";
 import QuotePayment from "./pages/QuotePayment";
+import TitleUpdater from "./components/common/TitleUpdater";
 
 function LayoutWrapper() {
   const location = useLocation();
@@ -41,7 +47,7 @@ function LayoutWrapper() {
     "/estimate",
     "/privacy",
     "/our-work",
-    "/profile"
+    "/profile",
   ];
 
   // Hide header/footer if not in mainRoutes OR special routes
@@ -55,6 +61,8 @@ function LayoutWrapper() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <TitleUpdater />
+
       {!hideHeaderFooter && <Navbar />}
       <main>
         <Routes>
@@ -118,9 +126,12 @@ function App() {
   useEffect(() => {
     function start() {
       gapi.client.init({
-        apiKey: 'import.AIzaSyAcUPet5yafJOl1BacuBT9moyg_jd_291c.env.VITE_GOOGLE_API_KEY as string',
-        clientId: '7355025915-iavbbbsne3bg9d3ctusa0g98rs86uscr.apps.googleusercontent.com',
-        discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"],
+        apiKey: import.meta.env.VITE_GOOGLE_API_KEY as string,
+        clientId:
+          "7355025915-iavbbbsne3bg9d3ctusa0g98rs86uscr.apps.googleusercontent.com",
+        discoveryDocs: [
+          "https://sheets.googleapis.com/$discovery/rest?version=v4",
+        ],
         scope: "https://www.googleapis.com/auth/spreadsheets",
       });
     }
