@@ -109,7 +109,9 @@ const Payment: React.FC = () => {
 
     setShowPaymentCard(true);
 
-    
+    if (isMobile) {
+      setTimeout(attemptUPIRedirect, 300);
+    }
   };
 
   const generateQrCodes = async (amount: string): Promise<void> => {
@@ -182,36 +184,24 @@ const Payment: React.FC = () => {
   };
 
   const handlePayment = (): void => {
-  const upiLinkFull = createUPILink(
-    paymentDetails.upiId,
-    paymentDetails.storeName,
-    paymentDetails.amount
-  );
-  const gpayLink = createGPayLink(
-    paymentDetails.upiId,
-    paymentDetails.storeName,
-    paymentDetails.amount
-  );
+    const upiLinkFull = createUPILink(paymentDetails.upiId, paymentDetails.storeName, paymentDetails.amount);
+    const gpayLink = createGPayLink(paymentDetails.upiId, paymentDetails.storeName, paymentDetails.amount);
 
-  if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-    // iOS: always show modal (QR + copy)
-    setShowModal(true);
-  } else if (/Android/i.test(navigator.userAgent)) {
-    // Android: attempt UPI redirect first
-    window.location.href = upiLinkFull;
+    if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+      // iOS: show modal (QR + copy)
+      setShowModal(true);
+    } else {
+      // Android: try UPI redirect
+      window.location.href = upiLinkFull;
 
-    setTimeout(() => {
-      if (!document.hidden) {
-        // fallback to GPay web if UPI app not available
-        window.location.href = gpayLink;
-      }
-    }, 1200);
-  } else {
-    // Desktop: always show modal, no redirect
-    setShowModal(true);
-  }
-};
-
+      setTimeout(() => {
+        if (!document.hidden) {
+          // fallback to GPay web if UPI app not available
+          window.location.href = gpayLink;
+        }
+      }, 1200);
+    }
+  };
 
   const copyUpiId = (): void => {
     navigator.clipboard
