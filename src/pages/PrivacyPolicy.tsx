@@ -38,7 +38,7 @@ export default function PrivacyPolicyPage() {
             collects, uses, and protects your personal information when you use our website and services. 
             As we grow, features like online ordering and order tracking will be introduced, and this policy will continue to evolve.
           </p>
-          <p className="mt-1 text-xs text-gray-500">Last updated: {new Date().toLocaleDateString()}</p>
+          <p className="mt-1 text-xs text-gray-500">Last updated: 30 Aug 2025</p>
         </div>
       </section>
 

@@ -29,27 +29,6 @@ const Payment: React.FC = () => {
     quoteNumber: "N/A",
     upiId: "decordrapes.instyle-3@okhdfcbank",
   });
-  const createUPILink = (upiId: string, name: string, amount: string, note = "Payment"): string => {
-    const params = new URLSearchParams({
-      pa: upiId,
-      pn: name,
-      am: amount,
-      cu: "INR",
-      tn: note,
-    });
-    return `upi://pay?${params.toString()}`;
-  };
-
-  const createGPayLink = (upiId: string, name: string, amount: string, note = "Payment"): string => {
-    const params = new URLSearchParams({
-      pa: upiId,
-      pn: name,
-      am: amount,
-      cu: "INR",
-      tn: note,
-    });
-    return `https://pay.google.com/upi/pay?${params.toString()}`;
-  };
   const [qrCodesGenerated, setQrCodesGenerated] = useState<boolean>(false);
 
   const qrCodeRef = useRef<HTMLCanvasElement>(null);
@@ -184,22 +163,14 @@ const Payment: React.FC = () => {
   };
 
   const handlePayment = (): void => {
-    const upiLinkFull = createUPILink(paymentDetails.upiId, paymentDetails.storeName, paymentDetails.amount);
-    const gpayLink = createGPayLink(paymentDetails.upiId, paymentDetails.storeName, paymentDetails.amount);
-
-    if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-      // iOS: show modal (QR + copy)
-      setShowModal(true);
-    } else {
-      // Android: try UPI redirect
-      window.location.href = upiLinkFull;
+    if (isMobile) {
+      window.location.href = upiLink;
 
       setTimeout(() => {
-        if (!document.hidden) {
-          // fallback to GPay web if UPI app not available
-          window.location.href = gpayLink;
-        }
-      }, 1200);
+        if (!document.hidden) setShowRedirectFallback(true);
+      }, 1000);
+    } else {
+      setShowModal(true);
     }
   };
 
