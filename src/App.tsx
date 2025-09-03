@@ -32,6 +32,7 @@ import ResetPassword from "./pages/ResetPassword";
 import ProductionDashboard from "./components/admin/ProductionDashboard";
 import QuotePayment from "./pages/QuotePayment";
 import TitleUpdater from "./components/common/TitleUpdater";
+// import OrderTracking from "./pages/OrderTracking";
 
 function LayoutWrapper() {
   const location = useLocation();
@@ -47,6 +48,7 @@ function LayoutWrapper() {
     "/estimate",
     "/privacy",
     "/our-work",
+    // "/track-order",
     "/profile",
   ];
 
@@ -80,6 +82,7 @@ function LayoutWrapper() {
           <Route path="/auth" element={<AuthBridge />} />
           <Route path="/auth/reset-password" element={<ResetPassword />} />
           <Route path="/auth/verified" element={<Verified />} />
+          {/* <Route path="/track" element={<OrderTracking />} /> */}
 
           <Route
             path="/profile"

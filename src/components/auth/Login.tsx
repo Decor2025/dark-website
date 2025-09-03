@@ -7,9 +7,13 @@ import {
   sendEmailVerification,
   sendPasswordResetEmail,
   signOut,
-  signInWithPopup,
+  signInWithRedirect,
   GoogleAuthProvider,
   User,
+  getRedirectResult,
+  onAuthStateChanged,
+  isSignInWithEmailLink,
+  signInWithEmailLink,
 } from 'firebase/auth';
 import {
   getDatabase,
@@ -19,10 +23,11 @@ import {
   equalTo,
   get,
   set,
+  update,
 } from 'firebase/database';
 import { Eye, EyeOff } from 'lucide-react';
 
-// Initialize Firebase with your config (replace with your actual config)
+// Initialize Firebase with your config
 import {database as db, auth} from "../../config/firebase";
 const provider = new GoogleAuthProvider();
 
@@ -54,24 +59,11 @@ function firebaseErrorToMessage(errorCode: string): string {
   }
 }
 
-// Mock function for Cloudinary upload (replace with your actual implementation)
-const uploadGooglePhoto = async (photoURL: string): Promise<string> => {
-  try {
-    // In a real implementation, you would upload to Cloudinary here
-    console.log('Uploading photo to Cloudinary:', photoURL);
-    // Simulate upload delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return photoURL; // Return original URL for demo purposes
-  } catch (error) {
-    console.error('Cloudinary upload failed:', error);
-    return photoURL;
-  }
-};
-
 const Login = () => {
   const navigate = useNavigate();
   const [authChecked, setAuthChecked] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [processingRedirect, setProcessingRedirect] = useState(false);
 
   const [step, setStep] = useState<
     'email' | 'login' | 'forgot_password' | 'signup_name' | 'signup_password' | 'verify_email'
@@ -101,15 +93,43 @@ const Login = () => {
 
   const [showGoogleError, setShowGoogleError] = useState('');
 
+  // Check authentication status
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      if (user && user.emailVerified) {
-        navigate('/');
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        if (user.emailVerified) {
+          // User is logged in and verified, redirect to profile
+          navigate('/profile');
+        } else {
+          // If user is logged in but not verified, keep them on login page
+          setAuthChecked(true);
+        }
       } else {
         setAuthChecked(true);
       }
     });
-    
+
+    // Check if we're returning from a Google redirect
+    const checkRedirectResult = async () => {
+      try {
+        setProcessingRedirect(true);
+        const result = await getRedirectResult(auth);
+        
+        if (result) {
+          const user = result.user;
+          await handleGoogleUser(user);
+          navigate('/profile');
+        }
+      } catch (error) {
+        console.error('Error handling redirect result:', error);
+        setShowGoogleError('Failed to complete Google sign-in. Please try again.');
+      } finally {
+        setProcessingRedirect(false);
+      }
+    };
+
+    checkRedirectResult();
+
     return () => {
       unsubscribe();
       if (intervalRef.current) {
@@ -136,30 +156,64 @@ const Login = () => {
   };
 
   const saveUserToDB = async (user: User, name: string) => {
-    let cloudinaryImageUrl = '';
+    const userRef = ref(db, `users/${user.uid}`);
+    const snapshot = await get(userRef);
     
-    // Only try to upload if there's a photoURL from Google
-    if (user.photoURL && user.providerData && user.providerData[0]?.providerId === 'google.com') {
-      try {
-        cloudinaryImageUrl = await uploadGooglePhoto(user.photoURL);
-      } catch (err) {
-        console.error('Cloudinary upload failed:', err);
-        cloudinaryImageUrl = user.photoURL;
-      }
-    } else if (user.photoURL) {
-      cloudinaryImageUrl = user.photoURL;
+    if (snapshot.exists()) {
+      // User already exists, update only lastLogin
+      await update(userRef, {
+        lastLogin: new Date().toISOString()
+      });
+    } else {
+      // Create new user entry
+      const userData = {
+        displayName: name || user.displayName || '',
+        uid: user.uid,
+        email: user.email,
+        profileImage: '',
+        createdAt: new Date().toISOString(),
+        lastLogin: new Date().toISOString(),
+      };
+      await set(userRef, userData);
     }
+  };
 
-    const userData = {
-      displayName: name || user.displayName || '',
-      uid: user.uid,
-      email: user.email,
-      profileImage: cloudinaryImageUrl,
-      createdAt: new Date().toISOString(),
-      lastLogin: new Date().toISOString(),
-    };
-
-    await set(ref(db, `users/${user.uid}`), userData);
+  const handleGoogleUser = async (user: User) => {
+    const userRef = ref(db, `users/${user.uid}`);
+    const snapshot = await get(userRef);
+    
+    if (snapshot.exists()) {
+      const userData = snapshot.val();
+      const updates: any = {
+        lastLogin: new Date().toISOString()
+      };
+      
+      // Only update displayName if it's empty and we have a value from Google
+      if ((!userData.displayName || userData.displayName === '') && user.displayName) {
+        updates.displayName = user.displayName;
+      }
+      
+      // Only update profileImage if it's empty and we have a value from Google
+      if ((!userData.profileImage || userData.profileImage === '') && user.photoURL) {
+        updates.profileImage = user.photoURL;
+      }
+      
+      // Update only the fields that need updating
+      if (Object.keys(updates).length > 1) { // More than just lastLogin
+        await update(userRef, updates);
+      }
+    } else {
+      // Create new user entry
+      const userData = {
+        displayName: user.displayName || '',
+        uid: user.uid,
+        email: user.email,
+        profileImage: user.photoURL || '',
+        createdAt: new Date().toISOString(),
+        lastLogin: new Date().toISOString(),
+      };
+      await set(userRef, userData);
+    }
   };
 
   const pollEmailVerification = (user: User) => {
@@ -175,7 +229,7 @@ const Login = () => {
           if (intervalRef.current) {
             clearInterval(intervalRef.current);
           }
-          navigate('/');
+          navigate('/profile');
         }
       } catch (error) {
         console.error('Error checking email verification:', error);
@@ -229,7 +283,7 @@ const Login = () => {
         setLoading(false);
         return;
       }
-      navigate('/');
+      navigate('/profile');
     } catch (err: any) {
       setLoginError(firebaseErrorToMessage(err.code || ''));
     }
@@ -294,16 +348,17 @@ const Login = () => {
     setShowGoogleError('');
     setLoading(true);
     try {
-      const result = await signInWithPopup(auth, provider);
-      // For Google sign-in, email is always verified
-      await saveUserToDB(result.user, result.user.displayName || '');
-      navigate('/');
+      // Store the current page URL to return after authentication
+      sessionStorage.setItem('preAuthPath', window.location.pathname);
+      
+      // Use redirect for full-page authentication
+      await signInWithRedirect(auth, provider);
     } catch (err: any) {
       const errorMessage = firebaseErrorToMessage(err.code || '');
       setShowGoogleError(errorMessage);
       console.error('Google sign-in error:', err);
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const VerificationStep = () => (
@@ -326,7 +381,7 @@ const Login = () => {
     </div>
   );
 
-  if (!authChecked) {
+  if (!authChecked || processingRedirect) {
     return (
       <div className="min-h-screen w-full bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -356,7 +411,7 @@ const Login = () => {
           type="button"
           onClick={handleGoogleSignIn}
           className="w-full flex justify-center items-center gap-2 border border-gray-300 py-3 rounded-lg hover:bg-gray-50 transition disabled:opacity-50"
-          disabled={loading}
+          disabled={loading || processingRedirect}
         >
           <img
             src="https://res.cloudinary.com/ds6um53cx/image/upload/v1754730922/goypyiizaob8qcc6luzj.png"
@@ -364,7 +419,7 @@ const Login = () => {
             className="h-5 w-5"
           />
           <span className="text-sm font-medium text-gray-700">
-            {loading ? 'Signing in...' : 'Continue with Google'}
+            {loading || processingRedirect ? 'Signing in...' : 'Continue with Google'}
           </span>
         </button>
         {showGoogleError && (
