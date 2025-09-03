@@ -9,6 +9,7 @@
     }
   }
 }
+
 @media (max-width: 380px) {
   body {
     zoom: 0.95;
@@ -17,28 +18,36 @@
   }
 }
 
-
 @keyframes fade-in {
   0% {
     opacity: 0;
     transform: translateY(16px);
   }
+
   100% {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-/* Add these to your global CSS (tailwind input file) */
 @keyframes floaty {
-  0% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-10px) scale(1.02); }
-  100% { transform: translateY(0) scale(1); }
+  0% {
+    transform: translateY(0) scale(1);
+  }
+
+  50% {
+    transform: translateY(-10px) scale(1.02);
+  }
+
+  100% {
+    transform: translateY(0) scale(1);
+  }
 }
 
 .animate-fade-in {
   animation: fade-in 0.5s ease forwards;
 }
+
 .blob {
   filter: blur(36px);
   opacity: 0.55;
@@ -46,42 +55,59 @@
   animation: floaty 7s ease-in-out infinite;
 }
 
-/* Slightly offset animation delays helpers */
-.blob-delay-1 { animation-delay: 0s; }
-.blob-delay-2 { animation-delay: 1.5s; }
-.blob-delay-3 { animation-delay: 3s; }
+.blob-delay-1 {
+  animation-delay: 0s;
+}
 
-/* subtle vignette inside hero */
+.blob-delay-2 {
+  animation-delay: 1.5s;
+}
+
+.blob-delay-3 {
+  animation-delay: 3s;
+}
+
 .hero-vignette {
-  background: radial-gradient(1200px 600px at 50% 40%, rgba(255,255,255,0) 0%, rgba(0,0,0,0.02) 40%, rgba(0,0,0,0.04) 100%);
+  background: radial-gradient(1200px 600px at 50% 40%, rgba(255, 255, 255, 0) 0%, rgba(0, 0, 0, 0.02) 40%, rgba(0, 0, 0, 0.04) 100%);
   pointer-events: none;
 }
 
-/* soft interior silhouette shapes — optional decorative shapes */
 .decor-silhouette {
   opacity: 0.08;
   filter: saturate(.8) blur(0.5px);
 }
 
-/* faint parquet/grid inside central area */
 .center-pattern {
-  background-image: radial-gradient(rgba(0,0,0,0.03) 1px, transparent 1px);
+  background-image: radial-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px);
   background-size: 22px 22px;
   opacity: 0.12;
   pointer-events: none;
 }
-/* subtle blob float */
+
 @keyframes softFloat {
-  0% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-8px) scale(1.01); }
-  100% { transform: translateY(0) scale(1); }
+  0% {
+    transform: translateY(0) scale(1);
+  }
+
+  50% {
+    transform: translateY(-8px) scale(1.01);
+  }
+
+  100% {
+    transform: translateY(0) scale(1);
+  }
 }
-.blob-float { animation: softFloat 6s ease-in-out infinite; }
 
-/* very faint silhouette styling helper used in component */
-.decor-silhouette { opacity: 0.06; filter: blur(.2px); }
+.blob-float {
+  animation: softFloat 6s ease-in-out infinite;
+}
 
-/* optional center-pattern (already illustrated with svg pattern) */
-.center-pattern { opacity: 0.08; pointer-events: none; }
+.decor-silhouette {
+  opacity: 0.06;
+  filter: blur(.2px);
+}
 
-
+.center-pattern {
+  opacity: 0.08;
+  pointer-events: none;
+}
