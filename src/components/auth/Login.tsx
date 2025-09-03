@@ -7,13 +7,10 @@ import {
   sendEmailVerification,
   sendPasswordResetEmail,
   signOut,
-  signInWithRedirect,
+  signInWithPopup,
   GoogleAuthProvider,
   User,
-  getRedirectResult,
   onAuthStateChanged,
-  isSignInWithEmailLink,
-  signInWithEmailLink,
 } from 'firebase/auth';
 import {
   getDatabase,
@@ -28,7 +25,7 @@ import {
 import { Eye, EyeOff } from 'lucide-react';
 
 // Initialize Firebase with your config
-import {database as db, auth} from "../../config/firebase";
+import { database as db, auth } from "../../config/firebase";
 const provider = new GoogleAuthProvider();
 
 // Add proper error mapping
@@ -63,7 +60,6 @@ const Login = () => {
   const navigate = useNavigate();
   const [authChecked, setAuthChecked] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const [processingRedirect, setProcessingRedirect] = useState(false);
 
   const [step, setStep] = useState<
     'email' | 'login' | 'forgot_password' | 'signup_name' | 'signup_password' | 'verify_email'
@@ -108,27 +104,6 @@ const Login = () => {
         setAuthChecked(true);
       }
     });
-
-    // Check if we're returning from a Google redirect
-    const checkRedirectResult = async () => {
-      try {
-        setProcessingRedirect(true);
-        const result = await getRedirectResult(auth);
-        
-        if (result) {
-          const user = result.user;
-          await handleGoogleUser(user);
-          navigate('/profile');
-        }
-      } catch (error) {
-        console.error('Error handling redirect result:', error);
-        setShowGoogleError('Failed to complete Google sign-in. Please try again.');
-      } finally {
-        setProcessingRedirect(false);
-      }
-    };
-
-    checkRedirectResult();
 
     return () => {
       unsubscribe();
@@ -348,17 +323,15 @@ const Login = () => {
     setShowGoogleError('');
     setLoading(true);
     try {
-      // Store the current page URL to return after authentication
-      sessionStorage.setItem('preAuthPath', window.location.pathname);
-      
-      // Use redirect for full-page authentication
-      await signInWithRedirect(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      await handleGoogleUser(result.user);
+      navigate('/profile');
     } catch (err: any) {
       const errorMessage = firebaseErrorToMessage(err.code || '');
       setShowGoogleError(errorMessage);
       console.error('Google sign-in error:', err);
-      setLoading(false);
     }
+    setLoading(false);
   };
 
   const VerificationStep = () => (
@@ -381,7 +354,7 @@ const Login = () => {
     </div>
   );
 
-  if (!authChecked || processingRedirect) {
+  if (!authChecked) {
     return (
       <div className="min-h-screen w-full bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -411,7 +384,7 @@ const Login = () => {
           type="button"
           onClick={handleGoogleSignIn}
           className="w-full flex justify-center items-center gap-2 border border-gray-300 py-3 rounded-lg hover:bg-gray-50 transition disabled:opacity-50"
-          disabled={loading || processingRedirect}
+          disabled={loading}
         >
           <img
             src="https://res.cloudinary.com/ds6um53cx/image/upload/v1754730922/goypyiizaob8qcc6luzj.png"
@@ -419,7 +392,7 @@ const Login = () => {
             className="h-5 w-5"
           />
           <span className="text-sm font-medium text-gray-700">
-            {loading || processingRedirect ? 'Signing in...' : 'Continue with Google'}
+            {loading ? 'Signing in...' : 'Continue with Google'}
           </span>
         </button>
         {showGoogleError && (
