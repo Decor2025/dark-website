@@ -170,9 +170,9 @@ const About: React.FC = () => {
           <h2 className="text-3xl font-bold text-gray-900 text-center mb-8">Find Us</h2>
           <div className="grid md:grid-cols-2 gap-8 items-center">
             {/* Map */}
-            <div className="w-full h-[400px] rounded-xl overflow-hidden">
+            <div className="w-full h-[300px] rounded-xl overflow-hidden">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d4784.243157956243!2d77.58869197585712!3d12.962455415077127!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae15fde41358f3%3A0x51705d17187d7f8a!2sDecor%20Drapes%20Instyle%20%2F%20Monsoon%20Blinds%20%2F%20Zebra%20Blinds%20%2F%20Roller%20Blinds!5e1!3m2!1sen!2sin!4v1756470282069!5m2!1sen!2sin"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1944.0738054050848!2d77.58994253612006!3d12.962404815078278!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae15fde41358f3%3A0x51705d17187d7f8a!2sDecor%20Drapes%20Instyle%20%2F%20Monsoon%20Blinds%20%2F%20Zebra%20Blinds%20%2F%20Roller%20Blinds!5e0!3m2!1sen!2sin!4v1756963029833!5m2!1sen!2sin"
                 width="100%"
                 height="100%"
                 style={{ border: 0 }}
@@ -184,7 +184,7 @@ const About: React.FC = () => {
 
             {/* Contact Info */}
             <div>
-              <h3 className="text-2xl font-semibold text-gray-900 mb-6">Our Location</h3>
+              <h3 className="text-2xl font-semibold text-gray-900 mb-6">{getSetting('store_name') || 'Our Location'}</h3>
               <ul className="space-y-4 text-gray-700">
                 <li className="flex items-start">
                   <MapPin className="w-6 h-6 text-blue-600 mr-3 flex-shrink-0" />
@@ -195,13 +195,13 @@ const About: React.FC = () => {
                 <li className="flex items-start">
                   <Phone className="w-6 h-6 text-green-600 mr-3 flex-shrink-0" />
                   <span>
-                    {getSetting('store_phone') || '+91 98765 43210'}
+                    {getSetting('primary_phone') || '+91 98765 43210'}
                   </span>
                 </li>
                 <li className="flex items-start">
                   <Mail className="w-6 h-6 text-red-600 mr-3 flex-shrink-0" />
                   <span>
-                    {getSetting('store_email') || 'info@decordrapes.com'}
+                    {getSetting('primary_email') || 'info@decordrapes.com'}
                   </span>
                 </li>
               </ul>
