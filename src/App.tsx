@@ -23,7 +23,7 @@ import Contact from "./pages/Contact";
 import Estimate from "./pages/Estimate";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import FaviconUpdater from "./components/FaviconUpdater";
-import AuthBridge from "../src/context/Auth";
+import Auth from "../src/context/Auth";
 import OurWorkPublic from "./pages/OurWork";
 import { useEffect } from "react";
 import { gapi } from "gapi-script";
@@ -79,9 +79,11 @@ function LayoutWrapper() {
           <Route path="/estimate" element={<Estimate />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/our-work" element={<OurWorkPublic />} />
-          <Route path="/auth" element={<AuthBridge />} />
+          <Route path="/auth" element={<Auth />} />               {/* handle email links */}
+          <Route path="/auth/login" element={<Auth />} />         {/* handle Google login */}
           <Route path="/auth/reset-password" element={<ResetPassword />} />
           <Route path="/auth/verified" element={<Verified />} />
+
           {/* <Route path="/track" element={<OrderTracking />} /> */}
 
           <Route
