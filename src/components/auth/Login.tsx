@@ -7,7 +7,8 @@ import {
   sendEmailVerification,
   sendPasswordResetEmail,
   signOut,
-  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider,
   User,
   onAuthStateChanged,
@@ -89,28 +90,21 @@ const Login = () => {
 
   const [showGoogleError, setShowGoogleError] = useState('');
 
-  // Check authentication status
+  // Check if redirect result exists
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        if (user.emailVerified) {
-          // User is logged in and verified, redirect to profile
-          navigate('/profile');
-        } else {
-          // If user is logged in but not verified, keep them on login page
-          setAuthChecked(true);
+    setLoading(true);
+    getRedirectResult(auth)
+      .then(async (result) => {
+        if (result && result.user) {
+          await handleGoogleUser(result.user);
+          navigate("/profile");
         }
-      } else {
-        setAuthChecked(true);
-      }
-    });
-
-    return () => {
-      unsubscribe();
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
+      })
+      .catch((err) => {
+        const errorMessage = firebaseErrorToMessage(err.code || "");
+        setShowGoogleError(errorMessage);
+      })
+      .finally(() => setLoading(false));
   }, [navigate]);
 
   async function isDisposableEmail(email: string) {
@@ -320,20 +314,18 @@ const Login = () => {
   };
 
   const handleGoogleSignIn = async () => {
-    setShowGoogleError('');
+    setShowGoogleError("");
     setLoading(true);
     try {
-      const result = await signInWithPopup(auth, provider);
-      await handleGoogleUser(result.user);
-      navigate('/profile');
+      await signInWithRedirect(auth, provider); // <--- Changed from Popup
     } catch (err: any) {
-      const errorMessage = firebaseErrorToMessage(err.code || '');
+      const errorMessage = firebaseErrorToMessage(err.code || "");
       setShowGoogleError(errorMessage);
-      console.error('Google sign-in error:', err);
+      console.error("Google sign-in error:", err);
+      setLoading(false);
     }
-    setLoading(false);
   };
-
+  
   const VerificationStep = () => (
     <div className="text-center space-y-4">
       <p className="text-lg font-semibold">
