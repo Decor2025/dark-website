@@ -1,6 +1,6 @@
 export const cloudinaryConfig = {
-  cloudName: 'ds6um53cx', // Replace with your Cloudinary cloud name
-  uploadPreset: 'images', // Replace with your upload preset
+  cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME,
+  uploadPreset: import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET,
 };
 
 export const uploadToCloudinary = async (file: File): Promise<string> => {
