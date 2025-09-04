@@ -14,7 +14,7 @@ import { getDatabase } from 'firebase/database';
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyAD4piXNNzWi3z1riCEl07NHnjg2IHcFhc",
-  authDomain: "decor-drapes.firebaseapp.com",
+  authDomain: "decordrapesinstyle.com",
   databaseURL: "https://decor-drapes-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "decor-drapes",
   storageBucket: "decor-drapes.firebasestorage.app",
