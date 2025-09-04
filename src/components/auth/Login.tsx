@@ -107,6 +107,18 @@ const Login = () => {
       .finally(() => setLoading(false));
   }, [navigate]);
 
+  // Add this useEffect hook near your other useEffect hooks
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setAuthChecked(true);
+      if (user && user.emailVerified) {
+        navigate('/profile');
+      }
+    });
+
+  return () => unsubscribe();
+}, [navigate]);
+
   async function isDisposableEmail(email: string) {
     try {
       const domain = email.split('@')[1];
@@ -325,7 +337,7 @@ const Login = () => {
       setLoading(false);
     }
   };
-  
+
   const VerificationStep = () => (
     <div className="text-center space-y-4">
       <p className="text-lg font-semibold">
