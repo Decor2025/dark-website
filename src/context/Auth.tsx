@@ -37,14 +37,12 @@ export default function Auth() {
       getRedirectResult(auth)
         .then((result) => {
           if (result?.user) {
-            console.log("Google login success:", result.user);
             navigate("/profile", { replace: true });
           } else {
             navigate("/login", { replace: true });
           }
         })
-        .catch((error) => {
-          console.error("Google login error:", error);
+        .catch(() => {
           navigate("/login", { replace: true });
         });
     }
