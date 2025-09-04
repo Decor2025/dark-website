@@ -10,6 +10,7 @@ import {
   Info,
   Home,
   Phone,
+  ChevronDown,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { ref, onValue } from "firebase/database";
@@ -47,16 +48,19 @@ const Navbar: React.FC = () => {
   const storeName = getSetting("store_name") || "Decor Drapes";
   const storeInitial = storeName.charAt(0).toUpperCase();
 
+  // Extract first name only
   const displayName =
     currentUser?.displayName ||
     currentUser?.email?.split?.("@")?.[0] ||
     "User";
+  const firstName = displayName.split(' ')[0]; // Extract first name only
 
   const handleLogout = async () => {
     try {
       await logout();
     } finally {
       setSidebarOpen(false);
+      setProfileMenuOpen(false);
       navigate("/");
     }
   };
@@ -109,6 +113,12 @@ const Navbar: React.FC = () => {
             currentUser.role === "production");
   };
 
+  // Handle navigation for profile menu items
+  const handleProfileMenuNavigation = (path: string) => {
+    setProfileMenuOpen(false);
+    navigate(path);
+  };
+
   return (
     <>
       <nav className="bg-white border-b border-gray-100">
@@ -116,9 +126,9 @@ const Navbar: React.FC = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-1 transition-transform hover:scale-102">
             <img
-              src="https://res.cloudinary.com/ds6um53cx/image/upload/v1756727077/a0jd950p5c8m7wgdylyq.webp" // Replace this with your internet image URL
+              src="https://res.cloudinary.com/ds6um53cx/image/upload/v1756727077/a0jd950p5c8m7wgdylyq.webp"
               alt="Logo"
-              className="w-full h-10 object-cover rounded-lg "
+              className="w-full h-10 object-cover rounded-lg"
             />
             <span className="font-semibold text-gray-800 text-lg">Drapes</span>
           </Link>
@@ -150,7 +160,7 @@ const Navbar: React.FC = () => {
                 <button
                   ref={profileButtonRef}
                   onClick={() => setProfileMenuOpen((o) => !o)}
-                  className="flex items-center gap-2 focus:outline-none transition-transform hover:scale-105 duration-200"
+                  className="flex items-center gap-1 focus:outline-none transition-all duration-200"
                 >
                   {currentUser.profileImage ? (
                     <img
@@ -163,7 +173,11 @@ const Navbar: React.FC = () => {
                       <UserIcon size={18} />
                     </div>
                   )}
-                  <span className="text-sm text-gray-700">{displayName}</span>
+                  <span className="text-sm text-gray-700">{firstName}</span>
+                  <ChevronDown 
+                    size={16} 
+                    className={`transition-transform duration-200 ${profileMenuOpen ? 'rotate-180' : ''}`} 
+                  />
                 </button>
 
                 {profileMenuOpen && (
@@ -171,21 +185,19 @@ const Navbar: React.FC = () => {
                     ref={profileMenuRef}
                     className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-50 animate-fadeIn"
                   >
-                    <Link
-                      to="/profile"
-                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
-                      onClick={() => setProfileMenuOpen(false)}
+                    <button
+                      onClick={() => handleProfileMenuNavigation("/profile")}
+                      className="flex items-center gap-2 w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
                     >
                       <UserIcon size={16} /> My Profile
-                    </Link>
+                    </button>
                     {shouldShowDashboard() && (
-                      <Link
-                        to={getDashboardPath()}
-                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
-                        onClick={() => setProfileMenuOpen(false)}
+                      <button
+                        onClick={() => handleProfileMenuNavigation(getDashboardPath())}
+                        className="flex items-center gap-2 w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
                       >
                         <Users size={16} /> {getDashboardLabel()}
-                      </Link>
+                      </button>
                     )}
                     <button
                       onClick={handleLogout}
@@ -227,8 +239,12 @@ const Navbar: React.FC = () => {
                     <UserIcon size={16} className="text-gray-700" />
                   )}
                   <span className="text-gray-700 text-sm truncate max-w-[80px]">
-                    {displayName}
+                    {firstName}
                   </span>
+                  <ChevronDown 
+                    size={14} 
+                    className={`transition-transform duration-200 ${profileMenuOpen ? 'rotate-180' : ''}`} 
+                  />
                 </button>
 
                 {/* Floating User Menu */}
@@ -237,21 +253,19 @@ const Navbar: React.FC = () => {
                     ref={profileMenuRef}
                     className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-100 z-50 animate-fadeIn"
                   >
-                    <Link
-                      to="/profile"
-                      onClick={() => setProfileMenuOpen(false)}
-                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
+                    <button
+                      onClick={() => handleProfileMenuNavigation("/profile")}
+                      className="flex items-center gap-2 w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
                     >
                       <UserIcon size={16} /> My Profile
-                    </Link>
+                    </button>
                     {shouldShowDashboard() && (
-                      <Link
-                        to={getDashboardPath()}
-                        onClick={() => setProfileMenuOpen(false)}
-                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
+                      <button
+                        onClick={() => handleProfileMenuNavigation(getDashboardPath())}
+                        className="flex items-center gap-2 w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
                       >
                         <Users size={16} /> {getDashboardLabel()}
-                      </Link>
+                      </button>
                     )}
                     <button
                       onClick={handleLogout}
@@ -290,15 +304,21 @@ const Navbar: React.FC = () => {
           <div className="w-72 bg-white h-full shadow-xl p-5 flex flex-col justify-between animate-slideInRight">
             <div>
               <div className="flex justify-between items-center border-b border-gray-100 pb-4 mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">
-                    {storeInitial}
-                  </div>
+                <Link 
+                  to="/" 
+                  className="flex items-center gap-3"
+                  onClick={() => setSidebarOpen(false)}
+                >
+                  <img
+                    src="https://res.cloudinary.com/ds6um53cx/image/upload/v1756727077/a0jd950p5c8m7wgdylyq.webp"
+                    alt="Logo"
+                    className="w-10 h-10 object-cover rounded-lg"
+                  />
                   <div>
                     <div className="font-semibold text-sm">{storeName}</div>
                     <div className="text-xs text-gray-500">Menu</div>
                   </div>
-                </div>
+                </Link>
                 <button
                   onClick={() => setSidebarOpen(false)}
                   className="p-2 hover:bg-gray-100 rounded-md transition-colors duration-200"
@@ -323,7 +343,7 @@ const Navbar: React.FC = () => {
                       </div>
                     )}
                     <div>
-                      <div className="font-medium text-sm">{displayName}</div>
+                      <div className="font-medium text-sm">{firstName}</div>
                       <div className="text-xs text-gray-500 capitalize">
                         {currentUser.role || "Member"}
                       </div>
