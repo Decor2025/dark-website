@@ -6,6 +6,7 @@ import { signOut } from "firebase/auth";
 import { auth } from "../../config/firebase";
 import QuoteBuilder from "../../components/admin/QuoteBuilder";
 import { ref, onValue, off } from "firebase/database";
+import RedirectManager from "../../components/admin/RedirectManager";
 import {
   Home,
   User,
@@ -339,6 +340,7 @@ const AdminDashboard: React.FC = () => {
       label: "Content",
       icon: MessageSquare,
       items: [
+        { id: "redirect", label: "Redirect", icon: Users },
         { id: "our-work", label: "Our Work", icon: Users },
         { id: "testimonials", label: "Testimonials", icon: MessageSquare },
         {
@@ -869,6 +871,8 @@ const AdminDashboard: React.FC = () => {
         return <ProductSKUManagement />;
       case "our-work":
         return <OurWorkAdmin />;
+      case "redirect":
+        return <RedirectManager />;
       case "messages":
         return <ContactManagement />;
       case "testimonials":

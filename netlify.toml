@@ -1,0 +1,16 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[[redirects]]
+  from = "/virtual/*"
+  to = "/virtual/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/virtual/:slug"
+  to = "/index.html"
+  status = 200
