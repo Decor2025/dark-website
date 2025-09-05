@@ -329,17 +329,19 @@ const Login = () => {
   };
 
   const handleGoogleSignIn = async () => {
-    setShowGoogleError("");
-    setLoading(true);
-    try {
-      await signInWithRedirect(auth, provider); // <--- Changed from Popup
-    } catch (err: any) {
-      const errorMessage = firebaseErrorToMessage(err.code || "");
-      setShowGoogleError(errorMessage);
-      console.error("Google sign-in error:", err);
-      setLoading(false);
-    }
-  };
+  setShowGoogleError("");
+  setLoading(true);
+  try {
+    // Use signInWithRedirect instead of signInWithPopup
+    await signInWithRedirect(auth, provider);
+    // The redirect will happen, and the AuthHandler will process the result
+  } catch (err: any) {
+    setLoading(false);
+    const errorMessage = firebaseErrorToMessage(err.code || "");
+    setShowGoogleError(errorMessage);
+    console.error("Google sign-in error:", err);
+  }
+};
 
   const VerificationStep = () => (
     <div className="text-center space-y-4">

@@ -31,6 +31,7 @@ import TermsPage from "./pages/Terms";
 import ResetPassword from "./pages/ResetPassword";
 import ProductionDashboard from "./components/admin/ProductionDashboard";
 import TitleUpdater from "./components/common/TitleUpdater";
+import AuthHandler from "../src/context/Auth";
 // import OrderTracking from "./pages/OrderTracking";
 
 function LayoutWrapper() {
@@ -49,6 +50,7 @@ function LayoutWrapper() {
     "/our-work",
     // "/track-order",
     "/profile",
+    "/auth/login"
   ];
 
   // Hide header/footer if not in mainRoutes OR special routes
@@ -81,7 +83,7 @@ function LayoutWrapper() {
           <Route path="/auth/login" element={<Auth />} />         {/* handle Google login */}
           <Route path="/auth/reset-password" element={<ResetPassword />} />
           <Route path="/auth/verified" element={<Verified />} />
-
+          <Route path="/auth/login" element={<AuthHandler />} />
           {/* <Route path="/track" element={<OrderTracking />} /> */}
 
           <Route
@@ -131,7 +133,7 @@ function App() {
       gapi.client.init({
         apiKey: "AIzaSyAcUPet5yafJOl1BacuBT9moyg_jd_291c",
         clientId:
-          "7355025915-iavbbbsne3bg9d3ctusa0g98rs86uscr.apps.googleusercontent.com",
+          "175917446618-irbbkqda7lgrdckeobfofmvrsjr9n383.apps.googleusercontent.com",
         discoveryDocs: [
           "https://sheets.googleapis.com/$discovery/rest?version=v4",
         ],
