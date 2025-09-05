@@ -28,6 +28,9 @@ import { Eye, EyeOff } from 'lucide-react';
 // Initialize Firebase with your config
 import { database as db, auth } from "../../config/firebase";
 const provider = new GoogleAuthProvider();
+provider.setCustomParameters({
+  redirect_uri: window.location.origin + '/auth/login'
+});
 
 // Add proper error mapping
 function firebaseErrorToMessage(errorCode: string): string {
