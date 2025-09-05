@@ -30,7 +30,6 @@ import { gapi } from "gapi-script";
 import TermsPage from "./pages/Terms";
 import ResetPassword from "./pages/ResetPassword";
 import ProductionDashboard from "./components/admin/ProductionDashboard";
-import QuotePayment from "./pages/QuotePayment";
 import TitleUpdater from "./components/common/TitleUpdater";
 // import OrderTracking from "./pages/OrderTracking";
 
@@ -70,7 +69,6 @@ function LayoutWrapper() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/terms" element={<TermsPage />} />
-          <Route path="/payment" element={<QuotePayment />} />
           <Route path="/login" element={<Login />} />
           <Route path="/catalogue" element={<Catalogue />} />
           <Route path="/cart" element={<Cart />} />
@@ -131,7 +129,7 @@ function App() {
   useEffect(() => {
     function start() {
       gapi.client.init({
-        apiKey: import.meta.env.VITE_GOOGLE_API_KEY as string,
+        apiKey: "AIzaSyAcUPet5yafJOl1BacuBT9moyg_jd_291c",
         clientId:
           "7355025915-iavbbbsne3bg9d3ctusa0g98rs86uscr.apps.googleusercontent.com",
         discoveryDocs: [
