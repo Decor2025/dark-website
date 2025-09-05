@@ -17,7 +17,6 @@ import Login from "./components/auth/Login";
 import Catalogue from "./pages/Catalogue";
 import Cart from "./pages/Cart";
 import Profile from "./pages/Profile";
-import AdminDashboard from "./pages/admin/AdminDashboard";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Estimate from "./pages/Estimate";
@@ -29,7 +28,6 @@ import { useEffect } from "react";
 import { gapi } from "gapi-script";
 import TermsPage from "./pages/Terms";
 import ResetPassword from "./pages/ResetPassword";
-import ProductionDashboard from "./components/admin/ProductionDashboard";
 import TitleUpdater from "./components/common/TitleUpdater";
 import AuthHandler from "../src/context/Auth";
 // import OrderTracking from "./pages/OrderTracking";
@@ -91,22 +89,6 @@ function LayoutWrapper() {
             element={
               <ProtectedRoute>
                 <Profile />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute>
-                <AdminDashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/production"
-            element={
-              <ProtectedRoute requiredRole="production">
-                <ProductionDashboard />
               </ProtectedRoute>
             }
           />

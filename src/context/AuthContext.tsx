@@ -44,6 +44,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const login = async (email: string, password: string) => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
+      
+      // Check if user is admin and redirect to admin subdomain
+      if (currentUser?.role === 'admin') {
+        window.location.href = 'https://admin.decordrapesinstyle.com';
+        return;
+      }
+      
       toast.success('Logged in successfully!');
     } catch (error: any) {
       toast.error(error.message);
@@ -170,10 +177,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           if (snapshot.exists()) {
             // Merge Firebase auth data with database user data
             const userData = snapshot.val() as User;
-            setCurrentUser({
+            const user = {
               ...userData,
               emailVerified: firebaseUser.emailVerified,
-            });
+            };
+            setCurrentUser(user);
+            
+            // Redirect admin users to admin subdomain
+            if (user.role === 'admin' && !window.location.hostname.includes('admin.')) {
+              window.location.href = 'https://admin.decordrapesinstyle.com';
+              return;
+            }
           } else {
             // Create new user in database if not exists
             const userData: User = {

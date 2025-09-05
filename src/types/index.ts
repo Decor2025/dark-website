@@ -272,7 +272,7 @@ export interface Order {
   id: string;
   orderNumber: string;
   orderType: 'normal' | 'wooden';
-  status: 'pending' | 'in-progress' | 'ready' | 'completed';
+  
   customerName: string;
   customerEmail?: string;
   customerPhone?: string;
