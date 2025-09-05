@@ -7,8 +7,7 @@ import {
   sendEmailVerification,
   sendPasswordResetEmail,
   signOut,
-  signInWithRedirect,
-  getRedirectResult,
+  signInWithPopup,
   GoogleAuthProvider,
   User,
   onAuthStateChanged,
@@ -28,9 +27,6 @@ import { Eye, EyeOff } from 'lucide-react';
 // Initialize Firebase with your config
 import { database as db, auth } from "../../config/firebase";
 const provider = new GoogleAuthProvider();
-provider.setCustomParameters({
-  redirect_uri: window.location.origin + '/auth/login'
-});
 
 // Add proper error mapping
 function firebaseErrorToMessage(errorCode: string): string {
@@ -93,34 +89,29 @@ const Login = () => {
 
   const [showGoogleError, setShowGoogleError] = useState('');
 
-  // Check if redirect result exists
+  // Check authentication status
   useEffect(() => {
-    setLoading(true);
-    getRedirectResult(auth)
-      .then(async (result) => {
-        if (result && result.user) {
-          await handleGoogleUser(result.user);
-          navigate("/profile");
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        if (user.emailVerified) {
+          // User is logged in and verified, redirect to profile
+          navigate('/profile');
+        } else {
+          // If user is logged in but not verified, keep them on login page
+          setAuthChecked(true);
         }
-      })
-      .catch((err) => {
-        const errorMessage = firebaseErrorToMessage(err.code || "");
-        setShowGoogleError(errorMessage);
-      })
-      .finally(() => setLoading(false));
-  }, [navigate]);
-
-  // Add this useEffect hook near your other useEffect hooks
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setAuthChecked(true);
-      if (user && user.emailVerified) {
-        navigate('/profile');
+      } else {
+        setAuthChecked(true);
       }
     });
 
-  return () => unsubscribe();
-}, [navigate]);
+    return () => {
+      unsubscribe();
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [navigate]);
 
   async function isDisposableEmail(email: string) {
     try {
@@ -329,19 +320,19 @@ const Login = () => {
   };
 
   const handleGoogleSignIn = async () => {
-  setShowGoogleError("");
-  setLoading(true);
-  try {
-    // Use signInWithRedirect instead of signInWithPopup
-    await signInWithRedirect(auth, provider);
-    // The redirect will happen, and the AuthHandler will process the result
-  } catch (err: any) {
+    setShowGoogleError('');
+    setLoading(true);
+    try {
+      const result = await signInWithPopup(auth, provider);
+      await handleGoogleUser(result.user);
+      navigate('/profile');
+    } catch (err: any) {
+      const errorMessage = firebaseErrorToMessage(err.code || '');
+      setShowGoogleError(errorMessage);
+      console.error('Google sign-in error:', err);
+    }
     setLoading(false);
-    const errorMessage = firebaseErrorToMessage(err.code || "");
-    setShowGoogleError(errorMessage);
-    console.error("Google sign-in error:", err);
-  }
-};
+  };
 
   const VerificationStep = () => (
     <div className="text-center space-y-4">
