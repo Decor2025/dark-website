@@ -63,7 +63,7 @@ function firebaseErrorToMessage(errorCode: string): string {
 const Login = () => {
   const navigate = useNavigate();
   const [authChecked, setAuthChecked] = useState(false);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const [step, setStep] = useState<
     'email' | 'login' | 'forgot_password' | 'signup_name' | 'signup_password' | 'verify_email'
