@@ -47,8 +47,7 @@ function LayoutWrapper() {
     "/privacy",
     "/our-work",
     // "/track-order",
-    "/profile",
-    "/auth/login"
+    "/profile"
   ];
 
   // Hide header/footer if not in mainRoutes OR special routes
@@ -77,8 +76,8 @@ function LayoutWrapper() {
           <Route path="/estimate" element={<Estimate />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/our-work" element={<OurWorkPublic />} />
-          <Route path="/auth" element={<Auth />} />               {/* handle email links */}
-          <Route path="/auth/login" element={<Auth />} />         {/* handle Google login */}
+          <Route path="/auth" element={<Auth />} />{/* handle email links */}
+          {/* <Route path="/auth/login" element={<Auth />} /> */}
           <Route path="/auth/reset-password" element={<ResetPassword />} />
           <Route path="/auth/verified" element={<Verified />} />
           <Route path="/auth/login" element={<AuthHandler />} />
