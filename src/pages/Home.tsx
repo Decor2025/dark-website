@@ -8,7 +8,7 @@ import ProductCard from "../components/product/ProductCard";
 import ProductModal from "../components/product/ProductModal";
 import TestimonialForm from "../components/testimonials/TestimonialForm";
 import OurWorkPublic from "./OurWork";
-import TrustIndexWidget from "../components/TrustIndexWidget";
+import Reviews from "../components/Reviews";
 import {
   ArrowRight,
   Star,
@@ -480,135 +480,36 @@ useEffect(() => {
       </section>
 
       {/* Testimonials */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
-        <div className="text-center mb-16">
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.7 }}
-            className="text-3xl sm:text-4xl font-bold text-gray-900"
-          >
-            What Our Clients Say
-          </motion.h2>
-          <motion.p
-            className="text-gray-600 mt-4 max-w-2xl mx-auto text-lg"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            Hear from clients who transformed their homes with our curated
-            interiors.
-          </motion.p>
-        </div>
+      {/* Testimonials */}
+<section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
+  <div className="text-center mb-16">
+    <motion.h2
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-100px" }}
+      transition={{ duration: 0.7 }}
+      className="text-3xl sm:text-4xl font-bold text-gray-900"
+    >
+      What Our Clients Say
+    </motion.h2>
+    <motion.p
+      className="text-gray-600 mt-4 max-w-2xl mx-auto text-lg"
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      viewport={{ once: true, margin: "-100px" }}
+      transition={{ duration: 0.5, delay: 0.2 }}
+    >
+      {/* Your description here */}
+    </motion.p>
+  </div>
 
-        {/*   TrustIndex Widget */}
-        <div className="mb-12  w-full">
-          <TrustIndexWidget />
-        </div>
+  {/* Combined Reviews Component */}
+  <div className="mb-12 w-full">
+    <Reviews localReviews={testimonials} />
+  </div>
 
-        {/*   Local testimonials (your DB-driven ones) */}
-        {loadingTestimonials ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {Array(3)
-              .fill(0)
-              .map((_, idx) => (
-                <TestimonialSkeleton key={idx} />
-              ))}
-          </div>
-        ) : testimonials.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials.map((t, idx) => (
-              <motion.div
-                key={t.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ duration: 0.5, delay: idx * 0.15 }}
-                className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100"
-              >
-                <div className="flex items-center mb-4">
-                  {[...Array(Math.max(0, t.rating || 5))].map((_, i) => (
-                    <Star
-                      key={i}
-                      className="w-5 h-5 text-yellow-400 fill-yellow-400"
-                    />
-                  ))}
-                </div>
-                <h4 className="font-semibold text-lg mb-3 text-gray-900">
-                  {t.title}
-                </h4>
-                <p className="text-gray-600 italic">"{t.content}"</p>
-                <div className="flex items-center mt-8 pt-4 border-t border-gray-100">
-                  {t.userImage ? (
-                    <motion.img
-                      src={t.userImage}
-                      alt={t.userName}
-                      className="w-12 h-12 rounded-full mr-4 object-cover"
-                      whileHover={{ scale: 1.1 }}
-                    />
-                  ) : (
-                    <div className="w-12 h-12 rounded-full bg-indigo-100 mr-4 flex items-center justify-center text-indigo-600">
-                      <Users className="w-6 h-6" />
-                    </div>
-                  )}
-                  <div>
-                    <div className="font-medium text-gray-900">
-                      {t.userName}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      Verified Customer
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        ) : (
-          <motion.div
-            className="text-center py-12 bg-gray-50 rounded-2xl"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.5 }}
-          >
-            <p className="text-gray-600 mb-6 text-lg">
-              No testimonials yet — be the first to share your experience.
-            </p>
-            <div className="mt-4">
-              <motion.button
-                onClick={() => setShowTestimonialForm(true)}
-                className="px-6 py-3 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition-colors font-medium"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Write a Review
-              </motion.button>
-            </div>
-          </motion.div>
-        )}
-
-        {/*   Extra "Rate Us" button */}
-        <div className="text-center mt-12">
-          <button
-            onClick={() => setShowTestimonialForm(true)}
-            className="px-6 py-3 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-colors font-medium"
-          >
-            Rate Us
-          </button>
-        </div>
-
-        {/* Testimonial modal/form */}
-        <AnimatePresence>
-          {showTestimonialForm && (
-            <TestimonialForm
-              isOpen={showTestimonialForm}
-              onClose={() => setShowTestimonialForm(false)}
-            />
-          )}
-        </AnimatePresence>
-      </section>
+  {/* The rest of your testimonials section */}
+</section>
 
       {/* CTA */}
       <motion.section

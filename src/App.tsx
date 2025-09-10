@@ -55,8 +55,6 @@ function LayoutWrapper() {
     !mainRoutes.includes(location.pathname) ||
     location.pathname === "/login" ||
     location.pathname.startsWith("/auth/reset-password") ||
-    location.pathname === "/admin" ||
-    location.pathname === "/production" ||
     location.pathname === "/auth/verified";
 
   return (
