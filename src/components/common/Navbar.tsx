@@ -94,8 +94,8 @@ const Navbar: React.FC = () => {
 
   // Fixed role checking functions
   const getDashboardPath = () => {
-    if (currentUser?.role === "production") return "/production";
-    if (currentUser?.role === "admin" || currentUser?.role === "employee") return "/admin";
+    if (currentUser?.role === "production") return "admin.decordrapesinsyle.com/production";
+    if (currentUser?.role === "admin" || currentUser?.role === "employee") return "admin.decordrapesinstyle.com";
     return "/";
   };
 
