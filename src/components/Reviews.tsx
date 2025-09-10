@@ -53,7 +53,7 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
     const fetchGoogleReviews = async () => {
       try {
         const res = await fetch(
-          "https://featurable.com/api/v1/widgets/82cc168d-94d6-442f-8cd1-ef333bd410f6"
+          `https://featurable.com/api/v1/widgets/${import.meta.env.VITE_FEATUREABLE_ID}`
         );
         const data = await res.json();
         
