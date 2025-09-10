@@ -46,7 +46,6 @@ const Navbar: React.FC = () => {
   const getSetting = (key: string) =>
     settings.find((s) => s.key === key)?.value || "";
   const storeName = getSetting("store_name") || "Decor Drapes";
-  const storeInitial = storeName.charAt(0).toUpperCase();
 
   // Extract first name only
   const displayName =
@@ -94,10 +93,15 @@ const Navbar: React.FC = () => {
 
   // Fixed role checking functions
   const getDashboardPath = () => {
-    if (currentUser?.role === "production") return "admin.decordrapesinsyle.com/production";
-    if (currentUser?.role === "admin" || currentUser?.role === "employee") return "admin.decordrapesinstyle.com";
-    return "/";
-  };
+  if (currentUser?.role === "production") {
+    return "https://admin.decordrapesinstyle.com/production";
+  }
+  if (currentUser?.role === "admin" || currentUser?.role === "employee") {
+    return "https://admin.decordrapesinstyle.com";
+  }
+  return "/";
+};
+
 
   const getDashboardLabel = () => {
     if (currentUser?.role === "production") return "Production";
