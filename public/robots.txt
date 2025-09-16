@@ -1,4 +1,9 @@
 User-agent: *
-Allow: /
+Disallow: /wp-admin/
+Disallow: /wp-json/
+Disallow: /tag/
+Disallow: /author/
+Disallow: /?s=
+Disallow: /feed/
 
 Sitemap: https://decordrapesinstyle.com/sitemap.xml
