@@ -306,9 +306,9 @@ const Footer: React.FC = () => {
         {/* Made by section */}
         <div className="bg-gray-900 text-center py-3">
           <p className="text-gray-500 text-xs">
-            Made with ❤️ by{" "}
+            Developed by{" "}
             <a
-              href="https://pankajshah.netlify.app/"
+              // href="https://pankajshah.netlify.app/"
               className="hover:text-white"
             >
               Pankaj
