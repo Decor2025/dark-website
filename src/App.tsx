@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -24,7 +25,6 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import FaviconUpdater from "./components/FaviconUpdater";
 import Auth from "../src/context/Auth";
 import OurWorkPublic from "./pages/OurWork";
-import { useEffect } from "react";
 import { gapi } from "gapi-script";
 import TermsPage from "./pages/Terms";
 import ResetPassword from "./pages/ResetPassword";
@@ -32,11 +32,8 @@ import TitleUpdater from "./components/common/TitleUpdater";
 import AuthHandler from "../src/context/Auth";
 // import OrderTracking from "./pages/OrderTracking";
 
-
 function LayoutWrapper() {
   const location = useLocation();
-
-  // List of routes where header/footer should be shown
   const mainRoutes = [
     "/",
     "/catalogue",
@@ -51,7 +48,6 @@ function LayoutWrapper() {
     "/profile"
   ];
 
-  // Hide header/footer if not in mainRoutes OR special routes
   const hideHeaderFooter =
     !mainRoutes.includes(location.pathname) ||
     location.pathname === "/login" ||
@@ -75,7 +71,7 @@ function LayoutWrapper() {
           <Route path="/estimate" element={<Estimate />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/our-work" element={<OurWorkPublic />} />
-          <Route path="/auth" element={<Auth />} />{/* handle email links */}
+          <Route path="/auth" element={<Auth />} />
           {/* <Route path="/auth/login" element={<Auth />} /> */}
           <Route path="/auth/reset-password" element={<ResetPassword />} />
           <Route path="/auth/verified" element={<Verified />} />
@@ -111,13 +107,7 @@ function App() {
   useEffect(() => {
     function start() {
       gapi.client.init({
-        apiKey: "AIzaSyAcUPet5yafJOl1BacuBT9moyg_jd_291c",
-        clientId:
-          "175917446618-irbbkqda7lgrdckeobfofmvrsjr9n383.apps.googleusercontent.com",
-        discoveryDocs: [
-          "https://sheets.googleapis.com/$discovery/rest?version=v4",
-        ],
-        scope: "https://www.googleapis.com/auth/spreadsheets",
+        clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID,
       });
     }
     gapi.load("client:auth2", start);

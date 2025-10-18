@@ -10,7 +10,37 @@ export interface User {
   bio?: string;
   role: 'admin' | 'employee' | 'customer' | 'editor' | 'viewer' | 'production';
   createdAt: string;
-  emailVerified?: boolean; 
+  emailVerified?: boolean;
+}
+
+export interface Reviewer {
+  profilePhotoUrl?: string;
+  displayName: string;
+}
+
+export interface Review {
+  id: string;
+  reviewer: Reviewer;
+  starRating: number;
+  comment: string;
+  createTime: string;
+  reviewReply?: { comment: string };
+  source: "google" | "website";
+  title?: string;
+  userName?: string;
+  userImage?: string;
+}
+
+export interface ReviewsProps {
+  localReviews: Array<{
+    id: string;
+    userName: string;
+    userImage?: string;
+    rating: number;
+    content: string;
+    createdAt: string;
+    title?: string;
+  }>;
 }
 
 export type OurWorkItem = {
@@ -189,7 +219,7 @@ export interface QuotationItem {
   width?: number;
   height?: number;
   area?: number;
-  gstRate?: number;  
+  gstRate?: number;
   unitPrice: number;
   pricePerUnit: number;
   unitType: string;
@@ -272,20 +302,20 @@ export interface Order {
   id: string;
   orderNumber: string;
   orderType: 'normal' | 'wooden';
-  
+
   customerName: string;
   customerEmail?: string;
   customerPhone?: string;
-  
+
   // Common fields
   width: number;
   height: number;
   quantity: number;
-  
+
   // Normal Blinds specific
   fabricCode?: string;
   imageUrl?: string;
-  
+
   // Wooden Blinds specific
   baseSize?: '35mm' | '50mm';
   woodenColorCode?: string;
@@ -297,7 +327,7 @@ export interface Order {
   channelUching?: number;
   channelUchingCm?: number;
   operatingSide?: 'left' | 'right';
-  
+
   notes?: string;
   createdAt: string;
   updatedAt: string;

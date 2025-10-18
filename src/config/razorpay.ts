@@ -1,9 +1,9 @@
 export const razorpayConfig = {
-  keyId: 'rzp_test_5KAIiglEAjfDfA', 
-  keySecret: 'ReTHyqWILzUD/spDCKvdHqGRW', 
+  keyId: 'NOT_YET_IMPLEMENTED',
+  keySecret: 'WHAT_ARE_YOU_DOING_HERE',
   currency: 'INR',
   companyName: 'Decor Drapes',
-  description: 'Payment for your order',
+  description: 'REACH ME BECAUSE YOU ARE GOOD: https://pankajshah.netlify.app',
   image: '/logo.png',
   theme: {
     color: '#2563eb'

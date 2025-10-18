@@ -1,36 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import TestimonialForm from "./testimonials/TestimonialForm";
-
-interface Reviewer {
-  profilePhotoUrl?: string;
-  displayName: string;
-}
-
-interface Review {
-  id: string;
-  reviewer: Reviewer;
-  starRating: number;
-  comment: string;
-  createTime: string;
-  reviewReply?: { comment: string };
-  source: "google" | "website";
-  title?: string;
-  userName?: string;
-  userImage?: string;
-}
-
-interface ReviewsProps {
-  localReviews: Array<{
-    id: string;
-    userName: string;
-    userImage?: string;
-    rating: number;
-    content: string;
-    createdAt: string;
-    title?: string;
-  }>;
-}
+import { Reviewer, Review, ReviewsProps } from "../types";
 
 const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
   const [googleReviews, setGoogleReviews] = useState<Review[]>([]);
@@ -42,8 +13,6 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [showReviewOptions, setShowReviewOptions] = useState(false);
   const [showTestimonialForm, setShowTestimonialForm] = useState(false);
-
-  // Business reply author details
   const businessAuthor = {
     name: "Aditya Shah",
     image: "https://lh3.googleusercontent.com/a/ACg8ocJYuOB--Gmc-R1OuACVtr6cHQ_ggylyhoKEAkECBub9t1t5KUOUow=s96-c"
@@ -56,17 +25,12 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
           `https://featurable.com/api/v1/widgets/${import.meta.env.VITE_FEATUREABLE_ID}`
         );
         const data = await res.json();
-        
-        // Map Google reviews to our format and add source identifier
         const googleReviewsData: Review[] = (data.reviews || []).map((review: any) => ({
           ...review,
           id: review.reviewId,
           source: "google" as const
         }));
-        
         setGoogleReviews(googleReviewsData);
-
-        // Calculate average rating from both Google and local reviews
         const allReviews = [...googleReviewsData, ...formatLocalReviews(localReviews)];
         if (allReviews.length) {
           const avg = allReviews.reduce((sum, r) => sum + r.starRating, 0) / allReviews.length;
@@ -82,7 +46,6 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
     fetchGoogleReviews();
   }, [localReviews]);
 
-  // Format local reviews to match our structure
   const formatLocalReviews = (reviews: ReviewsProps["localReviews"]): Review[] => {
     return reviews.map(review => ({
       id: review.id,
@@ -100,7 +63,6 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
     }));
   };
 
-  // Combine and sort all reviews by date (newest first)
   const allReviews = [...googleReviews, ...formatLocalReviews(localReviews)]
     .sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime());
 
@@ -124,7 +86,6 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
 
   const loadLess = useCallback(() => {
     setDisplayCount(6);
-    // Scroll to top of reviews section
     document.getElementById('reviews-section')?.scrollIntoView({ behavior: 'smooth' });
   }, []);
 
@@ -148,7 +109,7 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
   return (
     <div className="max-w-7xl mx-auto py-12 px-4" id="reviews-section">
       {/* Google Badge with Stats */}
-      <motion.div 
+      <motion.div
         className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-2xl shadow-sm mb-10"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -167,8 +128,8 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
             <div className="text-3xl font-bold text-gray-800">{averageRating} out of 5</div>
             <div className="flex gap-1 mt-1">
               {Array.from({ length: 5 }, (_, i) => (
-                <svg 
-                  key={i} 
+                <svg
+                  key={i}
                   className={`w-6 h-6 ${i < Math.floor(averageRating) ? 'text-yellow-400' : 'text-gray-300'}`}
                   fill="currentColor"
                   viewBox="0 0 20 20"
@@ -180,7 +141,7 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
             <div className="text-gray-600 mt-1">Based on {allReviews.length} reviews</div>
           </div>
         </div>
-        
+
         <div className="flex flex-col sm:flex-row gap-3 mt-4 sm:mt-0">
           <a
             href="https://search.google.com/local/writereview?placeid=ChIJ81gT5P0VrjsRin99GBddcFE"
@@ -193,7 +154,7 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
             </svg>
             Write on Google
           </a>
-          
+
           <button
             onClick={() => setShowReviewOptions(true)}
             className="bg-blue-600 text-white px-5 py-3 rounded-xl text-sm font-medium transition-all duration-300 hover:bg-blue-700 flex items-center gap-2"
@@ -206,17 +167,16 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
         </div>
       </motion.div>
 
-      {/* Review Options Modal */}
       <AnimatePresence>
         {showReviewOptions && (
-          <motion.div 
+          <motion.div
             className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setShowReviewOptions(false)}
           >
-            <motion.div 
+            <motion.div
               className="bg-white rounded-2xl p-6 max-w-md w-full"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -241,7 +201,7 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
                     <div className="text-sm text-gray-600">Share your experience publicly on Google</div>
                   </div>
                 </a>
-                
+
                 <button
                   onClick={() => {
                     setShowReviewOptions(false);
@@ -261,7 +221,7 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
                 </button>
 
               </div>
-              
+
               <button
                 onClick={() => setShowReviewOptions(false)}
                 className="mt-6 text-gray-500 hover:text-gray-700"
@@ -271,7 +231,6 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
             </motion.div>
           </motion.div>
         )}
-        {/* Testimonial Form Modal */}
         {showTestimonialForm && (
           <motion.div
             className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
@@ -285,11 +244,11 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()} // prevent closing modal on inner click
+              onClick={(e) => e.stopPropagation()}
             >
-              <TestimonialForm 
-                isOpen={showTestimonialForm} 
-                onClose={() => setShowTestimonialForm(false)} 
+              <TestimonialForm
+                isOpen={showTestimonialForm}
+                onClose={() => setShowTestimonialForm(false)}
               />
 
             </motion.div>
@@ -298,7 +257,6 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
 
       </AnimatePresence>
 
-      {/* Masonry Grid */}
       <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-6">
         <AnimatePresence>
           {displayedReviews.map((review, index) => (
@@ -335,7 +293,6 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
                 </div>
               </div>
 
-              {/* Reviewer Info */}
               <div className="flex items-center gap-4 mb-4">
                 <div className="relative">
                   {review.reviewer.profilePhotoUrl ? (
@@ -373,11 +330,10 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
                 </div>
               </div>
 
-              {/* Star Rating */}
               <div className="flex gap-1 mb-4">
                 {Array.from({ length: 5 }, (_, i) => (
-                  <svg 
-                    key={i} 
+                  <svg
+                    key={i}
                     className={`w-5 h-5 ${i < review.starRating ? 'text-yellow-400' : 'text-gray-300'}`}
                     fill="currentColor"
                     viewBox="0 0 20 20"
@@ -387,20 +343,18 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
                 ))}
               </div>
 
-              {/* Review Title (if exists) */}
               {review.title && (
                 <h4 className="font-semibold text-lg mb-2 text-gray-900">
                   {review.title}
                 </h4>
               )}
 
-              {/* Comment with truncation */}
               <div className="mb-4">
                 <p className="text-gray-700 leading-relaxed">
-                  {expandedReviews[review.id] 
-                    ? review.comment 
-                    : shouldTruncate(review.comment) 
-                      ? `${review.comment.substring(0, 150)}...` 
+                  {expandedReviews[review.id]
+                    ? review.comment
+                    : shouldTruncate(review.comment)
+                      ? `${review.comment.substring(0, 150)}...`
                       : review.comment
                   }
                 </p>
@@ -414,7 +368,6 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
                 )}
               </div>
 
-              {/* Reply Toggle - Only show if there's a reply */}
               {review.reviewReply?.comment && (
                 <div className="pt-3 border-t border-gray-100">
                   <button
@@ -422,20 +375,18 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
                     className="flex items-center text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
                   >
                     {expandedReplies[review.id] ? 'Hide response' : 'View response'}
-                    <motion.svg 
+                    <motion.svg
                       className="w-4 h-4 ml-1"
                       animate={{ rotate: expandedReplies[review.id] ? 180 : 0 }}
                       transition={{ duration: 0.3 }}
                       viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
+                      fill="currentColor">
                       <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                     </motion.svg>
                   </button>
                 </div>
               )}
 
-              {/* Reply */}
               <AnimatePresence>
                 {review.reviewReply?.comment && expandedReplies[review.id] && (
                   <motion.div
@@ -467,7 +418,6 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
         </AnimatePresence>
       </div>
 
-      {/* Load More/Less Buttons */}
       <div className="flex justify-center mt-8 gap-4">
         {hasMore && (
           <motion.button
@@ -495,7 +445,7 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
             )}
           </motion.button>
         )}
-        
+
         {showLoadLess && (
           <motion.button
             onClick={loadLess}

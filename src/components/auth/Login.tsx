@@ -24,11 +24,10 @@ import {
 } from 'firebase/database';
 import { Eye, EyeOff } from 'lucide-react';
 
-// Initialize Firebase with your config
 import { database as db, auth } from "../../config/firebase";
 const provider = new GoogleAuthProvider();
 
-// Add proper error mapping
+
 function firebaseErrorToMessage(errorCode: string): string {
   switch (errorCode) {
     case 'auth/email-already-in-use':
@@ -133,7 +132,7 @@ const Login = () => {
   const saveUserToDB = async (user: User, name: string) => {
     const userRef = ref(db, `users/${user.uid}`);
     const snapshot = await get(userRef);
-    
+
     if (snapshot.exists()) {
       // User already exists, update only lastLogin
       await update(userRef, {
@@ -156,23 +155,23 @@ const Login = () => {
   const handleGoogleUser = async (user: User) => {
     const userRef = ref(db, `users/${user.uid}`);
     const snapshot = await get(userRef);
-    
+
     if (snapshot.exists()) {
       const userData = snapshot.val();
       const updates: any = {
         lastLogin: new Date().toISOString()
       };
-      
+
       // Only update displayName if it's empty and we have a value from Google
       if ((!userData.displayName || userData.displayName === '') && user.displayName) {
         updates.displayName = user.displayName;
       }
-      
+
       // Only update profileImage if it's empty and we have a value from Google
       if ((!userData.profileImage || userData.profileImage === '') && user.photoURL) {
         updates.profileImage = user.photoURL;
       }
-      
+
       // Update only the fields that need updating
       if (Object.keys(updates).length > 1) { // More than just lastLogin
         await update(userRef, updates);
@@ -195,7 +194,7 @@ const Login = () => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
     }
-    
+
     intervalRef.current = setInterval(async () => {
       try {
         await user.reload();

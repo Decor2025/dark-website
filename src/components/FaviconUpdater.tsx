@@ -1,4 +1,3 @@
-// src/components/FaviconUpdater.tsx
 import { useEffect } from 'react';
 import { useSiteSettings } from '../hooks/useSiteSettings';
 

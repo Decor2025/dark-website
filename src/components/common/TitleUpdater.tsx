@@ -2,22 +2,22 @@ import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
 const routeTitles: Record<string, string> = {
-  "/": "Home | Decor Drapes InStyle",
-  "/catalogue": "Catalogue | Decor Drapes InStyle",
-  "/terms": "Terms & Conditions | Decor Drapes InStyle",
-  "/cart": "My Cart | Decor Drapes InStyle",
-  "/about": "About Us | Decor Drapes InStyle",
-  "/contact": "Contact Us | Decor Drapes InStyle",
-  "/estimate": "Get an Estimate | Decor Drapes InStyle",
-  "/privacy": "Privacy Policy | Decor Drapes InStyle",
-  "/our-work": "Our Work | Decor Drapes InStyle",
-  "/profile": "My Profile | Decor Drapes InStyle",
-  "/admin": "Admin Dashboard | Decor Drapes InStyle",
-  "/production": "Production Dashboard | Decor Drapes InStyle",
-  "/auth/verified": "Account Verified | Decor Drapes InStyle",
-  "/auth/reset-password": "Reset Password | Decor Drapes InStyle",
-  "/payment": "Payment | Decor Drapes InStyle",
-  "/login": "Login | Decor Drapes InStyle",
+  "/": "Home | Decor Drapes Instyle",
+  "/catalogue": "Catalogue | Decor Drapes Instyle",
+  "/terms": "Terms & Conditions | Decor Drapes Instyle",
+  "/cart": "My Cart | Decor Drapes Instyle",
+  "/about": "About Us | Decor Drapes Instyle",
+  "/contact": "Contact Us | Decor Drapes Instyle",
+  "/estimate": "Get an Estimate | Decor Drapes Instyle",
+  "/privacy": "Privacy Policy | Decor Drapes Instyle",
+  "/our-work": "Our Work | Decor Drapes Instyle",
+  "/profile": "My Profile | Decor Drapes Instyle",
+  "/admin": "Admin Dashboard | Decor Drapes Instyle",
+  "/production": "Production Dashboard | Decor Drapes Instyle",
+  "/auth/verified": "Account Verified | Decor Drapes Instyle",
+  "/auth/reset-password": "Reset Password | Decor Drapes Instyle",
+  "/payment": "Payment | Decor Drapes Instyle",
+  "/login": "Login | Decor Drapes Instyle",
 
 };
 
@@ -26,7 +26,7 @@ export default function TitleUpdater() {
 
   useEffect(() => {
     const newTitle =
-      routeTitles[location.pathname] || "Decor Drapes InStyle"; // fallback title
+      routeTitles[location.pathname] || "Decor Drapes Instyle"; // Default Title
     document.title = newTitle;
   }, [location.pathname]);
 
