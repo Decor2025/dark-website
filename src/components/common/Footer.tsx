@@ -214,16 +214,48 @@ const Footer: React.FC = () => {
               <div className="flex items-center space-x-3">
                 <Phone className="w-5 h-5 text-green-400 flex-shrink-0" />
                 <div className="text-gray-400">
-                  <p>{getSetting("primary_phone") || "+1 (555) 123-4567"}</p>
-                  <p>{getSetting("secondary_phone") || "+1 (555) 987-6543"}</p>
+                  <p>
+                    <a
+                      href={`tel:${
+                        getSetting("primary_phone") || "+1 (555) 123-4567"
+                      }`}
+                    >
+                      {getSetting("primary_phone") || "+1 (555) 123-4567"}
+                    </a>
+                  </p>
+                  <p>
+                    <a
+                      href={`tel:${
+                        getSetting("secondary_phone") || "+1 (555) 987-6543"
+                      }`}
+                    >
+                      {getSetting("secondary_phone") || "+1 (555) 987-6543"}
+                    </a>
+                  </p>
                 </div>
               </div>
 
               <div className="flex items-center space-x-3">
                 <Mail className="w-5 h-5 text-purple-400 flex-shrink-0" />
                 <div className="text-gray-400">
-                  <p>{getSetting("primary_email") || "contact@shop.com"}</p>
-                  <p>{getSetting("support_email") || "support@shop.com"}</p>
+                  <p>
+                    <a
+                      href={`mailto:${
+                        getSetting("primary_email") || "contact@shop.com"
+                      }`}
+                    >
+                      {getSetting("primary_email") || "contact@shop.com"}
+                    </a>
+                  </p>
+                  <p>
+                    <a
+                      href={`mailto:${
+                        getSetting("support_email") || "support@shop.com"
+                      }`}
+                    >
+                      {getSetting("support_email") || "support@shop.com"}
+                    </a>
+                  </p>
                 </div>
               </div>
             </div>
@@ -308,7 +340,7 @@ const Footer: React.FC = () => {
           <p className="text-gray-500 text-xs">
             Developed by{" "}
             <a
-              // href="https://pankajshah.netlify.app/"
+              // href=""
               className="hover:text-white"
             >
               Pankaj
