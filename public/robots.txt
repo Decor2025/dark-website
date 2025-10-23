@@ -6,4 +6,4 @@ Disallow: /author/
 Disallow: /?s=
 Disallow: /feed/
 
-Sitemap: https://decordrapesinstyle.com/sitemap.xml
+Sitemap: https://decordrapesinstyle.com/sitemap_w.xml
