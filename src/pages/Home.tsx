@@ -106,7 +106,7 @@ const Home: React.FC = () => {
       setLoadingTestimonials(false);
     });
 
-    
+
 
     // Products
     const productsRef = ref(database, "products");
@@ -152,7 +152,7 @@ useEffect(() => {
   const checkWidget = setTimeout(() => {
     const widget = document.querySelector('.ti-widget') as HTMLElement;
     const iframe = widget?.querySelector('iframe');
-    
+
     if (widget && (!iframe || iframe.offsetHeight < 50)) {
       // Widget didn't load properly, show fallback
       const fallback = document.getElementById('trustindex-fallback');

@@ -22,11 +22,10 @@ import {
   set,
   update,
 } from 'firebase/database';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Check, X } from 'lucide-react';
 
 import { database as db, auth } from "../../config/firebase";
 const provider = new GoogleAuthProvider();
-
 
 function firebaseErrorToMessage(errorCode: string): string {
   switch (errorCode) {
@@ -55,6 +54,116 @@ function firebaseErrorToMessage(errorCode: string): string {
   }
 }
 
+// Password validation function
+const validatePasswordStrength = (password: string) => {
+  const requirements = {
+    minLength: password.length >= 8,
+    hasUpperCase: /[A-Z]/.test(password),
+    hasLowerCase: /[a-z]/.test(password),
+    hasNumbers: /\d/.test(password),
+    hasSpecialChar: /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password),
+  };
+
+  const isValid = requirements.minLength && requirements.hasUpperCase && requirements.hasLowerCase;
+  const isStrong = Object.values(requirements).every(Boolean);
+
+  return {
+    requirements,
+    isValid,
+    isStrong,
+    score: Object.values(requirements).filter(Boolean).length,
+  };
+};
+
+// Compact password strength indicator
+const CompactPasswordStrength = ({ password }: { password: string }) => {
+  const validation = validatePasswordStrength(password);
+
+  if (!password) return null;
+
+  return (
+    <div className="mt-2">
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-xs font-medium text-gray-600">Strength:</span>
+        <span className={`text-xs font-medium ${
+          validation.isStrong ? 'text-green-600' :
+          validation.isValid ? 'text-yellow-600' :
+          'text-red-600'
+        }`}>
+          {validation.isStrong ? 'Strong' :
+           validation.isValid ? 'Good' :
+           'Weak'}
+        </span>
+      </div>
+      <div className="w-full bg-gray-200 rounded-full h-1.5">
+        <div
+          className={`h-1.5 rounded-full transition-all duration-300 ${
+            validation.isStrong ? 'bg-green-500 w-full' :
+            validation.isValid ? 'bg-yellow-500 w-3/4' :
+            'bg-red-500 w-1/3'
+          }`}
+        />
+      </div>
+    </div>
+  );
+};
+
+// Compact password requirements - only shows when requirements aren't met
+const CompactPasswordRequirements = ({ password, showAll = false }: { password: string; showAll?: boolean }) => {
+  const validation = validatePasswordStrength(password);
+
+  // Don't show anything if password is empty or all requirements are met
+  if (!password || (validation.isValid && !showAll)) return null;
+
+  const requiredMet = [
+    validation.requirements.minLength,
+    validation.requirements.hasUpperCase,
+    validation.requirements.hasLowerCase,
+  ].every(Boolean);
+
+  // Only show detailed requirements if the basic ones aren't met
+  if (!requiredMet || showAll) {
+    return (
+      <div className="mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+        <p className="text-xs font-medium text-gray-700 mb-2">Requirements:</p>
+        <div className="grid grid-cols-1 gap-1">
+          <RequirementItem
+            met={validation.requirements.minLength}
+            text="8+ characters"
+          />
+          <RequirementItem
+            met={validation.requirements.hasUpperCase}
+            text="Uppercase letter"
+          />
+          <RequirementItem
+            met={validation.requirements.hasLowerCase}
+            text="Lowercase letter"
+          />
+          <div className="flex items-center text-xs text-gray-500 mt-1">
+            <Check size={12} className="mr-1 text-gray-400" />
+            Numbers & special chars recommended
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+};
+
+const RequirementItem = ({ met, text }: { met: boolean; text: string }) => (
+  <div className="flex items-center">
+    <div className={`flex-shrink-0 w-3 h-3 rounded-full flex items-center justify-center mr-2 ${
+      met ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'
+    }`}>
+      {met ? <Check size={10} /> : <X size={10} />}
+    </div>
+    <span className={`text-xs ${met ? 'text-green-700' : 'text-gray-600'}`}>
+      {text}
+    </span>
+  </div>
+);
+
 const Login = () => {
   const navigate = useNavigate();
   const [authChecked, setAuthChecked] = useState(false);
@@ -77,6 +186,7 @@ const Login = () => {
   const [signupPassword, setSignupPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [signupError, setSignupError] = useState('');
+  const [showPasswordGuide, setShowPasswordGuide] = useState(false);
 
   const [forgotPasswordError, setForgotPasswordError] = useState('');
   const [forgotPasswordSuccess, setForgotPasswordSuccess] = useState('');
@@ -129,7 +239,7 @@ const Login = () => {
     return snapshot.exists();
   };
 
-  const saveUserToDB = async (user: User, name: string) => {
+  const saveUserToDB = async (user: User, name: string, createdWith: 'email' | 'gmail') => {
     const userRef = ref(db, `users/${user.uid}`);
     const snapshot = await get(userRef);
 
@@ -139,7 +249,7 @@ const Login = () => {
         lastLogin: new Date().toISOString()
       });
     } else {
-      // Create new user entry
+      // Create new user entry with createdWith field
       const userData = {
         displayName: name || user.displayName || '',
         uid: user.uid,
@@ -147,6 +257,7 @@ const Login = () => {
         profileImage: '',
         createdAt: new Date().toISOString(),
         lastLogin: new Date().toISOString(),
+        createdWith: createdWith, // Add this field
       };
       await set(userRef, userData);
     }
@@ -177,7 +288,7 @@ const Login = () => {
         await update(userRef, updates);
       }
     } else {
-      // Create new user entry
+      // Create new user entry with createdWith: 'gmail'
       const userData = {
         displayName: user.displayName || '',
         uid: user.uid,
@@ -185,6 +296,7 @@ const Login = () => {
         profileImage: user.photoURL || '',
         createdAt: new Date().toISOString(),
         lastLogin: new Date().toISOString(),
+        createdWith: 'gmail', // Set createdWith for Google users
       };
       await set(userRef, userData);
     }
@@ -296,19 +408,26 @@ const Login = () => {
   const handleSignupPasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSignupError('');
-    if (signupPassword.length < 6) {
-      setSignupError('Password should be at least 6 characters.');
+
+    // Validate password strength
+    const validation = validatePasswordStrength(signupPassword);
+
+    if (!validation.isValid) {
+      setSignupError('Please meet the minimum password requirements to continue.');
+      setShowPasswordGuide(true); // Show guide if requirements aren't met
       return;
     }
+
     if (signupPassword !== confirmPassword) {
       setSignupError('Passwords do not match.');
       return;
     }
+
     setLoading(true);
     try {
       const newUser = await createUserWithEmailAndPassword(auth, email, signupPassword);
       await sendEmailVerification(newUser.user);
-      await saveUserToDB(newUser.user, displayName);
+      await saveUserToDB(newUser.user, displayName, 'email'); // createdWith: 'email'
       setVerificationSent(true);
       setStep('verify_email');
       pollEmailVerification(newUser.user);
@@ -323,7 +442,7 @@ const Login = () => {
     setLoading(true);
     try {
       const result = await signInWithPopup(auth, provider);
-      await handleGoogleUser(result.user);
+      await handleGoogleUser(result.user); // createdWith: 'gmail' is set in handleGoogleUser
       navigate('/profile');
     } catch (err: any) {
       const errorMessage = firebaseErrorToMessage(err.code || '');
@@ -601,13 +720,14 @@ const Login = () => {
                 onClick={() => {
                   setStep('signup_name');
                   setSignupError('');
+                  setShowPasswordGuide(false);
                 }}
               >
                 Change
               </button>
             </div>
 
-            <form onSubmit={handleSignupPasswordSubmit} className="space-y-6">
+            <form onSubmit={handleSignupPasswordSubmit} className="space-y-4">
               <div className="relative">
                 <label htmlFor="signupPassword" className="block text-sm font-medium text-gray-700 mb-1">
                   Password
@@ -617,6 +737,7 @@ const Login = () => {
                   id="signupPassword"
                   value={signupPassword}
                   onChange={(e) => setSignupPassword(e.target.value)}
+                  onFocus={() => setShowPasswordGuide(true)}
                   required
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Create a password"
@@ -629,7 +750,17 @@ const Login = () => {
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
+
+                {/* Compact strength indicator - always shows when typing */}
+                <CompactPasswordStrength password={signupPassword} />
               </div>
+
+              {/* Compact requirements - only shows when focused or requirements not met */}
+              <CompactPasswordRequirements
+                password={signupPassword}
+                showAll={showPasswordGuide || signupError.includes('requirements')}
+              />
+
               <div className="relative">
                 <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
                   Confirm Password
@@ -643,27 +774,31 @@ const Login = () => {
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Confirm your password"
                 />
-                {signupError && <p className="text-red-600 text-sm mt-1">{signupError}</p>}
               </div>
 
-              <button
-                type="button"
-                className="text-gray-500 underline mb-2"
-                onClick={() => {
-                  setStep('signup_name');
-                  setSignupError('');
-                }}
-              >
-                Back
-              </button>
+              {signupError && <p className="text-red-600 text-sm mt-1">{signupError}</p>}
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition disabled:opacity-50"
-              >
-                {loading ? 'Creating account...' : 'Create Account'}
-              </button>
+              <div className="flex justify-between items-center pt-2">
+                <button
+                  type="button"
+                  className="text-gray-500 underline"
+                  onClick={() => {
+                    setStep('signup_name');
+                    setSignupError('');
+                    setShowPasswordGuide(false);
+                  }}
+                >
+                  Back
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition disabled:opacity-50"
+                >
+                  {loading ? 'Creating...' : 'Create Account'}
+                </button>
+              </div>
             </form>
           </>
         )}

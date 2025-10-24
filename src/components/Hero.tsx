@@ -86,7 +86,7 @@ const Hero: React.FC = () => {
     const interval = setInterval(() => {
       setActiveFeature((prev) => (prev + 1) % features.length);
     }, 4000);
-    
+
     return () => clearInterval(interval);
   }, [features.length]);
 
@@ -146,21 +146,21 @@ const Hero: React.FC = () => {
     <section className="relative bg-gradient-to-br from-slate-50 to-blue-50/30 overflow-hidden min-h-screen flex items-center">
       {/* Background pattern with mesh texture */}
       <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/light-mesh.png')] opacity-20 z-0" />
-      
+
       {/* Animated decorative elements */}
-      <motion.div 
+      <motion.div
         className="absolute top-0 right-0 w-1/3 h-1/3 bg-blue-100/40 rounded-full filter blur-3xl"
         initial={{ translateY: "-50%", translateX: "50%", opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1.5, ease: "easeOut" }}
       />
-      <motion.div 
+      <motion.div
         className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-slate-200/40 rounded-full filter blur-3xl"
         initial={{ translateY: "50%", translateX: "-50%", opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1.5, ease: "easeOut", delay: 0.3 }}
       />
-      
+
       {/* Floating particles */}
       {[...Array(15)].map((_, i) => (
         <motion.div
@@ -181,10 +181,10 @@ const Hero: React.FC = () => {
           }}
         />
       ))}
-      
+
       {/* Main container */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 lg:px-8 py-12 md:py-16 w-full">
-        <motion.div 
+        <motion.div
           className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center"
           variants={containerVariants}
           initial="hidden"
@@ -218,21 +218,21 @@ const Hero: React.FC = () => {
                       {secondHalf}
                     </span>
                   </h1>
-                  
+
                   <p className="text-xl text-slate-600 max-w-md mx-auto lg:mx-0 font-normal leading-relaxed">
                     {tagline}
                   </p>
                 </motion.div>
 
                 {/* Buttons */}
-                <motion.div 
+                <motion.div
                   variants={itemVariants}
                   className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mt-8"
                 >
                   <motion.a
                     href="/estimate"
-                    whileHover={{ 
-                      scale: 1.03, 
+                    whileHover={{
+                      scale: 1.03,
                       boxShadow: "0 10px 25px -5px rgba(59, 130, 246, 0.4)",
                       transition: { type: "spring", stiffness: 400, damping: 17 }
                     }}
@@ -246,8 +246,8 @@ const Hero: React.FC = () => {
 
                   <motion.a
                     href="/catalogue"
-                    whileHover={{ 
-                      scale: 1.03, 
+                    whileHover={{
+                      scale: 1.03,
                       boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
                       transition: { type: "spring", stiffness: 400, damping: 17 }
                     }}
@@ -260,7 +260,7 @@ const Hero: React.FC = () => {
                 </motion.div>
 
                 {/* Call to action button */}
-                <motion.div 
+                <motion.div
                   variants={itemVariants}
                   className="flex justify-center lg:justify-start mt-4"
                 >
@@ -275,7 +275,7 @@ const Hero: React.FC = () => {
                 </motion.div>
 
                 {/* Badges */}
-                <motion.div 
+                <motion.div
                   variants={itemVariants}
                   className="grid grid-cols-2 gap-4 mt-10"
                 >
@@ -299,13 +299,13 @@ const Hero: React.FC = () => {
           </div>
 
           {/* RIGHT COLUMN - Product Showcase */}
-          <motion.div 
+          <motion.div
             className="relative order-1 lg:order-2 mb-8 lg:mb-0"
             variants={containerVariants}
           >
             <div className="grid grid-cols-2 grid-rows-2 gap-4 md:gap-5 aspect-square max-w-md mx-auto lg:max-w-none">
               {/* Main image */}
-              <motion.div 
+              <motion.div
                 className="relative col-span-1 row-span-2 rounded-2xl overflow-hidden shadow-2xl border-4 border-white group"
                 variants={imageVariants}
                 whileHover={{ scale: 1.03 }}
@@ -328,7 +328,7 @@ const Hero: React.FC = () => {
               </motion.div>
 
               {/* Top right image */}
-              <motion.div 
+              <motion.div
                 className="relative rounded-xl overflow-hidden shadow-lg border-3 border-white group"
                 variants={imageVariants}
                 whileHover={{ y: -5 }}
@@ -347,7 +347,7 @@ const Hero: React.FC = () => {
               </motion.div>
 
               {/* Bottom right image */}
-              <motion.div 
+              <motion.div
                 className="relative rounded-xl overflow-hidden shadow-lg border-3 border-white group"
                 variants={imageVariants}
                 whileHover={{ y: 5 }}
@@ -367,10 +367,10 @@ const Hero: React.FC = () => {
             </div>
 
             {/* Floating feature card - Better placement and animation */}
-            <motion.div 
+            <motion.div
               className="absolute -bottom-4 -right-4 bg-white p-5 rounded-2xl shadow-2xl border border-slate-200/60 w-72 z-10"
               variants={featureCardVariants}
-              whileHover={{ 
+              whileHover={{
                 y: -5,
                 transition: { type: "spring", stiffness: 400, damping: 17 }
               }}
@@ -385,8 +385,8 @@ const Hero: React.FC = () => {
                   className="flex items-start space-x-4"
                 >
                   <div className="p-2.5 bg-blue-100 rounded-xl">
-                    {React.createElement(features[activeFeature].icon, { 
-                      className: "w-6 h-6 text-blue-600" 
+                    {React.createElement(features[activeFeature].icon, {
+                      className: "w-6 h-6 text-blue-600"
                     })}
                   </div>
                   <div>
@@ -409,25 +409,25 @@ const Hero: React.FC = () => {
         </motion.div>
 
         {/* Features section below */}
-        <motion.div 
+        <motion.div
           className="grid grid-cols-2 md:grid-cols-4 gap-5 mt-16"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8, duration: 0.6 }}
         >
           {features.map((feature, index) => (
-            <motion.div 
+            <motion.div
               key={index}
               className="bg-white/80 backdrop-blur-sm rounded-xl p-5 border border-slate-200/60 hover:border-blue-300 transition-all duration-300 shadow-sm"
-              whileHover={{ 
+              whileHover={{
                 y: -5,
                 transition: { type: "spring", stiffness: 400, damping: 17 }
               }}
             >
               <div className="flex items-center space-x-3 mb-3">
                 <div className="p-2 bg-blue-100 rounded-lg">
-                  {React.createElement(feature.icon, { 
-                    className: "w-5 h-5 text-blue-600" 
+                  {React.createElement(feature.icon, {
+                    className: "w-5 h-5 text-blue-600"
                   })}
                 </div>
                 <h3 className="text-slate-800 font-semibold text-sm">{feature.title}</h3>
@@ -438,7 +438,7 @@ const Hero: React.FC = () => {
         </motion.div>
 
         {/* Scrolling indicator */}
-        <motion.div 
+        <motion.div
           className="flex flex-col items-center mt-16"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
