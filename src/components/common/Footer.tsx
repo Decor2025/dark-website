@@ -314,7 +314,7 @@ const Footer: React.FC = () => {
             </p>
             <div className="flex items-center space-x-6 mt-4 md:mt-0">
               <a
-                href="#"
+                href="/sitemap"
                 className="text-gray-400 hover:text-white text-sm transition-colors"
               >
                 Sitemap

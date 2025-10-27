@@ -30,6 +30,7 @@ import TermsPage from "./pages/Terms";
 import ResetPassword from "./pages/ResetPassword";
 import TitleUpdater from "./components/common/TitleUpdater";
 import AuthHandler from "../src/context/Auth";
+import Sitemap from "./pages/Sitemap";
 // import OrderTracking from "./pages/OrderTracking";
 
 function LayoutWrapper() {
@@ -72,6 +73,7 @@ function LayoutWrapper() {
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/our-work" element={<OurWorkPublic />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/sitemap" element={<Sitemap/>} />
           {/* <Route path="/auth/login" element={<Auth />} /> */}
           <Route path="/auth/reset-password" element={<ResetPassword />} />
           <Route path="/auth/verified" element={<Verified />} />
