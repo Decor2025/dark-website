@@ -11,8 +11,12 @@ import {
   Home,
   Phone,
   ChevronDown,
+  Sun,
+  Moon,
+  Monitor,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
+import { useTheme } from "../../context/ThemeContext";
 import { ref, onValue } from "firebase/database";
 import { database } from "../../config/firebase";
 import { SiteSettings } from "../../types";
@@ -29,6 +33,7 @@ const Navbar: React.FC = () => {
   const [showTestimonialForm, setShowTestimonialForm] = useState(false);
   const [settings, setSettings] = useState<SiteSettings[]>([]);
   const { currentUser, loading: authLoading, logout } = useAuth();
+  const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -125,7 +130,7 @@ const Navbar: React.FC = () => {
 
   return (
     <>
-      <nav className="bg-white border-b border-gray-100">
+      <nav className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 transition-colors duration-200">
         <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-1 transition-transform hover:scale-102">
@@ -134,7 +139,7 @@ const Navbar: React.FC = () => {
               alt="Logo"
               className="w-full h-10 object-cover rounded-lg"
             />
-            <span className="font-semibold text-gray-800 text-lg">Drapes</span>
+            <span className="font-semibold text-gray-800 dark:text-gray-100 text-lg">Drapes</span>
           </Link>
 
           {/* Desktop nav */}
@@ -145,8 +150,8 @@ const Navbar: React.FC = () => {
                 to={to || "/"}
                 className={`relative text-sm font-medium px-3 py-2 rounded-md transition-all duration-200 ${
                   location.pathname === to
-                    ? "text-blue-600 bg-blue-50 font-semibold"
-                    : "text-gray-600 hover:text-blue-600 hover:bg-gray-50"
+                    ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 font-semibold"
+                    : "text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-800"
                 }`}
               >
                 {label}
@@ -177,7 +182,7 @@ const Navbar: React.FC = () => {
                       <UserIcon size={18} />
                     </div>
                   )}
-                  <span className="text-sm text-gray-700">{firstName}</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-200">{firstName}</span>
                   <ChevronDown 
                     size={16} 
                     className={`transition-transform duration-200 ${profileMenuOpen ? 'rotate-180' : ''}`} 
@@ -187,25 +192,25 @@ const Navbar: React.FC = () => {
                 {profileMenuOpen && (
                   <div
                     ref={profileMenuRef}
-                    className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-50 animate-fadeIn"
+                    className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-100 dark:border-gray-700 py-1 z-50 animate-fadeIn"
                   >
                     <button
                       onClick={() => handleProfileMenuNavigation("/profile")}
-                      className="flex items-center gap-2 w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
+                      className="flex items-center gap-2 w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
                     >
                       <UserIcon size={16} /> My Profile
                     </button>
                     {shouldShowDashboard() && (
                       <button
                         onClick={() => handleProfileMenuNavigation(getDashboardPath())}
-                        className="flex items-center gap-2 w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
+                        className="flex items-center gap-2 w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
                       >
                         <Users size={16} /> {getDashboardLabel()}
                       </button>
                     )}
                     <button
                       onClick={handleLogout}
-                      className="flex items-center gap-2 w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors duration-200"
+                      className="flex items-center gap-2 w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-red-50 dark:hover:bg-red-900/30 hover:text-red-600 dark:hover:text-red-400 transition-colors duration-200"
                     >
                       <LogOut size={16} /> Logout
                     </button>
@@ -215,7 +220,7 @@ const Navbar: React.FC = () => {
             ) : (
               <Link
                 to="/login"
-                className="px-4 py-2 border border-gray-200 rounded-md text-sm hover:bg-gray-50 transition-all duration-200 hover:border-gray-300"
+                className="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-md text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 hover:border-gray-300 dark:hover:border-gray-600"
               >
                 Login
               </Link>
@@ -231,7 +236,7 @@ const Navbar: React.FC = () => {
                 <button
                   ref={profileButtonRef}
                   onClick={() => setProfileMenuOpen((o) => !o)}
-                  className="flex items-center gap-1 px-3 py-1.5 border border-gray-200 rounded-md text-sm hover:bg-gray-50 transition-all duration-200"
+                  className="flex items-center gap-1 px-3 py-1.5 border border-gray-200 dark:border-gray-700 rounded-md text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200"
                 >
                   {currentUser.profileImage ? (
                     <img
@@ -240,9 +245,9 @@ const Navbar: React.FC = () => {
                       className="w-7 h-7 rounded-full object-cover border border-gray-200"
                     />
                   ) : (
-                    <UserIcon size={16} className="text-gray-700" />
+                    <UserIcon size={16} className="text-gray-700 dark:text-gray-200" />
                   )}
-                  <span className="text-gray-700 text-sm truncate max-w-[80px]">
+                  <span className="text-gray-700 dark:text-gray-200 text-sm truncate max-w-[80px]">
                     {firstName}
                   </span>
                   <ChevronDown 
@@ -255,25 +260,25 @@ const Navbar: React.FC = () => {
                 {profileMenuOpen && (
                   <div
                     ref={profileMenuRef}
-                    className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-100 z-50 animate-fadeIn"
+                    className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-100 dark:border-gray-700 z-50 animate-fadeIn"
                   >
                     <button
                       onClick={() => handleProfileMenuNavigation("/profile")}
-                      className="flex items-center gap-2 w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
+                      className="flex items-center gap-2 w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
                     >
                       <UserIcon size={16} /> My Profile
                     </button>
                     {shouldShowDashboard() && (
                       <button
                         onClick={() => handleProfileMenuNavigation(getDashboardPath())}
-                        className="flex items-center gap-2 w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
+                        className="flex items-center gap-2 w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
                       >
                         <Users size={16} /> {getDashboardLabel()}
                       </button>
                     )}
                     <button
                       onClick={handleLogout}
-                      className="flex items-center gap-2 w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors duration-200"
+                      className="flex items-center gap-2 w-full text-left px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors duration-200"
                     >
                       <LogOut size={16} /> Logout
                     </button>
@@ -283,14 +288,14 @@ const Navbar: React.FC = () => {
             ) : (
               <Link
                 to="/login"
-                className="px-3 py-1.5 border border-gray-200 rounded-md text-sm hover:bg-gray-50 transition-all duration-200"
+                className="px-3 py-1.5 border border-gray-200 dark:border-gray-700 rounded-md text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200"
               >
                 Login
               </Link>
             )}
             <button
               onClick={() => setSidebarOpen(true)}
-              className="p-2 rounded-md hover:bg-gray-100 transition-colors duration-200"
+              className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 text-gray-700 dark:text-gray-200"
             >
               <AlignRight size={20} />
             </button>
@@ -305,9 +310,9 @@ const Navbar: React.FC = () => {
             className="flex-1 bg-black bg-opacity-30 backdrop-blur-sm animate-fadeIn"
             onClick={() => setSidebarOpen(false)}
           />
-          <div className="w-72 bg-white h-full shadow-xl p-5 flex flex-col justify-between animate-slideInRight">
+          <div className="w-72 bg-white dark:bg-gray-900 h-full shadow-xl p-5 flex flex-col justify-between animate-slideInRight">
             <div>
-              <div className="flex justify-between items-center border-b border-gray-100 pb-4 mb-4">
+              <div className="flex justify-between items-center border-b border-gray-100 dark:border-gray-800 pb-4 mb-4">
                 <Link 
                   to="/" 
                   className="flex items-center gap-3"
@@ -319,20 +324,20 @@ const Navbar: React.FC = () => {
                     className="w-10 h-10 object-cover rounded-lg"
                   />
                   <div>
-                    <div className="font-semibold text-sm">{storeName}</div>
-                    <div className="text-xs text-gray-500">Menu</div>
+                    <div className="font-semibold text-sm dark:text-gray-100">{storeName}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">Menu</div>
                   </div>
                 </Link>
                 <button
                   onClick={() => setSidebarOpen(false)}
-                  className="p-2 hover:bg-gray-100 rounded-md transition-colors duration-200"
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors duration-200 text-gray-700 dark:text-gray-200"
                 >
                   <X size={22} />
                 </button>
               </div>
 
               {/* User Info */}
-              <div className="mb-6 border-b border-gray-100 pb-4">
+              <div className="mb-6 border-b border-gray-100 dark:border-gray-800 pb-4">
                 {!authLoading && currentUser ? (
                   <div className="flex items-center gap-3">
                     {currentUser.profileImage ? (
@@ -347,24 +352,24 @@ const Navbar: React.FC = () => {
                       </div>
                     )}
                     <div>
-                      <div className="font-medium text-sm">{firstName}</div>
-                      <div className="text-xs text-gray-500 capitalize">
+                      <div className="font-medium text-sm dark:text-gray-100">{firstName}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 capitalize">
                         {currentUser.role || "Member"}
                       </div>
                     </div>
                   </div>
                 ) : (
                   <div>
-                    <div className="text-sm font-medium text-gray-800">
+                    <div className="text-sm font-medium text-gray-800 dark:text-gray-100">
                       Welcome
                     </div>
-                    <div className="text-xs text-gray-500 mb-2">
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
                       Sign in to access your account
                     </div>
                     <Link
                       to="/login"
                       onClick={() => setSidebarOpen(false)}
-                      className="inline-block px-4 py-2 border border-gray-200 rounded-md text-sm hover:bg-gray-50 transition-all duration-200"
+                      className="inline-block px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-md text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200"
                     >
                       Login
                     </Link>
@@ -381,22 +386,64 @@ const Navbar: React.FC = () => {
                     onClick={() => setSidebarOpen(false)}
                     className={`py-3 px-3 rounded-lg flex items-center gap-3 transition-all duration-200 ${
                       location.pathname === to
-                        ? "bg-blue-50 text-blue-600 font-medium"
-                        : "hover:bg-gray-50 text-gray-700"
+                        ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium"
+                        : "hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
                     }`}
                   >
-                    {icon && <span className="text-gray-500">{icon}</span>}
+                    {icon && <span className="text-gray-500 dark:text-gray-400">{icon}</span>}
                     <span>{label}</span>
                   </Link>
                 ))}
               </div>
 
+              {/* Theme Selector */}
+              <div className="mt-6 mb-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+                <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">
+                  Theme
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setTheme('light')}
+                    className={`flex-1 py-2.5 px-3 rounded-lg flex items-center justify-center gap-2 text-sm transition-all duration-200 ${
+                      theme === 'light'
+                        ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium border-2 border-blue-200 dark:border-blue-700'
+                        : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 border-2 border-transparent'
+                    }`}
+                  >
+                    <Sun size={16} />
+                    <span>Light</span>
+                  </button>
+                  <button
+                    onClick={() => setTheme('dark')}
+                    className={`flex-1 py-2.5 px-3 rounded-lg flex items-center justify-center gap-2 text-sm transition-all duration-200 ${
+                      theme === 'dark'
+                        ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium border-2 border-blue-200 dark:border-blue-700'
+                        : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 border-2 border-transparent'
+                    }`}
+                  >
+                    <Moon size={16} />
+                    <span>Dark</span>
+                  </button>
+                  <button
+                    onClick={() => setTheme('system')}
+                    className={`flex-1 py-2.5 px-3 rounded-lg flex items-center justify-center gap-2 text-sm transition-all duration-200 ${
+                      theme === 'system'
+                        ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium border-2 border-blue-200 dark:border-blue-700'
+                        : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 border-2 border-transparent'
+                    }`}
+                  >
+                    <Monitor size={16} />
+                    <span>Auto</span>
+                  </button>
+                </div>
+              </div>
+
               {/* Footer links */}
-              <div className="text-xs text-gray-500 mt-6 mb-4">
+              <div className="text-xs text-gray-500 dark:text-gray-400">
                 <Link
                   to="/privacy-policy"
                   onClick={() => setSidebarOpen(false)}
-                  className="block mb-2 hover:text-blue-600 transition-colors duration-200"
+                  className="block mb-2 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
                 >
                   Privacy Policy
                 </Link>
@@ -405,7 +452,7 @@ const Navbar: React.FC = () => {
                     setSidebarOpen(false);
                     setShowTestimonialForm(true);
                   }}
-                  className="block hover:text-blue-600 transition-colors duration-200 text-left w-full"
+                  className="block hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 text-left w-full"
                 >
                   Rate Us
                 </button>
@@ -413,13 +460,13 @@ const Navbar: React.FC = () => {
             </div>
 
             {/* Bottom Links */}
-            <div className="border-t border-gray-100 pt-4 flex flex-col gap-1">
+            <div className="border-t border-gray-100 dark:border-gray-800 pt-4 flex flex-col gap-1">
               {!authLoading && currentUser ? (
                 <>
                   <Link
                     to="/profile"
                     onClick={() => setSidebarOpen(false)}
-                    className="py-2.5 px-3 rounded-lg hover:bg-gray-50 flex items-center gap-3 text-sm text-gray-600 transition-colors duration-200"
+                    className="py-2.5 px-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300 transition-colors duration-200"
                   >
                     <UserIcon size={16} />
                     My Profile
@@ -428,7 +475,7 @@ const Navbar: React.FC = () => {
                     <Link
                       to={getDashboardPath()}
                       onClick={() => setSidebarOpen(false)}
-                      className="py-2.5 px-3 rounded-lg hover:bg-gray-50 flex items-center gap-3 text-sm text-gray-600 transition-colors duration-200"
+                      className="py-2.5 px-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300 transition-colors duration-200"
                     >
                       <Users size={16} />
                       {getDashboardLabel()}
@@ -436,14 +483,14 @@ const Navbar: React.FC = () => {
                   )}
                   <button
                     onClick={handleLogout}
-                    className="text-red-600 py-2.5 px-3 rounded-lg hover:bg-red-50 text-left flex items-center gap-3 text-sm transition-colors duration-200"
+                    className="text-red-600 dark:text-red-400 py-2.5 px-3 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-left flex items-center gap-3 text-sm transition-colors duration-200"
                   >
                     <LogOut size={16} />
                     Logout
                   </button>
                 </>
               ) : (
-                <span className="text-gray-500 text-sm">Not signed in</span>
+                <span className="text-gray-500 dark:text-gray-400 text-sm">Not signed in</span>
               )}
             </div>
           </div>
