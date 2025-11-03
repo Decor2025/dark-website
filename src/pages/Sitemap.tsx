@@ -66,7 +66,7 @@ export default function SitemapPage() {
             {darkMode ? (
               <Sun className="w-4 h-4 text-yellow-400" />
             ) : (
-              <Moon className="w-4 h-4 text-gray-700" />
+              <Moon className="w-4 h-4 text-gray-700 dark:text-gray-300" />
             )}
           </button>
           <button

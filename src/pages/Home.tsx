@@ -44,30 +44,30 @@ const SkeletonCard: React.FC<{ className?: string }> = ({ className = "" }) => (
   <div
     className={`bg-gray-100 rounded-2xl overflow-hidden animate-pulse ${className}`}
   >
-    <div className="bg-gray-200 h-40 w-full" />
+    <div className="bg-gray-200 dark:bg-gray-700 h-40 w-full" />
     <div className="p-4">
-      <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-      <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
-      <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
+      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-4"></div>
+      <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
     </div>
   </div>
 );
 
 const TestimonialSkeleton: React.FC = () => (
-  <div className="bg-white rounded-2xl p-6 shadow-sm">
+  <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm">
     <div className="flex mb-3">
       {[...Array(5)].map((_, i) => (
-        <div key={i} className="w-4 h-4 bg-gray-200 rounded-full mr-1"></div>
+        <div key={i} className="w-4 h-4 bg-gray-200 dark:bg-gray-700 rounded-full mr-1"></div>
       ))}
     </div>
-    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-    <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
-    <div className="h-4 bg-gray-200 rounded w-5/6 mb-6"></div>
+    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
+    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2"></div>
+    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6 mb-6"></div>
     <div className="flex items-center">
-      <div className="w-10 h-10 bg-gray-200 rounded-full mr-3"></div>
+      <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full mr-3"></div>
       <div>
-        <div className="h-3 bg-gray-200 rounded w-24 mb-2"></div>
-        <div className="h-2 bg-gray-200 rounded w-16"></div>
+        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-24 mb-2"></div>
+        <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
       </div>
     </div>
   </div>
@@ -243,7 +243,7 @@ useEffect(() => {
   ];
 
   return (
-    <div className="bg-white text-gray-900 overflow-hidden">
+    <div className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 overflow-hidden">
       {/* HERO */}
       <Hero />
 
@@ -256,10 +256,10 @@ useEffect(() => {
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.7 }}
         >
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100">
             Our Premium Window Solutions
           </h2>
-          <p className="text-gray-600 mt-4 max-w-3xl mx-auto text-lg">
+          <p className="text-gray-600 dark:text-gray-400 mt-4 max-w-3xl mx-auto text-lg">
             Transform your space with our curated collection of high-quality
             window treatments designed for style and functionality
           </p>
@@ -273,7 +273,7 @@ useEffect(() => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="group bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300"
+              className="group bg-white dark:bg-gray-900 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300"
             >
               <div className="relative h-48 overflow-hidden">
                 <img
@@ -298,10 +298,10 @@ useEffect(() => {
                 <div className="bg-indigo-100 p-3 rounded-full text-indigo-600 mb-4 inline-flex">
                   {category.icon}
                 </div>
-                <h3 className="font-semibold text-xl mb-2 text-gray-900">
+                <h3 className="font-semibold text-xl mb-2 text-gray-900 dark:text-gray-100">
                   {category.title}
                 </h3>
-                <p className="text-gray-600">{category.description}</p>
+                <p className="text-gray-600 dark:text-gray-400">{category.description}</p>
                 <button className="mt-4 text-indigo-600 font-medium flex items-center gap-1 group-hover:gap-2 transition-all">
                   Explore options <ArrowRight className="w-4 h-4" />
                 </button>
@@ -321,10 +321,10 @@ useEffect(() => {
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.7 }}
           >
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100">
               Why Choose Our Products
             </h2>
-            <p className="text-gray-600 mt-4 max-w-2xl mx-auto text-lg">
+            <p className="text-gray-600 dark:text-gray-400 mt-4 max-w-2xl mx-auto text-lg">
               Experience the difference with our premium products and
               exceptional service
             </p>
@@ -338,15 +338,15 @@ useEffect(() => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="bg-white rounded-2xl p-6 text-center shadow-md hover:shadow-lg transition-all duration-300"
+                className="bg-white dark:bg-gray-900 rounded-2xl p-6 text-center shadow-md hover:shadow-lg transition-all duration-300"
               >
                 <div className="bg-indigo-100 w-14 h-14 rounded-full flex items-center justify-center text-indigo-600 mx-auto mb-5">
                   {benefit.icon}
                 </div>
-                <h3 className="font-semibold text-lg mb-3 text-gray-900">
+                <h3 className="font-semibold text-lg mb-3 text-gray-900 dark:text-gray-100">
                   {benefit.title}
                 </h3>
-                <p className="text-gray-600">{benefit.description}</p>
+                <p className="text-gray-600 dark:text-gray-400">{benefit.description}</p>
               </motion.div>
             ))}
           </div>
@@ -361,7 +361,7 @@ useEffect(() => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.7 }}
-            className="text-3xl sm:text-4xl font-bold text-gray-900 text-center sm:text-left"
+            className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 text-center sm:text-left"
           >
             Featured Products
           </motion.h2>
@@ -434,7 +434,7 @@ useEffect(() => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.7 }}
-            className="text-3xl sm:text-4xl font-bold text-gray-900 text-center sm:text-left"
+            className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 text-center sm:text-left"
           >
             Our Recent Projects
           </motion.h2>
@@ -488,12 +488,12 @@ useEffect(() => {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-100px" }}
       transition={{ duration: 0.7 }}
-      className="text-3xl sm:text-4xl font-bold text-gray-900"
+      className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100"
     >
       What Our Clients Say
     </motion.h2>
     <motion.p
-      className="text-gray-600 mt-4 max-w-2xl mx-auto text-lg"
+      className="text-gray-600 dark:text-gray-400 mt-4 max-w-2xl mx-auto text-lg"
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       viewport={{ once: true, margin: "-100px" }}
@@ -536,7 +536,7 @@ useEffect(() => {
           <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto relative z-10">
             <motion.a
               href="/contact"
-              className="bg-white text-indigo-700 px-6 py-4 rounded-xl font-semibold text-center transition-colors hover:bg-gray-50 shadow-lg"
+              className="bg-white dark:bg-gray-900 text-indigo-700 px-6 py-4 rounded-xl font-semibold text-center transition-colors hover:bg-gray-50 dark:bg-gray-900 shadow-lg"
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.98 }}
             >

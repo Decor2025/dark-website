@@ -50,14 +50,14 @@ const About: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Hero Section */}
         <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-gray-100 mb-6">
             About {getSetting('store_name') || 'Our Shop'}
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
             {getSetting('site_description') ||
               'We are a passionate team dedicated to providing high-quality products and exceptional customer service.'}
           </p>
@@ -66,16 +66,16 @@ const About: React.FC = () => {
         {/* Story Section */}
         <div className="grid md:grid-cols-2 gap-12 items-center mb-16">
           <div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-6">Our Story</h2>
-            <p className="text-gray-600 mb-4">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">Our Story</h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
               Founded with a vision to make quality products accessible to everyone, our shop has been serving customers 
               with dedication and excellence for years.
             </p>
-            <p className="text-gray-600 mb-4">
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
               We believe in building lasting relationships with our customers by providing not just products, 
               but complete solutions that meet their needs.
             </p>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-400">
               Our commitment to quality, innovation, and customer satisfaction drives everything we do.
             </p>
           </div>
@@ -104,14 +104,14 @@ const About: React.FC = () => {
 
         {/* Values Section */}
         <div className="mb-16">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">Our Values</h2>
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 text-center mb-12">Our Values</h2>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="text-center">
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Target className="w-8 h-8 text-blue-600" />
               </div>
               <h3 className="text-xl font-semibold mb-4">Excellence</h3>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-400">
                 We strive for excellence in every product we offer and every service we provide.
               </p>
             </div>
@@ -121,7 +121,7 @@ const About: React.FC = () => {
                 <Heart className="w-8 h-8 text-green-600" />
               </div>
               <h3 className="text-xl font-semibold mb-4">Integrity</h3>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-400">
                 Honesty and transparency are at the core of all our business relationships.
               </p>
             </div>
@@ -131,7 +131,7 @@ const About: React.FC = () => {
                 <Users className="w-8 h-8 text-purple-600" />
               </div>
               <h3 className="text-xl font-semibold mb-4">Community</h3>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-400">
                 We believe in building strong relationships and giving back to our community.
               </p>
             </div>
@@ -139,8 +139,8 @@ const About: React.FC = () => {
         </div>
 
         {/* Team Section */}
-        <div className="bg-white rounded-lg shadow-md p-8 mb-16">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-12">Meet Our Team</h2>
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-md p-8 mb-16">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 text-center mb-12">Meet Our Team</h2>
           
           {teamMembers.length > 0 ? (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -151,14 +151,14 @@ const About: React.FC = () => {
                     alt={member.name}
                     className="w-32 h-32 rounded-full object-cover mx-auto mb-4"
                   />
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">{member.name}</h3>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">{member.name}</h3>
                   <p className="text-blue-600 font-medium mb-3">{member.position}</p>
-                  <p className="text-gray-600 text-sm leading-relaxed">{member.bio}</p>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{member.bio}</p>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-center text-gray-600 max-w-2xl mx-auto">
+            <p className="text-center text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
               Our dedicated team of professionals is here to help you find exactly what you need. 
               With years of experience and a passion for customer service, we're committed to your satisfaction.
             </p>
@@ -166,8 +166,8 @@ const About: React.FC = () => {
         </div>
 
         {/* Location Section */}
-        <div className="bg-white rounded-lg shadow-md p-8 mb-16">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-8">Find Us</h2>
+        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-md p-8 mb-16">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 text-center mb-8">Find Us</h2>
           <div className="grid md:grid-cols-2 gap-8 items-center">
             {/* Map */}
             <div className="w-full h-[300px] rounded-xl overflow-hidden">
@@ -184,8 +184,8 @@ const About: React.FC = () => {
 
             {/* Contact Info */}
             <div>
-              <h3 className="text-2xl font-semibold text-gray-900 mb-6">{getSetting('store_name') || 'Our Location'}</h3>
-              <ul className="space-y-4 text-gray-700">
+              <h3 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 mb-6">{getSetting('store_name') || 'Our Location'}</h3>
+              <ul className="space-y-4 text-gray-700 dark:text-gray-300">
                 <li className="flex items-start">
                   <MapPin className="w-6 h-6 text-blue-600 mr-3 flex-shrink-0" />
                   <span>

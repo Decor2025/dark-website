@@ -78,12 +78,12 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl max-w-4xl w-full p-6 relative max-h-[90vh] overflow-y-auto"
+        className="bg-white dark:bg-gray-900 rounded-2xl max-w-4xl w-full p-6 relative max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 text-gray-600 hover:text-gray-900"
+          className="absolute top-3 right-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-gray-100"
         >
           <X size={28} />
         </button>
@@ -110,7 +110,7 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
 
         {/* Info */}
         <h2 className="text-3xl font-bold mb-2">{product.name}</h2>
-        <p className="text-gray-700 whitespace-pre-line mb-6">{product.description}</p>
+        <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line mb-6">{product.description}</p>
 
         {/* Rating Summary */}
         {product.averageRating !== undefined && (
@@ -131,7 +131,7 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
                     </span>
                   ))}
                 </div>
-                <div className="text-gray-600 text-sm">
+                <div className="text-gray-600 dark:text-gray-400 text-sm">
                   {product.ratingCount || 0} rating{(product.ratingCount || 0) !== 1 ? 's' : ''}
                 </div>
               </div>
@@ -160,7 +160,7 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
                   ))}
                 </div>
                 <textarea
-                  className="w-full border border-gray-300 rounded p-3 resize-none mb-4"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded p-3 resize-none mb-4"
                   placeholder="Leave a comment (optional)"
                   rows={4}
                   value={ratingMessage}
@@ -198,7 +198,7 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({
                         ))}
                       </div>
                     </div>
-                    {r.message && <p className="text-gray-700">{r.message}</p>}
+                    {r.message && <p className="text-gray-700 dark:text-gray-300">{r.message}</p>}
                   </div>
                 ))
             ) : (

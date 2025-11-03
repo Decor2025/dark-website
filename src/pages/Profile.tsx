@@ -48,7 +48,7 @@ const Profile: React.FC = () => {
 
   if (!currentUser) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-gray-600">
+      <div className="min-h-screen flex items-center justify-center text-gray-600 dark:text-gray-400">
         Please log in to view your profile.
       </div>
     );
@@ -126,16 +126,16 @@ const Profile: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 py-10 px-4">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-800 py-10 px-4">
       <div className="max-w-4xl mx-auto space-y-6">
         
         {/* Profile Completion Bar */}
-        <div className="bg-white p-4 rounded-xl shadow flex items-center justify-between">
+        <div className="bg-white dark:bg-gray-900 p-4 rounded-xl shadow flex items-center justify-between">
           <div className="flex-1 mr-4">
-            <p className="text-sm font-medium text-gray-700 mb-1">
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Profile Completion: {profileCompletion}%
             </p>
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
               <div
                 className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                 style={{ width: `${profileCompletion}%` }}
@@ -153,7 +153,7 @@ const Profile: React.FC = () => {
         </div>
 
         {/* Profile Header */}
-        <div className="bg-white p-6 rounded-xl shadow flex flex-col md:flex-row items-center md:items-start md:space-x-6">
+        <div className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow flex flex-col md:flex-row items-center md:items-start md:space-x-6">
           <div className="relative">
             {currentUser.profileImage || previewImage ? (
               <img
@@ -162,7 +162,7 @@ const Profile: React.FC = () => {
                 className="w-28 h-28 rounded-full object-cover border"
               />
             ) : (
-              <div className="w-28 h-28 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+              <div className="w-28 h-28 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500">
                 <User className="w-10 h-10" />
               </div>
             )}
@@ -174,7 +174,7 @@ const Profile: React.FC = () => {
             )}
           </div>
           <div className="mt-4 md:mt-0 text-center md:text-left flex-1">
-            <h1 className="text-xl font-semibold text-gray-800">
+            <h1 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
               {currentUser.displayName || 'User Profile'}
             </h1>
             
@@ -222,7 +222,7 @@ const Profile: React.FC = () => {
               )}
             </div>
             
-            <div className="mt-2 flex flex-wrap gap-2 text-sm text-gray-600">
+            <div className="mt-2 flex flex-wrap gap-2 text-sm text-gray-600 dark:text-gray-400">
               <span className="flex items-center gap-1">
                 <Shield className="w-4 h-4" /> {currentUser.role}
               </span>
@@ -244,11 +244,11 @@ const Profile: React.FC = () => {
         </div>
 
         {/* Profile Info Section */}
-        <div className="bg-white p-6 rounded-xl shadow">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Personal Information</h2>
+        <div className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow">
+          <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Personal Information</h2>
 
           {!isEditing ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700 dark:text-gray-300">
               <Info label="Phone" icon={Phone} value={currentUser.phone || ''} />
               <Info label="Address" icon={MapPin} value={currentUser.address || ''} />
               <Info label="Company" icon={Briefcase} value={currentUser.company || ''} />
@@ -267,7 +267,7 @@ const Profile: React.FC = () => {
                 <Input label="Address" value={formData.address} onChange={(v) => setFormData({ ...formData, address: v })} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Bio</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Bio</label>
                 <textarea
                   rows={3}
                   value={formData.bio}
@@ -277,7 +277,7 @@ const Profile: React.FC = () => {
                 />
               </div>
               <div className="flex justify-end space-x-3 pt-2">
-                <button type="button" onClick={handleCancel} className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg">
+                <button type="button" onClick={handleCancel} className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-lg">
                   <X className="w-4 h-4 inline mr-1" /> Cancel
                 </button>
                 <button type="submit" disabled={loading} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50">
@@ -298,7 +298,7 @@ const Profile: React.FC = () => {
 
 // Reusable Info display component
 const Info = ({ label, value, icon: Icon, multiline = false }: { label: string; value: string; icon: any; multiline?: boolean }) => (
-  <div className="flex items-start gap-3 bg-gray-50 p-3 rounded-lg">
+  <div className="flex items-start gap-3 bg-gray-50 dark:bg-gray-900 p-3 rounded-lg">
     <Icon className="w-5 h-5 text-gray-500 mt-1" />
     <div>
       <p className="text-sm text-gray-500">{label}</p>
@@ -310,7 +310,7 @@ const Info = ({ label, value, icon: Icon, multiline = false }: { label: string; 
 // Reusable Input field
 const Input = ({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) => (
   <div>
-    <label className="block text-sm font-medium text-gray-700">{label}</label>
+    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">{label}</label>
     <input
       type="text"
       value={value}

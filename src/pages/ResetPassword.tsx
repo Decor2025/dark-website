@@ -98,9 +98,9 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-lg bg-white rounded-2xl shadow-lg p-6 sm:p-10">
-        <h2 className="text-2xl font-semibold mb-6 text-center text-gray-900">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+      <div className="w-full max-w-lg bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-6 sm:p-10">
+        <h2 className="text-2xl font-semibold mb-6 text-center text-gray-900 dark:text-gray-100">
           Reset Password
         </h2>
 
@@ -124,7 +124,7 @@ export default function ResetPassword() {
 
         {oobCode && verifiedEmail ? (
           <>
-            <p className="mb-6 text-center text-gray-700 text-base">
+            <p className="mb-6 text-center text-gray-700 dark:text-gray-300 text-base">
               Reset password for{" "}
               <strong className="text-blue-600">{verifiedEmail}</strong>
             </p>
@@ -141,7 +141,7 @@ export default function ResetPassword() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   placeholder="Enter new password"
                   required
                   minLength={6}
@@ -150,7 +150,7 @@ export default function ResetPassword() {
               </div>
 
               {/* Password instruction */}
-              <div className="bg-blue-50 text-blue-700 text-xs p-3 rounded-lg">
+              <div className="bg-blue-50 dark:bg-blue-900/20 text-blue-700 text-xs p-3 rounded-lg">
                 Your password must be at least 6 characters and include a mix
                 of letters, numbers, and special characters for better security.
               </div>
@@ -166,7 +166,7 @@ export default function ResetPassword() {
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   placeholder="Confirm new password"
                   required
                   minLength={6}
@@ -186,7 +186,7 @@ export default function ResetPassword() {
           </>
         ) : (
           <>
-            <p className="mb-4 text-center text-gray-700 text-base">
+            <p className="mb-4 text-center text-gray-700 dark:text-gray-300 text-base">
               Forgot your password? Enter your email below to receive a reset
               link.
             </p>
@@ -202,7 +202,7 @@ export default function ResetPassword() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                     placeholder="Enter your email"
                     required
                     autoComplete="email"

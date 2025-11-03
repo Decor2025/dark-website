@@ -206,24 +206,24 @@ const CatalogueWithPopupRating: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-6 px-4 max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-6 px-4 max-w-7xl mx-auto">
       {/* Header */}
       {/* Header */}
 <header className="mb-6">
   <div className="flex flex-col gap-4">
-    <h1 className="text-3xl font-bold text-gray-900">Product Catalogue</h1>
+    <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Product Catalogue</h1>
     
     <div className="flex flex-col xs:flex-row gap-3">
       <input
         type="text"
         placeholder="Search products..."
-        className="w-full xs:flex-1 px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500"
+        className="w-full xs:flex-1 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500"
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
       />
       
       <select
-        className="w-full xs:w-auto px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500"
+        className="w-full xs:w-auto px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-blue-500"
         value={sortBy}
         onChange={(e) => setSortBy(e.target.value as any)}
       >
@@ -237,20 +237,20 @@ const CatalogueWithPopupRating: React.FC = () => {
 
       {/* Products Grid */}
       {filteredProducts.length === 0 ? (
-        <p className="text-center text-gray-600 text-xl mt-20">No products found.</p>
+        <p className="text-center text-gray-600 dark:text-gray-400 text-xl mt-20">No products found.</p>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {filteredProducts.map((product) => (
             <div
               key={product.id}
-              className="bg-white rounded-xl shadow-md p-4 flex flex-col cursor-pointer hover:shadow-xl transition"
+              className="bg-white dark:bg-gray-900 rounded-xl shadow-md p-4 flex flex-col cursor-pointer hover:shadow-xl transition"
               onClick={() => openProductDetails(product)}
               aria-label={`Open details for ${product.name}`}
               role="button"
               tabIndex={0}
               onKeyDown={e => { if(e.key === 'Enter') openProductDetails(product); }}
             >
-              <div className="h-40 w-full rounded-md overflow-hidden bg-gray-100 mb-3">
+              <div className="h-40 w-full rounded-md overflow-hidden bg-gray-100 dark:bg-gray-800 mb-3">
                 <img
                   src={product.imageUrl || (product.images && product.images[0]) || DEFAULT_IMG}
                   alt={product.name}
@@ -275,7 +275,7 @@ const CatalogueWithPopupRating: React.FC = () => {
                       ★
                     </span>
                   ))}
-                  <span className="ml-2 text-sm text-gray-600 select-none">({product.ratingCount || 0})</span>
+                  <span className="ml-2 text-sm text-gray-600 dark:text-gray-400 select-none">({product.ratingCount || 0})</span>
                 </div>
                 <button
                   onClick={(e) => {
@@ -304,12 +304,12 @@ const CatalogueWithPopupRating: React.FC = () => {
           aria-describedby="modal-description"
         >
           <div
-            className="bg-white rounded-2xl max-w-4xl w-full p-6 relative max-h-[90vh] overflow-y-auto"
+            className="bg-white dark:bg-gray-900 rounded-2xl max-w-4xl w-full p-6 relative max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               onClick={() => setSelectedProduct(null)}
-              className="absolute top-3 right-3 text-gray-600 hover:text-gray-900"
+              className="absolute top-3 right-3 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:text-gray-100"
               aria-label="Close details"
             >
               <X size={28} />
@@ -343,7 +343,7 @@ const CatalogueWithPopupRating: React.FC = () => {
 
             {/* Product Info */}
             <h2 id="modal-title" className="text-3xl font-bold mb-2">{selectedProduct.name}</h2>
-            <p id="modal-description" className="text-gray-700 whitespace-pre-line mb-6">{selectedProduct.description}</p>
+            <p id="modal-description" className="text-gray-700 dark:text-gray-300 whitespace-pre-line mb-6">{selectedProduct.description}</p>
 
             {/* Aggregate Ratings Display */}
             <section className="border-t pt-6">
@@ -363,7 +363,7 @@ const CatalogueWithPopupRating: React.FC = () => {
                       </span>
                     ))}
                   </div>
-                  <div className="text-gray-600 text-sm">
+                  <div className="text-gray-600 dark:text-gray-400 text-sm">
                     {selectedProduct.ratingCount || 0} rating{(selectedProduct.ratingCount || 0) !== 1 ? 's' : ''}</div>
                 </div>
               </div>
@@ -394,7 +394,7 @@ const CatalogueWithPopupRating: React.FC = () => {
                   </div>
 
                   <textarea
-                    className="w-full border border-gray-300 rounded p-3 resize-none mb-4"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded p-3 resize-none mb-4"
                     placeholder="Leave a comment (optional)"
                     rows={4}
                     value={ratingMessage}
@@ -436,7 +436,7 @@ const CatalogueWithPopupRating: React.FC = () => {
                           ))}
                         </div>
                       </div>
-                      {r.message && <p className="text-gray-700">{r.message}</p>}
+                      {r.message && <p className="text-gray-700 dark:text-gray-300">{r.message}</p>}
                     </div>
                   ))
               ) : (

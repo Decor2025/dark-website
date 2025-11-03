@@ -50,7 +50,7 @@ export default function Verified() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-white px-6">
+    <div className="min-h-screen w-full flex items-center justify-center bg-white dark:bg-gray-900 px-6">
       {/* Inline styles for small animations (safe to include) */}
       <style>{`
         @keyframes floatUp { from { transform: translateY(8px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
@@ -63,7 +63,7 @@ export default function Verified() {
         {/* Big SVG area */}
         <div className="flex flex-col items-center gap-6">
           <div
-            className="w-56 h-40 flex items-center justify-center rounded-xl shadow-lg bg-white fade-in"
+            className="w-56 h-40 flex items-center justify-center rounded-xl shadow-lg bg-white dark:bg-gray-900 fade-in"
             aria-hidden="true"
             role="img"
           >
@@ -132,12 +132,12 @@ export default function Verified() {
           </div>
 
           {/* Title */}
-          <h1 className="text-3xl font-extrabold text-gray-900">
+          <h1 className="text-3xl font-extrabold text-gray-900 dark:text-gray-100">
             {status === "success" ? "Congratulations!" : status === "loading" ? "Almost there…" : "Oops! something went wrong"}
           </h1>
 
           {/* Subtext / reason */}
-          <p className="text-gray-600 max-w-lg mx-auto mt-2">
+          <p className="text-gray-600 dark:text-gray-400 max-w-lg mx-auto mt-2">
             {status === "success"
               ? message || "Your email has been verified. You can now log in."
               : status === "loading"
@@ -189,7 +189,7 @@ export default function Verified() {
                     navigate("/profile");
                   }
                 }}
-                className="px-5 py-2 rounded-lg bg-white border border-gray-200 text-gray-800 font-medium shadow-sm hover:bg-gray-50 transition"
+                className="px-5 py-2 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium shadow-sm hover:bg-gray-50 dark:bg-gray-900 transition"
               >
                 Retry
               </button>

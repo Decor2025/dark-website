@@ -10,7 +10,7 @@ const links = [
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-white flex flex-col items-center justify-center px-6 py-12 text-center">
+    <div className="min-h-screen bg-white dark:bg-gray-900 flex flex-col items-center justify-center px-6 py-12 text-center">
       
       {/* Funny SVG */}
       <div className="mb-8 max-w-lg">
@@ -35,7 +35,7 @@ export default function NotFound() {
       </div>
 
       {/* Funny Message */}
-      <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3">
+      <h1 className="text-3xl md:text-4xl font-bold text-gray-800 dark:text-gray-200 mb-3">
         Well... This is awkward
       </h1>
       <p className="text-gray-500 max-w-md mb-10">
@@ -49,7 +49,7 @@ export default function NotFound() {
           <Link
             key={to}
             to={to}
-            className="px-5 py-2 rounded-full border border-gray-300 bg-gray-100 hover:bg-blue-500 hover:text-white font-medium shadow-sm transition-all duration-300"
+            className="px-5 py-2 rounded-full border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 hover:bg-blue-50 dark:bg-blue-900/200 hover:text-white font-medium shadow-sm transition-all duration-300"
           >
             {name}
           </Link>

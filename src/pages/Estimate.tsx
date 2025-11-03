@@ -311,15 +311,15 @@ const Estimate: React.FC = () => {
 
   // --- UI ------------------------------------------------------------------
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className={`text-center mb-12 transition-all duration-700 ease-out ${isMounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
           <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
             <Calculator className="w-8 h-8 text-blue-600" />
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Get Your Estimate</h1>
-          <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto">
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">Get Your Estimate</h1>
+          <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
             Select products from our inventory and we'll provide you with a detailed quotation within 24 hours.
           </p>
         </div>
@@ -329,7 +329,7 @@ const Estimate: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Customer Information with floating labels */}
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Customer Information</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Customer Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="relative">
                   <input
@@ -339,7 +339,7 @@ const Estimate: React.FC = () => {
                     required
                     value={formData.name}
                     onChange={handleInputChange}
-                    className="peer w-full px-4 pt-5 pb-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-transparent"
+                    className="peer w-full px-4 pt-5 pb-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-transparent"
                     placeholder="Full Name"
                   />
                   <label htmlFor="name" className="absolute left-4 top-2 text-gray-500 text-sm transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-base">
@@ -354,7 +354,7 @@ const Estimate: React.FC = () => {
                     required
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="peer w-full px-4 pt-5 pb-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-transparent"
+                    className="peer w-full px-4 pt-5 pb-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-transparent"
                     placeholder="your.email@example.com"
                   />
                   <label htmlFor="email" className="absolute left-4 top-2 text-gray-500 text-sm transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-base">
@@ -369,7 +369,7 @@ const Estimate: React.FC = () => {
                   name="phone"
                   value={formData.phone}
                   onChange={handleInputChange}
-                  className="peer w-full px-4 pt-5 pb-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-transparent"
+                  className="peer w-full px-4 pt-5 pb-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-transparent"
                   placeholder="+91 9876543210"
                 />
                 <label htmlFor="phone" className="absolute left-4 top-2 text-gray-500 text-sm transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-base">
@@ -381,7 +381,7 @@ const Estimate: React.FC = () => {
             {/* Product Selection */}
             <div>
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Select Products</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Select Products</h3>
                 <div className="flex items-center gap-3">
                   <button
                     type="button"
@@ -396,11 +396,11 @@ const Estimate: React.FC = () => {
               {selectedItems.length > 0 ? (
                 <div className="space-y-4">
                   {selectedItems.map((item) => (
-                    <div key={item.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
+                    <div key={item.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-md transition-shadow">
                       <div className="flex-1">
-                        <h4 className="font-medium text-gray-900">{item.name}</h4>
+                        <h4 className="font-medium text-gray-900 dark:text-gray-100">{item.name}</h4>
                         {item.description && (
-                          <p className="text-sm text-gray-600">{item.description}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">{item.description}</p>
                         )}
                         <p className="text-sm font-medium text-blue-600">
                           {formatCurrency(Number(item.pricePerUnit || item.unitPrice))} per {item.unitType}
@@ -421,7 +421,7 @@ const Estimate: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => updateItemQuantity(item.id!, (Number(item.quantity) || 0) - 1)}
-                            className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors"
+                            className="w-8 h-8 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center transition-colors"
                             aria-label="decrease"
                           >-</button>
                           <div className="relative">
@@ -431,7 +431,7 @@ const Estimate: React.FC = () => {
                               min={0}
                               value={Number(item.quantity) || 0}
                               onChange={(e) => updateItemQuantity(item.id!, parseFloat(e.target.value))}
-                              className="w-24 text-center border border-gray-200 rounded-md py-1 px-2"
+                              className="w-24 text-center border border-gray-200 dark:border-gray-700 rounded-md py-1 px-2"
                               aria-label="quantity"
                             />
                             {(item.unitType || '').toLowerCase() === 'sqft' && (
@@ -441,7 +441,7 @@ const Estimate: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => updateItemQuantity(item.id!, (Number(item.quantity) || 0) + 1)}
-                            className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors"
+                            className="w-8 h-8 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center transition-colors"
                             aria-label="increase"
                           >+</button>
                         </div>
@@ -450,12 +450,12 @@ const Estimate: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => openSqftModalFor(item.id!)}
-                            className="inline-flex items-center gap-1 px-3 py-2 rounded-md border text-sm hover:bg-gray-50 transition-colors"
+                            className="inline-flex items-center gap-1 px-3 py-2 rounded-md border text-sm hover:bg-gray-50 dark:bg-gray-900 transition-colors"
                           >
                             <Ruler className="w-4 h-4" /> Calculate area
                           </button>
                           <div className="text-right min-w-[110px]">
-                            <p className="font-medium text-gray-900">{formatCurrency(Number(item.total) || 0)}</p>
+                            <p className="font-medium text-gray-900 dark:text-gray-100">{formatCurrency(Number(item.total) || 0)}</p>
                             {item.gstRate !== undefined && item.gstRate > 0 && (
                               <p className="text-xs text-gray-500">incl. GST</p>
                             )}
@@ -489,8 +489,8 @@ const Estimate: React.FC = () => {
                   </div>
                 </div>
               ) : (
-                <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
-                  <p className="text-gray-600">No products selected. Click "Add Product" to get started.</p>
+                <div className="text-center py-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
+                  <p className="text-gray-600 dark:text-gray-400">No products selected. Click "Add Product" to get started.</p>
                 </div>
               )}
             </div>
@@ -504,7 +504,7 @@ const Estimate: React.FC = () => {
                   rows={4}
                   value={formData.description}
                   onChange={handleInputChange}
-                  className="peer w-full px-4 pt-6 pb-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-transparent resize-none"
+                  className="peer w-full px-4 pt-6 pb-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-transparent resize-none"
                   placeholder="Describe your requirements, timeline, or any special instructions..."
                 />
                 <label htmlFor="description" className="absolute left-4 top-2 text-gray-500 text-sm transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-base">
@@ -518,7 +518,7 @@ const Estimate: React.FC = () => {
                   rows={4}
                   value={formData.notes}
                   onChange={handleInputChange}
-                  className="peer w-full px-4 pt-6 pb-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-transparent resize-none"
+                  className="peer w-full px-4 pt-6 pb-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-transparent resize-none"
                   placeholder="Any additional information or special requests..."
                 />
                 <label htmlFor="notes" className="absolute left-4 top-2 text-gray-500 text-sm transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-gray-400 peer-placeholder-shown:text-base">
@@ -546,13 +546,13 @@ const Estimate: React.FC = () => {
         {/* Product Search Modal */}
         {showProductSearch && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 animate-fadeIn">
-            <div className="bg-white rounded-lg w-full max-w-lg sm:max-w-2xl max-h-[90vh] overflow-hidden animate-scaleIn">
+            <div className="bg-white dark:bg-gray-900 rounded-lg w-full max-w-lg sm:max-w-2xl max-h-[90vh] overflow-hidden animate-scaleIn">
               <div className="p-6 border-b">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-semibold">Select Products</h3>
                   <button 
                     onClick={() => setShowProductSearch(false)} 
-                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                    className="text-gray-400 hover:text-gray-600 dark:text-gray-400 transition-colors"
                   >
                     <X className="w-6 h-6" />
                   </button>
@@ -564,7 +564,7 @@ const Estimate: React.FC = () => {
                     placeholder="Search products..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
@@ -574,11 +574,11 @@ const Estimate: React.FC = () => {
                     <div
                       key={item.id}
                       onClick={() => addItemToQuotation(item)}
-                      className="flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                      className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:bg-gray-900 cursor-pointer transition-colors"
                     >
                       <div className="flex-1">
-                        <h4 className="font-medium text-gray-900">{item.name}</h4>
-                        <p className="text-sm text-gray-600">{item.category} • SKU: {item.sku}</p>
+                        <h4 className="font-medium text-gray-900 dark:text-gray-100">{item.name}</h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{item.category} • SKU: {item.sku}</p>
                         {item.imageUrl && (
                           <img src={item.imageUrl} alt={item.name} className="w-16 h-16 object-cover rounded mt-2" />
                         )}
@@ -593,7 +593,7 @@ const Estimate: React.FC = () => {
                     </div>
                   ))}
                   {filteredInventory.length === 0 && (
-                    <p className="text-center text-gray-600 py-8">No products found</p>
+                    <p className="text-center text-gray-600 dark:text-gray-400 py-8">No products found</p>
                   )}
                 </div>
               </div>
@@ -604,12 +604,12 @@ const Estimate: React.FC = () => {
         {/* Get Your Sqft Modal */}
         {showSqftModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-fadeIn">
-            <div className="bg-white rounded-lg w-full max-w-md p-6 animate-scaleIn">
+            <div className="bg-white dark:bg-gray-900 rounded-lg w-full max-w-md p-6 animate-scaleIn">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-lg font-semibold">Calculate Area</h3>
                 <button 
                   onClick={() => setShowSqftModal(false)} 
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  className="text-gray-400 hover:text-gray-600 dark:text-gray-400 transition-colors"
                 >
                   <X className="w-6 h-6" />
                 </button>
@@ -622,7 +622,7 @@ const Estimate: React.FC = () => {
                     step="any"
                     value={sqftForm.width}
                     onChange={(e) => setSqftForm((s) => ({ ...s, width: e.target.value }))}
-                    className="peer w-full px-3 pt-5 pb-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-transparent"
+                    className="peer w-full px-3 pt-5 pb-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-transparent"
                     placeholder="Width"
                   />
                   <label className="absolute left-3 top-2 text-gray-500 text-xs">Width</label>
@@ -633,14 +633,14 @@ const Estimate: React.FC = () => {
                     step="any"
                     value={sqftForm.height}
                     onChange={(e) => setSqftForm((s) => ({ ...s, height: e.target.value }))}
-                    className="peer w-full px-3 pt-5 pb-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-transparent"
+                    className="peer w-full px-3 pt-5 pb-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-transparent"
                     placeholder="Height"
                   />
                   <label className="absolute left-3 top-2 text-gray-500 text-xs">Height</label>
                 </div>
               </div>
               <select
-                className="mt-3 w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500"
+                className="mt-3 w-full border border-gray-300 dark:border-gray-600 rounded-lg p-2 focus:ring-2 focus:ring-blue-500"
                 value={sqftForm.unit}
                 onChange={(e) => setSqftForm((s) => ({ ...s, unit: e.target.value }))}
               >
@@ -652,7 +652,7 @@ const Estimate: React.FC = () => {
               </select>
               
               {sqftForm.width && sqftForm.height && (
-                <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                   <p className="text-sm text-blue-800">
                     Calculated area: {(toFeet(parseFloat(sqftForm.width), sqftForm.unit) * toFeet(parseFloat(sqftForm.height), sqftForm.unit)).toFixed(2)} sqft
                   </p>

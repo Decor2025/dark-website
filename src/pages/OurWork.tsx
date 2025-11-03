@@ -93,7 +93,7 @@ const OurWorkPublic: React.FC<OurWorkPublicProps> = ({
   // Skeleton loader with random heights for masonry feel
   const Skeleton = () => (
     <div 
-      className="animate-pulse bg-gray-300 rounded-lg w-full"
+      className="animate-pulse bg-gray-300 dark:bg-gray-600 rounded-lg w-full"
       style={{ height: `${200 + Math.random() * 200}px` }}
     />
   );
@@ -141,7 +141,7 @@ const OurWorkPublic: React.FC<OurWorkPublicProps> = ({
         <div className="p-4">
           
           {item.caption && (
-            <p className="text-gray-600 text-sm line-clamp-2">{item.caption}</p>
+            <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-2">{item.caption}</p>
           )}
           {item.category && (
             <span className="inline-block mt-2 bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">

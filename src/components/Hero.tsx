@@ -212,14 +212,14 @@ const Hero: React.FC = () => {
             ) : (
               <>
                 <motion.div variants={itemVariants} className="space-y-4">
-                  <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-tight text-slate-800 tracking-tight">
+                  <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-tight text-slate-800 dark:text-gray-100 tracking-tight">
                     <span className="block font-bold">{firstHalf}</span>
                     <span className="block bg-gradient-to-r from-blue-600 to-teal-500 bg-clip-text text-transparent font-bold">
                       {secondHalf}
                     </span>
                   </h1>
 
-                  <p className="text-xl text-slate-600 max-w-md mx-auto lg:mx-0 font-normal leading-relaxed">
+                  <p className="text-xl text-slate-600 dark:text-gray-300 max-w-md mx-auto lg:mx-0 font-normal leading-relaxed">
                     {tagline}
                   </p>
                 </motion.div>
@@ -252,7 +252,7 @@ const Hero: React.FC = () => {
                       transition: { type: "spring", stiffness: 400, damping: 17 }
                     }}
                     whileTap={{ scale: 0.98 }}
-                    className="inline-flex items-center justify-center px-6 py-4 font-semibold rounded-xl shadow-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition-all duration-300 text-base"
+                    className="inline-flex items-center justify-center px-6 py-4 font-semibold rounded-xl shadow-lg border border-slate-300 bg-white dark:bg-gray-900 text-slate-700 dark:text-gray-200 hover:bg-slate-50 dark:bg-gray-900 transition-all duration-300 text-base"
                   >
                     <ShoppingBag className="mr-3 h-5 w-5" />
                     Browse Products
@@ -267,7 +267,7 @@ const Hero: React.FC = () => {
                   <motion.a
                     href="tel:+91 9738101408"
                     whileHover={{ scale: 1.02 }}
-                    className="inline-flex items-center justify-center px-5 py-3 font-medium rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition text-sm"
+                    className="inline-flex items-center justify-center px-5 py-3 font-medium rounded-lg bg-slate-100 text-slate-700 dark:text-gray-200 hover:bg-slate-200 transition text-sm"
                   >
                     <Phone className="mr-2 h-4 w-4" />
                     Call Now
@@ -285,12 +285,12 @@ const Hero: React.FC = () => {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5, delay: 0.2 + i * 0.1 }}
-                      className="flex items-center space-x-3 p-4 bg-white/80 rounded-xl shadow-sm backdrop-blur-sm border border-slate-200/60"
+                      className="flex items-center space-x-3 p-4 bg-white dark:bg-gray-900/80 rounded-xl shadow-sm backdrop-blur-sm border border-slate-200 dark:border-gray-700/60"
                     >
                       <div className="p-2 bg-blue-100 rounded-full">
                         <Icon className="w-5 h-5 text-blue-600" />
                       </div>
-                      <span className="text-sm font-medium text-slate-700">{label}</span>
+                      <span className="text-sm font-medium text-slate-700 dark:text-gray-200">{label}</span>
                     </motion.div>
                   ))}
                 </motion.div>
@@ -340,7 +340,7 @@ const Hero: React.FC = () => {
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-b from-slate-900/50 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-start justify-center p-3">
-                  <div className="w-7 h-7 bg-blue-500 rounded-full flex items-center justify-center">
+                  <div className="w-7 h-7 bg-blue-50 dark:bg-blue-900/200 rounded-full flex items-center justify-center">
                     <CheckCircle className="text-white" size={16} />
                   </div>
                 </div>
@@ -359,7 +359,7 @@ const Hero: React.FC = () => {
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-blue-900/20 opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center">
-                  <div className="w-7 h-7 bg-blue-500 rounded-full flex items-center justify-center">
+                  <div className="w-7 h-7 bg-blue-50 dark:bg-blue-900/200 rounded-full flex items-center justify-center">
                     <CheckCircle className="text-white" size={16} />
                   </div>
                 </div>
@@ -368,7 +368,7 @@ const Hero: React.FC = () => {
 
             {/* Floating feature card - Better placement and animation */}
             <motion.div
-              className="absolute -bottom-4 -right-4 bg-white p-5 rounded-2xl shadow-2xl border border-slate-200/60 w-72 z-10"
+              className="absolute -bottom-4 -right-4 bg-white dark:bg-gray-900 p-5 rounded-2xl shadow-2xl border border-slate-200 dark:border-gray-700/60 w-72 z-10"
               variants={featureCardVariants}
               whileHover={{
                 y: -5,
@@ -390,8 +390,8 @@ const Hero: React.FC = () => {
                     })}
                   </div>
                   <div>
-                    <h4 className="text-slate-800 font-bold text-base">{features[activeFeature].title}</h4>
-                    <p className="text-slate-600 text-sm mt-1">{features[activeFeature].description}</p>
+                    <h4 className="text-slate-800 dark:text-gray-100 font-bold text-base">{features[activeFeature].title}</h4>
+                    <p className="text-slate-600 dark:text-gray-300 text-sm mt-1">{features[activeFeature].description}</p>
                   </div>
                 </motion.div>
               </AnimatePresence>
@@ -418,7 +418,7 @@ const Hero: React.FC = () => {
           {features.map((feature, index) => (
             <motion.div
               key={index}
-              className="bg-white/80 backdrop-blur-sm rounded-xl p-5 border border-slate-200/60 hover:border-blue-300 transition-all duration-300 shadow-sm"
+              className="bg-white dark:bg-gray-900/80 backdrop-blur-sm rounded-xl p-5 border border-slate-200 dark:border-gray-700/60 hover:border-blue-300 transition-all duration-300 shadow-sm"
               whileHover={{
                 y: -5,
                 transition: { type: "spring", stiffness: 400, damping: 17 }
@@ -430,9 +430,9 @@ const Hero: React.FC = () => {
                     className: "w-5 h-5 text-blue-600"
                   })}
                 </div>
-                <h3 className="text-slate-800 font-semibold text-sm">{feature.title}</h3>
+                <h3 className="text-slate-800 dark:text-gray-100 font-semibold text-sm">{feature.title}</h3>
               </div>
-              <p className="text-slate-600 text-xs">{feature.description}</p>
+              <p className="text-slate-600 dark:text-gray-300 text-xs">{feature.description}</p>
             </motion.div>
           ))}
         </motion.div>
@@ -444,7 +444,7 @@ const Hero: React.FC = () => {
           animate={{ opacity: 1 }}
           transition={{ delay: 1.2, duration: 0.6 }}
         >
-          <span className="text-slate-600 text-sm mb-2 font-medium">Scroll to see more</span>
+          <span className="text-slate-600 dark:text-gray-300 text-sm mb-2 font-medium">Scroll to see more</span>
           <motion.div
             animate={{ y: [0, 8, 0] }}
             transition={{ duration: 1.5, repeat: Infinity }}

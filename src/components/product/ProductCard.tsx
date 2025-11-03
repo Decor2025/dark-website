@@ -15,7 +15,7 @@ export default function ProductCard({
 
   return (
     <div
-      className="cursor-pointer bg-white rounded-xl shadow-md hover:shadow-lg transition flex flex-col w-40 md:w-60 lg:w-100 overflow-hidden"
+      className="cursor-pointer bg-white dark:bg-gray-900 rounded-xl shadow-md hover:shadow-lg transition flex flex-col w-40 md:w-60 lg:w-100 overflow-hidden"
       onClick={onViewDetails}
       role="button"
       tabIndex={0}
@@ -23,7 +23,7 @@ export default function ProductCard({
         if (e.key === "Enter") onViewDetails();
       }}
     >
-      <div className="w-full aspect-square overflow-hidden rounded-t-xl bg-gray-100">
+      <div className="w-full aspect-square overflow-hidden rounded-t-xl bg-gray-100 dark:bg-gray-800">
         <img
           src={product.imageUrl || DEFAULT_IMG}
           alt={product.name}

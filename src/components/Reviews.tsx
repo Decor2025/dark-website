@@ -96,7 +96,7 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
       <div className="max-w-7xl mx-auto py-12 px-4">
         <div className="flex flex-col items-center justify-center h-64">
           <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-          <p className="text-gray-600">Loading reviews...</p>
+          <p className="text-gray-600 dark:text-gray-400">Loading reviews...</p>
         </div>
       </div>
     );
@@ -116,7 +116,7 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
         transition={{ duration: 0.5 }}
       >
         <div className="flex items-center gap-4">
-          <div className="flex items-center justify-center w-16 h-16 bg-white rounded-xl shadow-sm">
+          <div className="flex items-center justify-center w-16 h-16 bg-white dark:bg-gray-900 rounded-xl shadow-sm">
             <svg className="w-10 h-10" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
               <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -125,7 +125,7 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
             </svg>
           </div>
           <div>
-            <div className="text-3xl font-bold text-gray-800">{averageRating} out of 5</div>
+            <div className="text-3xl font-bold text-gray-800 dark:text-gray-200">{averageRating} out of 5</div>
             <div className="flex gap-1 mt-1">
               {Array.from({ length: 5 }, (_, i) => (
                 <svg
@@ -138,7 +138,7 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
                 </svg>
               ))}
             </div>
-            <div className="text-gray-600 mt-1">Based on {allReviews.length} reviews</div>
+            <div className="text-gray-600 dark:text-gray-400 mt-1">Based on {allReviews.length} reviews</div>
           </div>
         </div>
 
@@ -147,7 +147,7 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
             href="https://search.google.com/local/writereview?placeid=ChIJ81gT5P0VrjsRin99GBddcFE"
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-white text-gray-800 px-5 py-3 rounded-xl text-sm font-medium transition-all duration-300 hover:shadow-md flex items-center gap-2 border border-gray-200"
+            className="bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 px-5 py-3 rounded-xl text-sm font-medium transition-all duration-300 hover:shadow-md flex items-center gap-2 border border-gray-200 dark:border-gray-700"
           >
             <svg className="w-4 h-4" viewBox="0 0 24 24">
               <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 16l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-8 8z"/>
@@ -177,19 +177,19 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
             onClick={() => setShowReviewOptions(false)}
           >
             <motion.div
-              className="bg-white rounded-2xl p-6 max-w-md w-full"
+              className="bg-white dark:bg-gray-900 rounded-2xl p-6 max-w-md w-full"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="text-xl font-bold text-gray-800 mb-4">How would you like to review?</h3>
+              <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-4">How would you like to review?</h3>
               <div className="space-y-4">
                 <a
                   href="https://search.google.com/local/writereview?placeid=ChIJ81gT5P0VrjsRin99GBddcFE"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-4 p-4 border border-gray-200 rounded-xl hover:bg-blue-50 transition-colors"
+                  className="flex items-center gap-4 p-4 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-blue-50 dark:bg-blue-900/20 transition-colors"
                 >
                   <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
                     <svg className="w-6 h-6 text-blue-600" viewBox="0 0 24 24">
@@ -198,7 +198,7 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
                   </div>
                   <div>
                     <div className="font-medium">Write on Google</div>
-                    <div className="text-sm text-gray-600">Share your experience publicly on Google</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Share your experience publicly on Google</div>
                   </div>
                 </a>
 
@@ -207,7 +207,7 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
                     setShowReviewOptions(false);
                     setShowTestimonialForm(true);
                   }}
-                  className="flex items-center gap-4 p-4 border border-gray-200 rounded-xl hover:bg-blue-50 transition-colors w-full text-left"
+                  className="flex items-center gap-4 p-4 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-blue-50 dark:bg-blue-900/20 transition-colors w-full text-left"
                 >
                   <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
                     <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -216,7 +216,7 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
                   </div>
                   <div>
                     <div className="font-medium">Submit on our website</div>
-                    <div className="text-sm text-gray-600">Share your feedback directly with us</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Share your feedback directly with us</div>
                   </div>
                 </button>
 
@@ -224,7 +224,7 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
 
               <button
                 onClick={() => setShowReviewOptions(false)}
-                className="mt-6 text-gray-500 hover:text-gray-700"
+                className="mt-6 text-gray-500 hover:text-gray-700 dark:text-gray-300"
               >
                 Cancel
               </button>
@@ -240,7 +240,7 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
             onClick={() => setShowTestimonialForm(false)}
           >
             <motion.div
-              className="bg-white rounded-2xl p-6 max-w-md w-full"
+              className="bg-white dark:bg-gray-900 rounded-2xl p-6 max-w-md w-full"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
@@ -262,7 +262,7 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
           {displayedReviews.map((review, index) => (
             <motion.div
               key={review.id}
-              className="break-inside-avoid bg-white rounded-2xl shadow-sm p-6 mb-6 border border-gray-100 hover:shadow-md transition-all duration-300 overflow-hidden"
+              className="break-inside-avoid bg-white dark:bg-gray-900 rounded-2xl shadow-sm p-6 mb-6 border border-gray-100 hover:shadow-md transition-all duration-300 overflow-hidden"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
@@ -271,7 +271,7 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
             >
               {/* Review Source Badge */}
               <div className="flex justify-between items-start mb-4">
-                <div className="flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full bg-gray-100 text-gray-600">
+                <div className="flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
                   {review.source === "google" ? (
                     <>
                       <svg className="w-3 h-3" viewBox="0 0 24 24">
@@ -309,8 +309,8 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
                     </div>
                   )}
                   {review.source === "google" && (
-                    <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5 shadow-sm">
-                      <div className="w-5 h-5 rounded-full bg-blue-50 flex items-center justify-center">
+                    <div className="absolute -bottom-1 -right-1 bg-white dark:bg-gray-900 rounded-full p-0.5 shadow-sm">
+                      <div className="w-5 h-5 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
                         <svg className="w-3 h-3 text-blue-500" viewBox="0 0 24 24">
                           <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 16l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-8 8z"/>
                         </svg>
@@ -319,7 +319,7 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
                   )}
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-800">{review.reviewer.displayName}</p>
+                  <p className="font-semibold text-gray-800 dark:text-gray-200">{review.reviewer.displayName}</p>
                   <p className="text-gray-500 text-sm">
                     {new Date(review.createTime).toLocaleDateString("en-US", {
                       month: "short",
@@ -344,13 +344,13 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
               </div>
 
               {review.title && (
-                <h4 className="font-semibold text-lg mb-2 text-gray-900">
+                <h4 className="font-semibold text-lg mb-2 text-gray-900 dark:text-gray-100">
                   {review.title}
                 </h4>
               )}
 
               <div className="mb-4">
-                <p className="text-gray-700 leading-relaxed">
+                <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
                   {expandedReviews[review.id]
                     ? review.comment
                     : shouldTruncate(review.comment)
@@ -390,7 +390,7 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
               <AnimatePresence>
                 {review.reviewReply?.comment && expandedReplies[review.id] && (
                   <motion.div
-                    className="bg-blue-50 p-4 rounded-xl mt-4 border border-blue-100"
+                    className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl mt-4 border border-blue-100"
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
@@ -422,7 +422,7 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
         {hasMore && (
           <motion.button
             onClick={loadMore}
-            className="bg-white text-blue-600 border border-blue-200 px-6 py-3 rounded-xl font-medium hover:bg-blue-50 transition-colors flex items-center gap-2"
+            className="bg-white dark:bg-gray-900 text-blue-600 border border-blue-200 px-6 py-3 rounded-xl font-medium hover:bg-blue-50 dark:bg-blue-900/20 transition-colors flex items-center gap-2"
             whileHover={{ y: -2 }}
             whileTap={{ y: 0 }}
             disabled={isLoadingMore}
@@ -449,7 +449,7 @@ const Reviews: React.FC<ReviewsProps> = ({ localReviews }) => {
         {showLoadLess && (
           <motion.button
             onClick={loadLess}
-            className="bg-gray-100 text-gray-700 px-6 py-3 rounded-xl font-medium hover:bg-gray-200 transition-colors flex items-center gap-2"
+            className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-6 py-3 rounded-xl font-medium hover:bg-gray-200 dark:bg-gray-700 transition-colors flex items-center gap-2"
             whileHover={{ y: -2 }}
             whileTap={{ y: 0 }}
           >

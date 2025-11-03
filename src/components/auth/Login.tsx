@@ -84,7 +84,7 @@ const CompactPasswordStrength = ({ password }: { password: string }) => {
   return (
     <div className="mt-2">
       <div className="flex items-center justify-between mb-1">
-        <span className="text-xs font-medium text-gray-600">Strength:</span>
+        <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Strength:</span>
         <span className={`text-xs font-medium ${
           validation.isStrong ? 'text-green-600' :
           validation.isValid ? 'text-yellow-600' :
@@ -95,7 +95,7 @@ const CompactPasswordStrength = ({ password }: { password: string }) => {
            'Weak'}
         </span>
       </div>
-      <div className="w-full bg-gray-200 rounded-full h-1.5">
+      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
         <div
           className={`h-1.5 rounded-full transition-all duration-300 ${
             validation.isStrong ? 'bg-green-500 w-full' :
@@ -124,8 +124,8 @@ const CompactPasswordRequirements = ({ password, showAll = false }: { password: 
   // Only show detailed requirements if the basic ones aren't met
   if (!requiredMet || showAll) {
     return (
-      <div className="mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
-        <p className="text-xs font-medium text-gray-700 mb-2">Requirements:</p>
+      <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+        <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Requirements:</p>
         <div className="grid grid-cols-1 gap-1">
           <RequirementItem
             met={validation.requirements.minLength}
@@ -461,7 +461,7 @@ const Login = () => {
       {emailVerified ? (
         <p className="text-green-600 font-semibold">Email verified! Redirecting...</p>
       ) : (
-        <p className="text-gray-600 italic">Waiting for verification...</p>
+        <p className="text-gray-600 dark:text-gray-400 italic">Waiting for verification...</p>
       )}
       <button
         className="mt-4 text-blue-600"
@@ -474,17 +474,17 @@ const Login = () => {
 
   if (!authChecked) {
     return (
-      <div className="min-h-screen w-full bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen w-full bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Please wait...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Please wait...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen w-full bg-gray-50 flex flex-col items-center justify-center px-4 py-12">
+    <div className="min-h-screen w-full bg-gray-50 dark:bg-gray-900 flex flex-col items-center justify-center px-4 py-12">
       <div className="text-center mb-8">
         <Link to="/" className="inline-block">
           <img
@@ -492,16 +492,16 @@ const Login = () => {
             alt="Decor Drapes Instyle"
             className="h-16 mx-auto mb-4"
           />
-          <h1 className="text-2xl font-bold text-gray-800">Decor Drapes Instyle</h1>
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Decor Drapes Instyle</h1>
           <p className="text-sm text-gray-500 mt-1">Elegant Interiors. Effortlessly.</p>
         </Link>
       </div>
 
-      <div className="w-full max-w-md bg-white shadow-xl rounded-2xl p-6 md:p-8 lg:p-8 space-y-6">
+      <div className="w-full max-w-md bg-white dark:bg-gray-900 shadow-xl rounded-2xl p-6 md:p-8 lg:p-8 space-y-6">
         <button
           type="button"
           onClick={handleGoogleSignIn}
-          className="w-full flex justify-center items-center gap-2 border border-gray-300 py-3 rounded-lg hover:bg-gray-50 transition disabled:opacity-50"
+          className="w-full flex justify-center items-center gap-2 border border-gray-300 dark:border-gray-600 py-3 rounded-lg hover:bg-gray-50 dark:bg-gray-900 transition disabled:opacity-50"
           disabled={loading}
         >
           <img
@@ -509,7 +509,7 @@ const Login = () => {
             alt="Google"
             className="h-5 w-5"
           />
-          <span className="text-sm font-medium text-gray-700">
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
             {loading ? 'Signing in...' : 'Continue with Google'}
           </span>
         </button>
@@ -518,15 +518,15 @@ const Login = () => {
         )}
 
         <div className="flex items-center space-x-4 my-4">
-          <div className="flex-grow border-t border-gray-300"></div>
+          <div className="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
           <span className="text-gray-400 text-sm">or</span>
-          <div className="flex-grow border-t border-gray-300"></div>
+          <div className="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
         </div>
 
         {step === 'email' && (
           <form onSubmit={handleEmailSubmit} className="space-y-6">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Email
               </label>
               <input
@@ -535,7 +535,7 @@ const Login = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter your email"
               />
               {emailError && <p className="text-red-600 text-sm mt-1">{emailError}</p>}
@@ -553,7 +553,7 @@ const Login = () => {
 
         {step === 'login' && (
           <form onSubmit={handleLoginSubmit} className="space-y-6">
-            <div className="text-sm text-gray-700 mb-2">
+            <div className="text-sm text-gray-700 dark:text-gray-300 mb-2">
               Signed in as <strong>{email}</strong>{' '}
               <button
                 type="button"
@@ -570,7 +570,7 @@ const Login = () => {
             </div>
 
             <div className="relative">
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Password
               </label>
               <input
@@ -579,7 +579,7 @@ const Login = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter your password"
               />
               <button
@@ -620,7 +620,7 @@ const Login = () => {
         {step === 'forgot_password' && (
           <form onSubmit={handleForgotPasswordSubmit} className="space-y-6">
             <div>
-              <label htmlFor="forgotEmail" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="forgotEmail" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Enter your email to reset password
               </label>
               <input
@@ -629,7 +629,7 @@ const Login = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Your email"
               />
               {forgotPasswordError && <p className="text-red-600 text-sm mt-1">{forgotPasswordError}</p>}
@@ -639,7 +639,7 @@ const Login = () => {
             <div className="flex justify-between items-center">
               <button
                 type="button"
-                className="text-sm text-gray-600 hover:underline"
+                className="text-sm text-gray-600 dark:text-gray-400 hover:underline"
                 onClick={() => {
                   setForgotPasswordError('');
                   setForgotPasswordSuccess('');
@@ -664,7 +664,7 @@ const Login = () => {
 
         {step === 'signup_name' && (
           <>
-            <div className="text-sm text-gray-700 mb-4">
+            <div className="text-sm text-gray-700 dark:text-gray-300 mb-4">
               Creating account for <strong>{email}</strong>{' '}
               <button
                 type="button"
@@ -684,7 +684,7 @@ const Login = () => {
 
             <form onSubmit={handleSignupNameSubmit} className="space-y-6">
               <div>
-                <label htmlFor="displayName" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="displayName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Full Name
                 </label>
                 <input
@@ -693,7 +693,7 @@ const Login = () => {
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Your full name"
                 />
                 {signupError && <p className="text-red-600 text-sm mt-1">{signupError}</p>}
@@ -712,7 +712,7 @@ const Login = () => {
 
         {step === 'signup_password' && (
           <>
-            <div className="text-sm text-gray-700 mb-4">
+            <div className="text-sm text-gray-700 dark:text-gray-300 mb-4">
               Creating account for <strong>{email}</strong>{' '}
               <button
                 type="button"
@@ -729,7 +729,7 @@ const Login = () => {
 
             <form onSubmit={handleSignupPasswordSubmit} className="space-y-4">
               <div className="relative">
-                <label htmlFor="signupPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="signupPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Password
                 </label>
                 <input
@@ -739,7 +739,7 @@ const Login = () => {
                   onChange={(e) => setSignupPassword(e.target.value)}
                   onFocus={() => setShowPasswordGuide(true)}
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Create a password"
                 />
                 <button
@@ -762,7 +762,7 @@ const Login = () => {
               />
 
               <div className="relative">
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Confirm Password
                 </label>
                 <input
@@ -771,7 +771,7 @@ const Login = () => {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Confirm your password"
                 />
               </div>

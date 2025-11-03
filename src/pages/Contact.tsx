@@ -66,12 +66,12 @@ const Contact: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Contact Us</h1>
-          <p className="text-xl text-gray-600">
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">Contact Us</h1>
+          <p className="text-xl text-gray-600 dark:text-gray-400">
             We'd love to hear from you. Send us a message and we'll respond as
             soon as possible.
           </p>
@@ -79,8 +79,8 @@ const Contact: React.FC = () => {
 
         <div className="space-y-12">
           {/* Contact Form (on top) */}
-          <div className="bg-white rounded-lg shadow-md p-6 max-w-3xl mx-auto">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-md p-6 max-w-3xl mx-auto">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6 text-center">
               Send us a Message
             </h2>
 
@@ -95,7 +95,7 @@ const Contact: React.FC = () => {
                     required
                     value={formData.name}
                     onChange={handleInputChange}
-                    className="block py-2.5 px-0 w-full text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                    className="block py-2.5 px-0 w-full text-gray-900 dark:text-gray-100 bg-transparent border-0 border-b-2 border-gray-300 dark:border-gray-600 appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer"
                     placeholder=" "
                     autoComplete="off"
                   />
@@ -116,7 +116,7 @@ const Contact: React.FC = () => {
                     required
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="block py-2.5 px-0 w-full text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                    className="block py-2.5 px-0 w-full text-gray-900 dark:text-gray-100 bg-transparent border-0 border-b-2 border-gray-300 dark:border-gray-600 appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer"
                     placeholder=" "
                     autoComplete="off"
                   />
@@ -138,7 +138,7 @@ const Contact: React.FC = () => {
                   required
                   value={formData.subject}
                   onChange={handleInputChange}
-                  className="block py-2.5 px-0 w-full text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                  className="block py-2.5 px-0 w-full text-gray-900 dark:text-gray-100 bg-transparent border-0 border-b-2 border-gray-300 dark:border-gray-600 appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer"
                   placeholder=" "
                   autoComplete="off"
                 />
@@ -159,7 +159,7 @@ const Contact: React.FC = () => {
                   rows={6}
                   value={formData.message}
                   onChange={handleInputChange}
-                  className="block py-2.5 px-0 w-full text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 resize-none appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                  className="block py-2.5 px-0 w-full text-gray-900 dark:text-gray-100 bg-transparent border-0 border-b-2 border-gray-300 dark:border-gray-600 resize-none appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer"
                   placeholder=" "
                 />
                 <label
@@ -188,8 +188,8 @@ const Contact: React.FC = () => {
           </div>
 
           {/* Contact Info (below form) */}
-          <div className="bg-white rounded-lg shadow-md p-6 max-w-3xl mx-auto">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-md p-6 max-w-3xl mx-auto">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6 text-center">
               Get in Touch
             </h2>
 
@@ -200,11 +200,11 @@ const Contact: React.FC = () => {
                   <Mail className="w-5 h-5 text-blue-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">Email</h3>
-                  <p className="text-gray-600">
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100">Email</h3>
+                  <p className="text-gray-600 dark:text-gray-400">
                     {getSetting("primary_email") || "contact@shop.com"}
                   </p>
-                  <p className="text-gray-600">
+                  <p className="text-gray-600 dark:text-gray-400">
                     {getSetting("support_email") || "support@shop.com"}
                   </p>
                 </div>
@@ -216,11 +216,11 @@ const Contact: React.FC = () => {
                   <Phone className="w-5 h-5 text-green-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">Phone</h3>
-                  <p className="text-gray-600">
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100">Phone</h3>
+                  <p className="text-gray-600 dark:text-gray-400">
                     {getSetting("primary_phone") || "+1 (555) 123-4567"}
                   </p>
-                  <p className="text-gray-600">
+                  <p className="text-gray-600 dark:text-gray-400">
                     {getSetting("secondary_phone") || "+1 (555) 987-6543"}
                   </p>
                 </div>
@@ -232,14 +232,14 @@ const Contact: React.FC = () => {
                   <MapPin className="w-5 h-5 text-purple-600" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900">Address</h3>
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100">Address</h3>
                   {(
                     getSetting("store_address") ||
                     ""
                   )
                     .split("\n")
                     .map((line, index) => (
-                      <p className="text-gray-600" key={index}>
+                      <p className="text-gray-600 dark:text-gray-400" key={index}>
                         {line}
                       </p>
                     ))}
@@ -248,10 +248,10 @@ const Contact: React.FC = () => {
 
               {/* Business Hours */}
               <div className="mt-8">
-                <h3 className="font-semibold text-gray-900 mb-4">
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-4">
                   Business Hours
                 </h3>
-                <div className="space-y-2 text-sm text-gray-600">
+                <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                   {(
                     getSetting("store_hours") ||
                     "Mon-Fri: 9AM-6PM, Sat: 10AM-4PM, Sun: Closed"

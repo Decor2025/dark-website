@@ -1,4 +1,3 @@
-// src/components/Navbar.tsx
 import React, { useEffect, useState, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
@@ -14,13 +13,17 @@ import {
   Sun,
   Moon,
   Monitor,
+  ShoppingCart,
+  Palette,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
+import { useCart } from "../../context/CartContext";
 import { ref, onValue } from "firebase/database";
 import { database } from "../../config/firebase";
 import { SiteSettings } from "../../types";
 import TestimonialForm from "../testimonials/TestimonialForm";
+import { motion, AnimatePresence } from "framer-motion";
 
 type NavItem = {
   label: string;
@@ -32,10 +35,13 @@ const Navbar: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showTestimonialForm, setShowTestimonialForm] = useState(false);
   const [settings, setSettings] = useState<SiteSettings[]>([]);
+  const [showThemeMenu, setShowThemeMenu] = useState(false);
   const { currentUser, loading: authLoading, logout } = useAuth();
   const { theme, setTheme } = useTheme();
+  const { items } = useCart();
   const navigate = useNavigate();
   const location = useLocation();
+  const themeMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const settingsRef = ref(database, "siteSettings");
@@ -48,491 +54,265 @@ const Navbar: React.FC = () => {
     return () => unsub();
   }, []);
 
-  const getSetting = (key: string) =>
-    settings.find((s) => s.key === key)?.value || "";
-  const storeName = getSetting("store_name") || "Decor Drapes";
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (themeMenuRef.current && !themeMenuRef.current.contains(event.target as Node)) {
+        setShowThemeMenu(false);
+      }
+    };
 
-  // Extract first name only
-  const displayName =
-    currentUser?.displayName ||
-    currentUser?.email?.split?.("@")?.[0] ||
-    "User";
-  const firstName = displayName.split(' ')[0]; // Extract first name only
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleLogout = async () => {
-    try {
-      await logout();
-    } finally {
-      setSidebarOpen(false);
-      setProfileMenuOpen(false);
-      navigate("/");
-    }
+    await logout();
+    setSidebarOpen(false);
+    navigate("/");
   };
 
-  const navLinks: NavItem[] = [
-    { label: "Home", to: "/", icon: <Home size={16} /> },
-    { label: "Catalogue", to: "/catalogue", icon: <Users size={16} /> },
-    { label: "About Us", to: "/about", icon: <Info size={16} /> },
-    { label: "Contact Us", to: "/contact", icon: <Phone size={16} /> },
+  const navItems: NavItem[] = [
+    { label: "Home", to: "/", icon: <Home size={20} /> },
+    { label: "About", to: "/about", icon: <Info size={20} /> },
+    { label: "Catalogue", to: "/catalogue", icon: <Palette size={20} /> },
+    { label: "Our Work", to: "/our-work", icon: <Users size={20} /> },
+    { label: "Contact", to: "/contact", icon: <Phone size={20} /> },
   ];
 
-  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
-  const profileMenuRef = useRef<HTMLDivElement>(null);
-  const profileButtonRef = useRef<HTMLButtonElement>(null);
+  const themeOptions = [
+    { value: "light", label: "Light", icon: Sun },
+    { value: "dark", label: "Dark", icon: Moon },
+    { value: "system", label: "System", icon: Monitor },
+  ];
 
-  useEffect(() => {
-    function onClickOutside(e: MouseEvent) {
-      if (
-        profileMenuOpen &&
-        profileMenuRef.current &&
-        profileButtonRef.current &&
-        !profileMenuRef.current.contains(e.target as Node) &&
-        !profileButtonRef.current.contains(e.target as Node)
-      ) {
-        setProfileMenuOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", onClickOutside);
-    return () => document.removeEventListener("mousedown", onClickOutside);
-  }, [profileMenuOpen]);
-
-  // Fixed role checking functions
-  const getDashboardPath = () => {
-  if (currentUser?.role === "production") {
-    return "https://admin.decordrapesinstyle.com";
-  }
-  if (currentUser?.role === "admin" || currentUser?.role === "employee") {
-    return "https://admin.decordrapesinstyle.com";
-  }
-  return "/";
-};
-
-
-  const getDashboardLabel = () => {
-    if (currentUser?.role === "production") return "Production";
-    if (currentUser?.role === "admin") return "Admin Panel";
-    if (currentUser?.role === "employee") return "Dashboard";
-    return "";
-  };
-
-  const shouldShowDashboard = () => {
-    return currentUser && 
-           (currentUser.role === "admin" || 
-            currentUser.role === "employee" || 
-            currentUser.role === "production");
-  };
-
-  // Handle navigation for profile menu items
-  const handleProfileMenuNavigation = (path: string) => {
-    setProfileMenuOpen(false);
-    navigate(path);
-  };
+  const cartCount = items.reduce((sum, item) => sum + (item.quantity || 1), 0);
 
   return (
-    <>
-      <nav className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 transition-colors duration-200">
-        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-16">
+    <nav className="sticky top-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95 shadow-sm dark:shadow-none transition-colors duration-300">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-1 transition-transform hover:scale-102">
-            <img
-              src="https://res.cloudinary.com/ds6um53cx/image/upload/v1756727077/a0jd950p5c8m7wgdylyq.webp"
-              alt="Logo"
-              className="w-full h-10 object-cover rounded-lg"
-            />
-            <span className="font-semibold text-gray-800 dark:text-gray-100 text-lg">Drapes</span>
+          <Link to="/" className="flex items-center space-x-2 flex-shrink-0 group hover:opacity-80 transition-opacity">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-cyan-500 dark:from-blue-500 dark:to-cyan-400 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-300">
+              <span className="text-white font-bold text-base">HLG</span>
+            </div>
+            <div className="hidden sm:block">
+              <p className="font-bold text-lg bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-200 bg-clip-text text-transparent">
+                HLG
+              </p>
+              <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">Quality Furnishings</p>
+            </div>
           </Link>
 
-          {/* Desktop nav */}
-          <div className="hidden md:flex items-center space-x-6">
-            {navLinks.map(({ label, to }) => (
+          {/* Desktop Navigation */}
+          <div className="hidden lg:flex items-center space-x-1">
+            {navItems.map((item) => (
               <Link
-                key={label}
-                to={to || "/"}
-                className={`relative text-sm font-medium px-3 py-2 rounded-md transition-all duration-200 ${
-                  location.pathname === to
-                    ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 font-semibold"
-                    : "text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+                key={item.label}
+                to={item.to || "#"}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  location.pathname === item.to
+                    ? "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300"
+                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                 }`}
               >
-                {label}
-                {location.pathname === to && (
-                  <span className="absolute inset-x-1 -bottom-2 h-0.5 bg-blue-600 rounded-full transition-all duration-300"></span>
-                )}
+                {item.label}
               </Link>
             ))}
-
-            {/* Profile / Login */}
-            {authLoading ? (
-              <div className="w-16 h-8 bg-gray-200 rounded-md animate-pulse" />
-            ) : currentUser ? (
-              <div className="relative">
-                <button
-                  ref={profileButtonRef}
-                  onClick={() => setProfileMenuOpen((o) => !o)}
-                  className="flex items-center gap-1 focus:outline-none transition-all duration-200"
-                >
-                  {currentUser.profileImage ? (
-                    <img
-                      src={currentUser.profileImage}
-                      alt="Avatar"
-                      className="w-9 h-9 rounded-full object-cover border-2 border-gray-200 transition-all duration-300 hover:border-blue-500"
-                    />
-                  ) : (
-                    <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center border-2 border-gray-200 transition-all duration-300 hover:border-blue-500">
-                      <UserIcon size={18} />
-                    </div>
-                  )}
-                  <span className="text-sm text-gray-700 dark:text-gray-200">{firstName}</span>
-                  <ChevronDown 
-                    size={16} 
-                    className={`transition-transform duration-200 ${profileMenuOpen ? 'rotate-180' : ''}`} 
-                  />
-                </button>
-
-                {profileMenuOpen && (
-                  <div
-                    ref={profileMenuRef}
-                    className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-100 dark:border-gray-700 py-1 z-50 animate-fadeIn"
-                  >
-                    <button
-                      onClick={() => handleProfileMenuNavigation("/profile")}
-                      className="flex items-center gap-2 w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
-                    >
-                      <UserIcon size={16} /> My Profile
-                    </button>
-                    {shouldShowDashboard() && (
-                      <button
-                        onClick={() => handleProfileMenuNavigation(getDashboardPath())}
-                        className="flex items-center gap-2 w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
-                      >
-                        <Users size={16} /> {getDashboardLabel()}
-                      </button>
-                    )}
-                    <button
-                      onClick={handleLogout}
-                      className="flex items-center gap-2 w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-red-50 dark:hover:bg-red-900/30 hover:text-red-600 dark:hover:text-red-400 transition-colors duration-200"
-                    >
-                      <LogOut size={16} /> Logout
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <Link
-                to="/login"
-                className="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-md text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 hover:border-gray-300 dark:hover:border-gray-600"
-              >
-                Login
-              </Link>
-            )}
           </div>
 
-          {/* Mobile */}
-          <div className="flex items-center gap-2 md:hidden">
-            {authLoading ? (
-              <div className="w-16 h-8 bg-gray-200 rounded-md animate-pulse" />
-            ) : currentUser ? (
-              <div className="relative">
-                <button
-                  ref={profileButtonRef}
-                  onClick={() => setProfileMenuOpen((o) => !o)}
-                  className="flex items-center gap-1 px-3 py-1.5 border border-gray-200 dark:border-gray-700 rounded-md text-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200"
-                >
-                  {currentUser.profileImage ? (
-                    <img
-                      src={currentUser.profileImage}
-                      alt="Avatar"
-                      className="w-7 h-7 rounded-full object-cover border border-gray-200"
-                    />
-                  ) : (
-                    <UserIcon size={16} className="text-gray-700 dark:text-gray-200" />
-                  )}
-                  <span className="text-gray-700 dark:text-gray-200 text-sm truncate max-w-[80px]">
-                    {firstName}
-                  </span>
-                  <ChevronDown 
-                    size={14} 
-                    className={`transition-transform duration-200 ${profileMenuOpen ? 'rotate-180' : ''}`} 
-                  />
-                </button>
-
-                {/* Floating User Menu */}
-                {profileMenuOpen && (
-                  <div
-                    ref={profileMenuRef}
-                    className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-100 dark:border-gray-700 z-50 animate-fadeIn"
-                  >
-                    <button
-                      onClick={() => handleProfileMenuNavigation("/profile")}
-                      className="flex items-center gap-2 w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
-                    >
-                      <UserIcon size={16} /> My Profile
-                    </button>
-                    {shouldShowDashboard() && (
-                      <button
-                        onClick={() => handleProfileMenuNavigation(getDashboardPath())}
-                        className="flex items-center gap-2 w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
-                      >
-                        <Users size={16} /> {getDashboardLabel()}
-                      </button>
-                    )}
-                    <button
-                      onClick={handleLogout}
-                      className="flex items-center gap-2 w-full text-left px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors duration-200"
-                    >
-                      <LogOut size={16} /> Logout
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <Link
-                to="/login"
-                className="px-3 py-1.5 border border-gray-200 dark:border-gray-700 rounded-md text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200"
-              >
-                Login
-              </Link>
-            )}
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200 text-gray-700 dark:text-gray-200"
+          {/* Right side controls */}
+          <div className="flex items-center space-x-3">
+            {/* Cart */}
+            <Link
+              to="/cart"
+              className="relative p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-700 transition-colors duration-200 group"
             >
-              <AlignRight size={20} />
+              <ShoppingCart size={20} className="group-hover:scale-110 transition-transform" />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {cartCount}
+                </span>
+              )}
+            </Link>
+
+            {/* Theme Selector */}
+            <div className="relative hidden sm:block" ref={themeMenuRef}>
+              <button
+                onClick={() => setShowThemeMenu(!showThemeMenu)}
+                className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-700 transition-colors duration-200 hover:scale-110 transition-transform"
+                aria-label="Toggle theme"
+              >
+                {theme === "light" && <Sun size={20} />}
+                {theme === "dark" && <Moon size={20} />}
+                {theme === "system" && <Monitor size={20} />}
+              </button>
+
+              <AnimatePresence>
+                {showThemeMenu && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                    className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-2 z-50"
+                  >
+                    <div className="px-4 py-2">
+                      <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Theme Preference
+                      </p>
+                    </div>
+                    {themeOptions.map((option) => {
+                      const Icon = option.icon;
+                      const isActive = theme === option.value;
+                      return (
+                        <button
+                          key={option.value}
+                          onClick={() => {
+                            setTheme(option.value as any);
+                            setShowThemeMenu(false);
+                          }}
+                          className={`w-full flex items-center space-x-3 px-4 py-3 text-sm font-medium transition-all duration-200 ${
+                            isActive
+                              ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-l-2 border-blue-600 dark:border-blue-400"
+                              : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border-l-2 border-transparent"
+                          }`}
+                        >
+                          <Icon size={18} />
+                          <span className="flex-1 text-left">{option.label}</span>
+                          {isActive && <span className="text-blue-600 dark:text-blue-400">✓</span>}
+                        </button>
+                      );
+                    })}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Auth buttons */}
+            {!authLoading && (
+              <>
+                {currentUser ? (
+                  <Link
+                    to="/profile"
+                    className="p-2 rounded-lg bg-gradient-to-br from-blue-600 to-cyan-500 dark:from-blue-500 dark:to-cyan-400 text-white hover:shadow-lg transition-all duration-200 hover:scale-105"
+                  >
+                    <UserIcon size={20} />
+                  </Link>
+                ) : (
+                  <Link
+                    to="/login"
+                    className="px-4 py-2 bg-gradient-to-br from-blue-600 to-cyan-500 dark:from-blue-500 dark:to-cyan-400 text-white rounded-lg font-medium text-sm hover:shadow-lg transition-all duration-200 hover:scale-105"
+                  >
+                    Login
+                  </Link>
+                )}
+              </>
+            )}
+
+            {/* Mobile menu button */}
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="lg:hidden p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-700 transition-colors duration-200"
+            >
+              {sidebarOpen ? <X size={24} /> : <AlignRight size={24} />}
             </button>
           </div>
         </div>
-      </nav>
 
-      {/* Sidebar */}
-      {sidebarOpen && (
-        <div className="fixed inset-0 z-50 flex">
-          <div
-            className="flex-1 bg-black bg-opacity-30 backdrop-blur-sm animate-fadeIn"
-            onClick={() => setSidebarOpen(false)}
-          />
-          <div className="w-72 bg-white dark:bg-gray-900 h-full shadow-xl p-5 flex flex-col justify-between animate-slideInRight">
-            <div>
-              <div className="flex justify-between items-center border-b border-gray-100 dark:border-gray-800 pb-4 mb-4">
-                <Link 
-                  to="/" 
-                  className="flex items-center gap-3"
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <img
-                    src="https://res.cloudinary.com/ds6um53cx/image/upload/v1756727077/a0jd950p5c8m7wgdylyq.webp"
-                    alt="Logo"
-                    className="w-10 h-10 object-cover rounded-lg"
-                  />
-                  <div>
-                    <div className="font-semibold text-sm dark:text-gray-100">{storeName}</div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">Menu</div>
+        {/* Mobile Navigation */}
+        <AnimatePresence>
+          {sidebarOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="lg:hidden border-t border-gray-200 dark:border-gray-700 overflow-hidden"
+            >
+              <div className="py-4 space-y-1">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.label}
+                    to={item.to || "#"}
+                    onClick={() => setSidebarOpen(false)}
+                    className={`flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      location.pathname === item.to
+                        ? "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300"
+                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                    }`}
+                  >
+                    {item.icon}
+                    <span>{item.label}</span>
+                  </Link>
+                ))}
+
+                {/* Mobile Theme Selector */}
+                <div className="px-4 py-4 border-t border-gray-200 dark:border-gray-700 mt-4">
+                  <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
+                    Theme
+                  </p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {themeOptions.map((option) => {
+                      const Icon = option.icon;
+                      const isActive = theme === option.value;
+                      return (
+                        <button
+                          key={option.value}
+                          onClick={() => {
+                            setTheme(option.value as any);
+                            setSidebarOpen(false);
+                          }}
+                          className={`flex flex-col items-center space-y-2 px-3 py-3 rounded-lg text-xs font-medium transition-all duration-200 ${
+                            isActive
+                              ? "bg-blue-600 dark:bg-blue-600 text-white shadow-lg"
+                              : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                          }`}
+                        >
+                          <Icon size={20} />
+                          <span>{option.label}</span>
+                        </button>
+                      );
+                    })}
                   </div>
-                </Link>
-                <button
-                  onClick={() => setSidebarOpen(false)}
-                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors duration-200 text-gray-700 dark:text-gray-200"
-                >
-                  <X size={22} />
-                </button>
-              </div>
+                </div>
 
-              {/* User Info */}
-              <div className="mb-6 border-b border-gray-100 dark:border-gray-800 pb-4">
-                {!authLoading && currentUser ? (
-                  <div className="flex items-center gap-3">
-                    {currentUser.profileImage ? (
-                      <img
-                        src={currentUser.profileImage}
-                        alt="Avatar"
-                        className="w-12 h-12 rounded-full object-cover border-2 border-blue-100"
-                      />
+                {/* Auth section */}
+                {!authLoading && (
+                  <div className="px-4 py-4 border-t border-gray-200 dark:border-gray-700 mt-4 space-y-2">
+                    {currentUser ? (
+                      <>
+                        <Link
+                          to="/profile"
+                          onClick={() => setSidebarOpen(false)}
+                          className="flex items-center space-x-3 px-4 py-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-medium transition-all duration-200"
+                        >
+                          <UserIcon size={20} />
+                          <span>Profile</span>
+                        </Link>
+                        <button
+                          onClick={handleLogout}
+                          className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-700 font-medium transition-all duration-200"
+                        >
+                          <LogOut size={20} />
+                          <span>Logout</span>
+                        </button>
+                      </>
                     ) : (
-                      <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center border-2 border-blue-100">
-                        <UserIcon size={18} />
-                      </div>
+                      <Link
+                        to="/login"
+                        onClick={() => setSidebarOpen(false)}
+                        className="block px-4 py-3 bg-gradient-to-br from-blue-600 to-cyan-500 dark:from-blue-500 dark:to-cyan-400 text-white rounded-lg font-medium text-center transition-all duration-200 hover:shadow-lg"
+                      >
+                        Login
+                      </Link>
                     )}
-                    <div>
-                      <div className="font-medium text-sm dark:text-gray-100">{firstName}</div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 capitalize">
-                        {currentUser.role || "Member"}
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div>
-                    <div className="text-sm font-medium text-gray-800 dark:text-gray-100">
-                      Welcome
-                    </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                      Sign in to access your account
-                    </div>
-                    <Link
-                      to="/login"
-                      onClick={() => setSidebarOpen(false)}
-                      className="inline-block px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-md text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200"
-                    >
-                      Login
-                    </Link>
                   </div>
                 )}
               </div>
-
-              {/* Menu Links */}
-              <div className="flex flex-col gap-1">
-                {navLinks.map(({ label, to, icon }, idx) => (
-                  <Link
-                    key={idx}
-                    to={to || "/"}
-                    onClick={() => setSidebarOpen(false)}
-                    className={`py-3 px-3 rounded-lg flex items-center gap-3 transition-all duration-200 ${
-                      location.pathname === to
-                        ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium"
-                        : "hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300"
-                    }`}
-                  >
-                    {icon && <span className="text-gray-500 dark:text-gray-400">{icon}</span>}
-                    <span>{label}</span>
-                  </Link>
-                ))}
-              </div>
-
-              {/* Theme Selector */}
-              <div className="mt-6 mb-4 border-t border-gray-200 dark:border-gray-700 pt-4">
-                <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">
-                  Theme
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setTheme('light')}
-                    className={`flex-1 py-2.5 px-3 rounded-lg flex items-center justify-center gap-2 text-sm transition-all duration-200 ${
-                      theme === 'light'
-                        ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium border-2 border-blue-200 dark:border-blue-700'
-                        : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 border-2 border-transparent'
-                    }`}
-                  >
-                    <Sun size={16} />
-                    <span>Light</span>
-                  </button>
-                  <button
-                    onClick={() => setTheme('dark')}
-                    className={`flex-1 py-2.5 px-3 rounded-lg flex items-center justify-center gap-2 text-sm transition-all duration-200 ${
-                      theme === 'dark'
-                        ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium border-2 border-blue-200 dark:border-blue-700'
-                        : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 border-2 border-transparent'
-                    }`}
-                  >
-                    <Moon size={16} />
-                    <span>Dark</span>
-                  </button>
-                  <button
-                    onClick={() => setTheme('system')}
-                    className={`flex-1 py-2.5 px-3 rounded-lg flex items-center justify-center gap-2 text-sm transition-all duration-200 ${
-                      theme === 'system'
-                        ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium border-2 border-blue-200 dark:border-blue-700'
-                        : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 border-2 border-transparent'
-                    }`}
-                  >
-                    <Monitor size={16} />
-                    <span>Auto</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Footer links */}
-              <div className="text-xs text-gray-500 dark:text-gray-400">
-                <Link
-                  to="/privacy-policy"
-                  onClick={() => setSidebarOpen(false)}
-                  className="block mb-2 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
-                >
-                  Privacy Policy
-                </Link>
-                <button
-                  onClick={() => {
-                    setSidebarOpen(false);
-                    setShowTestimonialForm(true);
-                  }}
-                  className="block hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 text-left w-full"
-                >
-                  Rate Us
-                </button>
-              </div>
-            </div>
-
-            {/* Bottom Links */}
-            <div className="border-t border-gray-100 dark:border-gray-800 pt-4 flex flex-col gap-1">
-              {!authLoading && currentUser ? (
-                <>
-                  <Link
-                    to="/profile"
-                    onClick={() => setSidebarOpen(false)}
-                    className="py-2.5 px-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300 transition-colors duration-200"
-                  >
-                    <UserIcon size={16} />
-                    My Profile
-                  </Link>
-                  {shouldShowDashboard() && (
-                    <Link
-                      to={getDashboardPath()}
-                      onClick={() => setSidebarOpen(false)}
-                      className="py-2.5 px-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300 transition-colors duration-200"
-                    >
-                      <Users size={16} />
-                      {getDashboardLabel()}
-                    </Link>
-                  )}
-                  <button
-                    onClick={handleLogout}
-                    className="text-red-600 dark:text-red-400 py-2.5 px-3 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-left flex items-center gap-3 text-sm transition-colors duration-200"
-                  >
-                    <LogOut size={16} />
-                    Logout
-                  </button>
-                </>
-              ) : (
-                <span className="text-gray-500 dark:text-gray-400 text-sm">Not signed in</span>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Testimonial Modal */}
-      <TestimonialForm
-        isOpen={showTestimonialForm}
-        onClose={() => setShowTestimonialForm(false)}
-      />
-
-      <style>{`
-        @keyframes slideInRight {
-          from {
-            transform: translateX(100%);
-            opacity: 0;
-          }
-          to {
-            transform: translateX(0);
-            opacity: 1;
-          }
-        }
-        
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-        
-        .animate-slideInRight {
-          animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-        
-        .animate-fadeIn {
-          animation: fadeIn 0.2s ease-out forwards;
-        }
-      `}</style>
-    </>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </nav>
   );
 };
 
